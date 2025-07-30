@@ -56,6 +56,7 @@ public class SecurityConfig {
                 // Endpoints apenas para ESTRADA_FACIL (CNPJs específicos de admin)
                 .requestMatchers(HttpMethod.GET, "/documentos/pendentes").hasAuthority("ESTRADA_FACIL")
                 .requestMatchers(HttpMethod.POST, "/documentos/*/aprovar").hasAuthority("ESTRADA_FACIL")
+                .requestMatchers(HttpMethod.POST, "/documentos/*/rejeitar").hasAuthority("ESTRADA_FACIL")
                 .requestMatchers(HttpMethod.GET, "/aprovacao/**").hasAuthority("ESTRADA_FACIL")
                 
                 // Endpoints para DESPACHANTE (todos os outros CNPJs)

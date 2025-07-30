@@ -12,15 +12,29 @@ import {
   Chip,
   Box,
   Button,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Input
 } from '@mui/material';
-import { Add, Refresh } from '@mui/icons-material';
+import { Add, Refresh, CloudUpload } from '@mui/icons-material';
 import axios from 'axios';
 
 export default function Dashboard() {
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [modalAberto, setModalAberto] = useState(false);
+  const [enviandoDoc, setEnviandoDoc] = useState(false);
+  const [formData, setFormData] = useState({
+    titulo: '',
+    descricao: '',
+    nomeMotorista: '',
+    arquivo: null
+  });
 
   useEffect(() => {
     carregarDocumentos();
@@ -117,6 +131,122 @@ export default function Dashboard() {
     }
   };
 
+  const enviarDocumento = async () => {
+    try {
+      setEnviandoDoc(true);
+      setError('');
+
+      const token = localStorage.getItem('token');
+      const empresaData = JSON.parse(localStorage.getItem('empresa') || '{}');
+
+      if (!formData.arquivo) {
+        setError('Selecione um arquivo para enviar');
+        return;
+      }
+
+      if (!formData.titulo.trim()) {
+        setError('Digite um título para o documento');
+        return;
+      }
+
+      const formDataToSend = new FormData();
+      formDataToSend.append('arquivo', formData.arquivo);
+      formDataToSend.append('titulo', formData.titulo);
+      formDataToSend.append('descricao', formData.descricao || '');
+      formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
+      formDataToSend.append('empresaId', empresaData.empresaId);
+
+      console.log('📤 Enviando documento...');
+      console.log('Titulo:', formData.titulo);
+      console.log('EmpresaId:', empresaData.empresaId);
+      console.log('Arquivo:', formData.arquivo.name);
+
+      const response = await axios.post('http://localhost:8080/documentos/enviar', formDataToSend, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      console.log('✅ Documento enviado:', response.data);
+      
+      // Fechar modal e limpar form
+      setModalAberto(false);
+      setFormData({
+        titulo: '',
+        descricao: '',
+        nomeMotorista: '',
+        arquivo: null
+      });
+
+      // Recarregar documentos
+      carregarDocumentos();
+
+    } catch (error) {
+      console.error('❌ Erro ao enviar documento:', error);
+      setError('Erro ao enviar documento: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setEnviandoDoc(false);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setFormData({ ...formData, arquivo: file });
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const aprovarDocumento = async (documentoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      console.log('✅ Aprovando documento:', documentoId);
+      
+      const response = await axios.post(`http://localhost:8080/documentos/${documentoId}/aprovar`, '', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('✅ Documento aprovado:', response.data);
+      
+      // Recarregar documentos
+      carregarDocumentos();
+      
+    } catch (error) {
+      console.error('❌ Erro ao aprovar documento:', error);
+      setError('Erro ao aprovar documento: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const rejeitarDocumento = async (documentoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      console.log('❌ Rejeitando documento:', documentoId);
+      
+      const response = await axios.post(`http://localhost:8080/documentos/${documentoId}/rejeitar`, '', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('❌ Documento rejeitado:', response.data);
+      
+      // Recarregar documentos
+      carregarDocumentos();
+      
+    } catch (error) {
+      console.error('❌ Erro ao rejeitar documento:', error);
+      setError('Erro ao rejeitar documento: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'PENDENTE':
@@ -169,6 +299,7 @@ export default function Dashboard() {
               variant="contained"
               startIcon={<Add />}
               color="primary"
+              onClick={() => setModalAberto(true)}
             >
               Enviar Documento
             </Button>
@@ -230,10 +361,19 @@ export default function Dashboard() {
                     <TableCell>
                       {isAdmin && documento.status === 'PENDENTE' ? (
                         <Box>
-                          <Button size="small" color="success" sx={{ mr: 1 }}>
+                          <Button 
+                            size="small" 
+                            color="success" 
+                            sx={{ mr: 1 }}
+                            onClick={() => aprovarDocumento(documento.id)}
+                          >
                             ✅ Aprovar
                           </Button>
-                          <Button size="small" color="error">
+                          <Button 
+                            size="small" 
+                            color="error"
+                            onClick={() => rejeitarDocumento(documento.id)}
+                          >
                             ❌ Rejeitar
                           </Button>
                         </Box>
@@ -250,6 +390,68 @@ export default function Dashboard() {
           </Table>
         </TableContainer>
       )}
+      
+      {/* Modal para enviar documento */}
+      <Dialog open={modalAberto} onClose={() => setModalAberto(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>📤 Enviar Novo Documento</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Título do Documento"
+              value={formData.titulo}
+              onChange={(e) => handleInputChange('titulo', e.target.value)}
+              required
+              fullWidth
+            />
+            
+            <TextField
+              label="Descrição"
+              value={formData.descricao}
+              onChange={(e) => handleInputChange('descricao', e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+            />
+            
+            <TextField
+              label="Nome do Motorista"
+              value={formData.nomeMotorista}
+              onChange={(e) => handleInputChange('nomeMotorista', e.target.value)}
+              fullWidth
+            />
+            
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                Selecione o arquivo:
+              </Typography>
+              <Input
+                type="file"
+                onChange={handleFileChange}
+                inputProps={{ accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx' }}
+                fullWidth
+              />
+              {formData.arquivo && (
+                <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
+                  ✅ Arquivo selecionado: {formData.arquivo.name}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalAberto(false)}>
+            Cancelar
+          </Button>
+          <Button 
+            onClick={enviarDocumento} 
+            variant="contained" 
+            disabled={enviandoDoc || !formData.arquivo || !formData.titulo.trim()}
+            startIcon={<CloudUpload />}
+          >
+            {enviandoDoc ? 'Enviando...' : 'Enviar Documento'}
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {/* Debug info */}
       <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.100', borderRadius: 1, fontSize: '0.75rem', fontFamily: 'monospace' }}>

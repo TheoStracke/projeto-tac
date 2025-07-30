@@ -62,4 +62,38 @@ public class DocumentoController {
         List<Documento> documentos = documentoService.listarDocumentosPendentes();
         return ResponseEntity.ok(documentos);
     }
+    
+    @PostMapping("/{id}/aprovar")
+    public ResponseEntity<?> aprovarDocumento(@PathVariable Long id, @RequestBody(required = false) String comentarios) {
+        try {
+            System.out.println("=== APROVANDO DOCUMENTO ===");
+            System.out.println("ID: " + id);
+            System.out.println("Comentários: " + comentarios);
+            
+            Documento documento = documentoService.aprovarDocumentoPorId(id, true, comentarios);
+            System.out.println("Documento aprovado com sucesso: " + documento.getId());
+            
+            return ResponseEntity.ok(documento);
+        } catch (Exception e) {
+            System.err.println("Erro ao aprovar documento: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Erro ao aprovar documento: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/{id}/rejeitar")
+    public ResponseEntity<?> rejeitarDocumento(@PathVariable Long id, @RequestBody(required = false) String comentarios) {
+        try {
+            System.out.println("=== REJEITANDO DOCUMENTO ===");
+            System.out.println("ID: " + id);
+            System.out.println("Comentários: " + comentarios);
+            
+            Documento documento = documentoService.aprovarDocumentoPorId(id, false, comentarios);
+            System.out.println("Documento rejeitado com sucesso: " + documento.getId());
+            
+            return ResponseEntity.ok(documento);
+        } catch (Exception e) {
+            System.err.println("Erro ao rejeitar documento: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Erro ao rejeitar documento: " + e.getMessage());
+        }
+    }
 }

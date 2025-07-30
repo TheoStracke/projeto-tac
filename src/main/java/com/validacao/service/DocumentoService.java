@@ -28,8 +28,9 @@ public class DocumentoService {
     @Autowired
     private EmpresaRepository empresaRepository;
     
-    @Autowired
-    private EmailService emailService;
+    // TODO: Reativar quando configurar email adequadamente
+    // @Autowired
+    // private EmailService emailService;
     
     private final String UPLOAD_DIR = "uploads/";
     
@@ -62,10 +63,16 @@ public class DocumentoService {
         
         Documento savedDoc = documentoRepository.save(documento);
         
+        // TODO: Configurar envio de email adequadamente
         // Enviar email para Estrada Fácil
-        List<Empresa> estradaFacilList = empresaRepository.findByTipo(TipoEmpresa.ESTRADA_FACIL);
-        for (Empresa estradaFacil : estradaFacilList) {
-            emailService.enviarEmailAprovacao(estradaFacil.getEmail(), nomeMotorista, savedDoc.getTokenAprovacao());
+        try {
+            List<Empresa> estradaFacilList = empresaRepository.findByTipo(TipoEmpresa.ESTRADA_FACIL);
+            for (Empresa estradaFacil : estradaFacilList) {
+                // emailService.enviarEmailAprovacao(estradaFacil.getEmail(), nomeMotorista, savedDoc.getTokenAprovacao());
+                System.out.println("📧 Email seria enviado para: " + estradaFacil.getEmail() + " - Token: " + savedDoc.getTokenAprovacao());
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Falha ao enviar email (continuando sem email): " + e.getMessage());
         }
         
         return savedDoc;
@@ -85,13 +92,19 @@ public class DocumentoService {
         
         Documento savedDoc = documentoRepository.save(documento);
         
+        // TODO: Configurar envio de email adequadamente  
         // Enviar email para o despachante
-        String status = aprovado ? "APROVADO" : "REJEITADO";
-        emailService.enviarEmailAprovado(
-            documento.getEmpresaRemetente().getEmail(),
-            documento.getNomeMotorista(),
-            status
-        );
+        try {
+            String status = aprovado ? "APROVADO" : "REJEITADO";
+            // emailService.enviarEmailAprovado(
+            //     documento.getEmpresaRemetente().getEmail(),
+            //     documento.getNomeMotorista(),
+            //     status
+            // );
+            System.out.println("📧 Email seria enviado para: " + documento.getEmpresaRemetente().getEmail() + " - Status: " + status);
+        } catch (Exception e) {
+            System.out.println("⚠️ Falha ao enviar email (continuando sem email): " + e.getMessage());
+        }
         
         return savedDoc;
     }
@@ -105,6 +118,32 @@ public class DocumentoService {
     
     public List<Documento> listarDocumentosPendentes() {
         return documentoRepository.findByStatus(StatusDocumento.PENDENTE);
+    }
+    
+    public Documento aprovarDocumentoPorId(Long id, boolean aprovado, String comentarios) {
+        Documento documento = documentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Documento não encontrado"));
+        
+        if (documento.getStatus() != StatusDocumento.PENDENTE) {
+            throw new RuntimeException("Este documento já foi processado");
+        }
+        
+        documento.setStatus(aprovado ? StatusDocumento.APROVADO : StatusDocumento.REJEITADO);
+        documento.setComentarios(comentarios);
+        documento.setDataAprovacao(LocalDateTime.now());
+        
+        Documento savedDoc = documentoRepository.save(documento);
+        
+        // TODO: Configurar envio de email adequadamente  
+        // Enviar email para o despachante
+        try {
+            String status = aprovado ? "APROVADO" : "REJEITADO";
+            System.out.println("📧 Email seria enviado para: " + documento.getEmpresaRemetente().getEmail() + " - Status: " + status);
+        } catch (Exception e) {
+            System.out.println("⚠️ Falha ao enviar email (continuando sem email): " + e.getMessage());
+        }
+        
+        return savedDoc;
     }
     
     public Optional<Documento> buscarPorToken(String token) {
