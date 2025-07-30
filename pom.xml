@@ -13,11 +13,11 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
-  <groupId>com.senac</groupId>
-  <artifactId>pizzademo</artifactId> 
-  <name>pizzademo</name>
+  <groupId>com.validacao</groupId>
+  <artifactId>validacao-documentos</artifactId> 
+  <name>validacao-documentos</name>
   <version>1.0</version>
-  <description>Demo project for Spring Boot</description>
+  <description>Sistema de Validação de Documentos</description>
 
   <properties>
     <java.version>17</java.version>
@@ -75,6 +75,19 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>8.0.33</version>
       <scope>runtime</scope>
+    </dependency>
+
+    <!-- Email -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
+    <!-- Upload de arquivos -->
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.4</version>
     </dependency>
   </dependencies>
 

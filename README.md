@@ -1,80 +1,185 @@
-# VTT Pizza - Aplicativo Web de Gerenciamento de Cardápio
+# Sistema de Validação de Documentos
 
-Este projeto é um sistema completo para gerenciamento de itens de menu de pizza, com backend em Spring Boot e frontend em React + Vite, utilizando Material-UI e integração total via API REST.
-
-# Equipe
-Thiago
-Theo
-Vinicius
+Este projeto foi adaptado do sistema de pizzaria para ser um **Sistema de Validação de Documentos** para despachantes e Estrada Fácil.
 
 ## Funcionalidades
-- Listar itens do menu (GET /menu ou /cardapio)
-- Visualizar detalhes do item (GET /menu/{id})
-- Adicionar novos itens (POST /menu)
-- Editar itens (PUT/PATCH /menu/{id})
-- Remover itens (DELETE /menu/{id})
-- Feedback visual (loading, sucesso, erro)
-- Interface moderna e responsiva
 
-## Instalação e Uso
+### Fluxo do Sistema:
+1. **Despachante** recebe documento do motorista
+2. **Despachante** faz upload no sistema 
+3. **Sistema** envia email automático para Estrada Fácil
+4. **Estrada Fácil** acessa link do email e aprova/rejeita
+5. **Despachante** recebe notificação por email do resultado
+6. **Despachante** pode acompanhar status no dashboard
 
-### Backend (Spring Boot)
-1. **No Codespaces:**
-   - Edite `src/main/resources/application.properties` para usar H2 (já configurado para facilitar):
-     ```properties
-     spring.datasource.url=jdbc:h2:mem:testdb
-     spring.datasource.driver-class-name=org.h2.Driver
-     spring.datasource.username=sa
-     spring.datasource.password=
-     spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-     spring.h2.console.enabled=true
-     spring.jpa.hibernate.ddl-auto=update
-     spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-     ```
-   - No terminal:
-     ```sh
-     mvn spring-boot:run
-     ```
-   - Acesse a API em http://localhost:8080/
+### Tipos de Usuário:
+- **Despachante**: Pode enviar documentos e acompanhar status
+- **Estrada Fácil**: Pode aprovar/rejeitar documentos (admin)
 
-### Frontend (React + Vite)
-1. Abra outro terminal e rode:
-   ```sh
+## Tecnologias Utilizadas
+
+### Backend:
+- Spring Boot 3.4.8
+- Spring Security
+- Spring Mail
+- MySQL/H2
+- JPA/Hibernate
+
+### Frontend:
+- React 19
+- Material-UI
+- React Router
+- Axios
+- Framer Motion
+
+## Instalação e Configuração
+
+### 1. Backend (Spring Boot)
+
+1. **Configurar Email** em `src/main/resources/application.properties`:
+   ```properties
+   # Configuração de Email (configure com suas credenciais)
+   spring.mail.host=smtp.gmail.com
+   spring.mail.port=587
+   spring.mail.username=seu-email@gmail.com
+   spring.mail.password=sua-senha-de-app
+   spring.mail.properties.mail.smtp.auth=true
+   spring.mail.properties.mail.smtp.starttls.enable=true
+   ```
+
+2. **Executar o backend**:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+
+3. **Inserir empresas admin** (execute após primeira inicialização):
+   ```sql
+   -- No MySQL ou H2 Console
+   INSERT INTO empresa (cnpj, razao_social, email, senha, tipo) VALUES 
+   ('11.111.111/0001-11', 'Estrada Fácil Admin 1', 'admin1@estradafacil.com', 'senha123', 'ESTRADA_FACIL'),
+   ('22.222.222/0002-22', 'Estrada Fácil Admin 2', 'admin2@estradafacil.com', 'senha123', 'ESTRADA_FACIL'),
+   ('33.333.333/0003-33', 'Despachante Teste', 'despachante@teste.com', 'senha123', 'DESPACHANTE');
+   ```
+
+### 2. Frontend (React)
+
+1. **Instalar dependências**:
+   ```bash
    cd frontend
    npm install
+   ```
+
+2. **Executar o frontend**:
+   ```bash
    npm run dev
    ```
-2. Acesse o endereço mostrado (ex: http://localhost:5173/)
 
-## Endpoints principais
-- GET    `/menu`         → Lista todos os itens
-- GET    `/menu/{id}`    → Detalhes de um item
-- POST   `/menu`         → Adiciona novo item
-- PUT    `/menu/{id}`    → Edita item
-- DELETE `/menu/{id}`    → Remove item
+3. **Acessar**: http://localhost:5173
 
-## Prompts do GitHub Copilot utilizados
-- "desenvolva o frontend a partir do backend do projeto completo com react, quero animações fluidas e cores em amarelo e tons de amarelo, vermelho e vermelho escuro, design super megar hiper moderno"
-- "as cores estão feias, deixa com cores mais modernas, tem que ser clicável com opção de adicionar no carrinho"
-- "Continue: 'Continue to iterate?'"
-- "Failed to load resource: the server responded with a status of 404 (Not Found) ..."
-- "ERR_CONNECTION_REFUSED\nNão é possível acessar esse site\nA conexão com localhost foi recusada. ..."
-- "npm ERR! code ENOENT\nnpm ERR! syscall open\nnpm ERR! path ...\nnpm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open ..."
-- "[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project pizzademo: ..."
-- "[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.4.5:run (default-cli) on project pizzademo: Process terminated with exit code: 1 ..."
+## Como Usar
 
-## Demonstração CRUD
-- Todas as operações podem ser testadas na interface web.
-- O backend pode ser testado via Postman/Insomnia ou pelo frontend.
+### Login
+- Acesse http://localhost:5173
+- Use CNPJ e senha para login
+- **Despachantes** vão para o dashboard
+- **Estrada Fácil** vão para lista de aprovações
 
-## Organização
-- Código React em `frontend/`
-- Código Java em `src/main/java/com/pizzaria/`
-- Controllers, DTOs, Models e Services organizados por domínio
+### Para Despachantes:
+1. Faça login com CNPJ de despachante
+2. Clique em "Enviar Documento"
+3. Preencha dados do motorista e faça upload
+4. Acompanhe status no dashboard
 
-## Participação
-- Projeto desenvolvido em equipe, com apoio do GitHub Copilot para acelerar e aprimorar o desenvolvimento.
+### Para Estrada Fácil:
+1. Receba email com link de aprovação
+2. Clique no link (funciona sem login)
+3. Visualize dados do documento
+4. Aprove ou rejeite com comentários
+5. Despachante recebe email automático
+
+## Endpoints da API
+
+### Autenticação:
+- `POST /auth/login` - Login com CNPJ e senha
+- `POST /auth/cadastro` - Cadastro de nova empresa
+
+### Documentos:
+- `POST /documentos/enviar` - Upload de documento (multipart)
+- `GET /documentos/empresa/{id}` - Listar documentos por empresa
+- `GET /documentos/pendentes` - Listar pendentes (admin)
+
+### Aprovação:
+- `GET /aprovacao/{token}` - Buscar documento por token
+- `POST /aprovacao/{token}` - Aprovar/rejeitar documento
+
+## Estrutura de Arquivos
+
+### Backend:
+```
+src/main/java/com/pizzaria/
+├── model/
+│   ├── Empresa.java          # Empresas (despachantes/admin)
+│   ├── Documento.java        # Documentos enviados
+│   ├── TipoEmpresa.java      # DESPACHANTE | ESTRADA_FACIL
+│   └── StatusDocumento.java  # PENDENTE | APROVADO | REJEITADO
+├── repository/
+│   ├── EmpresaRepository.java
+│   └── DocumentoRepository.java
+├── service/
+│   ├── EmpresaService.java
+│   ├── DocumentoService.java
+│   └── EmailService.java
+└── controller/
+    ├── AuthController.java
+    ├── DocumentoController.java
+    └── AprovacaoController.java
+```
+
+### Frontend:
+```
+src/pages/
+├── Login.jsx              # Tela de login
+├── Dashboard.jsx          # Dashboard do despachante
+├── EnviarDocumento.jsx    # Upload de documentos
+└── PaginaAprovacao.jsx    # Página de aprovação (link email)
+```
+
+## Contas para Teste
+
+### Estrada Fácil (Admin):
+- CNPJ: `11.111.111/0001-11`
+- Senha: `senha123`
+
+### Despachante:
+- CNPJ: `33.333.333/0003-33`
+- Senha: `senha123`
+
+## Configuração de Email
+
+Para funcionar em produção, configure um email válido no `application.properties`:
+
+1. **Gmail**: Use senha de app (não sua senha normal)
+2. **Outlook**: Configure SMTP do Outlook
+3. **SendGrid/AWS SES**: Para produção profissional
+
+## Arquivos Removidos
+
+Os seguintes arquivos da pizzaria foram removidos/não são mais necessários:
+- Todos os models relacionados a Pizza, Cardápio, Carrinho
+- Controllers de Pizza, Cardápio, Ingredientes
+- Pages do frontend relacionadas à pizzaria
+- Sistema de carrinho e pedidos
+
+## Próximos Passos
+
+1. Implementar autenticação JWT mais robusta
+2. Adicionar validação de arquivos por tipo
+3. Implementar download de arquivos
+4. Adicionar relatórios e estatísticas
+5. Melhorar interface do usuário
+6. Implementar notificações em tempo real
 
 ---
 
-Se tiver dúvidas, abra uma issue ou consulte os comentários no código!
+**Desenvolvido por**: Thiago, Theo, Vinicius
+**Tecnologia**: Spring Boot + React + Material-UI
