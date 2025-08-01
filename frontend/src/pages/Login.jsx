@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 import CnpjInput from '../components/CnpjInput';
 import { cleanCnpj } from '../utils/cnpjValidator';
 
@@ -17,16 +18,15 @@ const Login = () => {
         setError('');
 
         try {
-            const response = await fetch("http://localhost:8080/api/auth/login", {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
                     cnpj: cleanCnpj(cnpj), // Remove a formatação antes de enviar
                     senha 
                 })
             });
+
 
             if (!response.ok) {
                 throw new Error(`Erro: ${response.status}`);

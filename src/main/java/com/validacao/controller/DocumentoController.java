@@ -19,7 +19,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/documentos")
-@CrossOrigin(origins = "*")
 public class DocumentoController {
     
     @Autowired

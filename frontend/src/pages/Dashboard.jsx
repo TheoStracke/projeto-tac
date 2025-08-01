@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { Add, Refresh, CloudUpload } from '@mui/icons-material';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 
 export default function Dashboard() {
   const [documentos, setDocumentos] = useState([]);
@@ -69,8 +70,8 @@ export default function Dashboard() {
       }
       
       const endpoint = empresaData.tipo === 'ESTRADA_FACIL' 
-        ? 'http://localhost:8080/documentos/pendentes'
-        : `http://localhost:8080/documentos/empresa/${empresaData.empresaId}`;
+        ? `${API_BASE_URL}/documentos/pendentes`
+        : `${API_BASE_URL}/documentos/empresa/${empresaData.empresaId}`;
       
       const response = await axios.get(endpoint, {
         headers: {
@@ -134,7 +135,7 @@ export default function Dashboard() {
       formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
       formDataToSend.append('empresaId', empresaData.empresaId);
 
-      const response = await axios.post('http://localhost:8080/documentos/enviar', formDataToSend, {
+      const response = await axios.post(`${API_BASE_URL}/documentos/enviar`, formDataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -174,7 +175,7 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
       
       // Fazer requisição com autorização
-      const response = await fetch(`http://localhost:8080/documentos/${documentoId}/arquivo`, {
+      const response = await fetch(`${API_BASE_URL}/documentos/${documentoId}/arquivo`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -206,7 +207,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await axios.get(`http://localhost:8080/documentos/${documentoId}`, {
+      const response = await axios.get(`${API_BASE_URL}/documentos/${documentoId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -224,7 +225,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await axios.post(`http://localhost:8080/documentos/${documentoId}/aprovar`, '', {
+      const response = await axios.post(`${API_BASE_URL}/documentos/${documentoId}/aprovar`, '', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -243,7 +244,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await axios.post(`http://localhost:8080/documentos/${documentoId}/rejeitar`, '', {
+      const response = await axios.post(`${API_BASE_URL}/documentos/${documentoId}/rejeitar`, '', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

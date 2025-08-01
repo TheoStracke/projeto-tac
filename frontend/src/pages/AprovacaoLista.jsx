@@ -16,6 +16,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 
 export default function AprovacaoLista() {
   const [documentos, setDocumentos] = useState([]);
@@ -28,7 +29,7 @@ export default function AprovacaoLista() {
 
   const carregarDocumentos = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/documentos/pendentes');
+      const response = await axios.get(`${API_BASE_URL}/documentos/pendentes`);
       
       // Verificar se a resposta é um array
       if (Array.isArray(response.data)) {
@@ -148,7 +149,7 @@ export default function AprovacaoLista() {
                         size="small"
                         onClick={() => {
                           window.open(
-                            `http://localhost:8080/documentos/${doc.id}/arquivo`,
+                            `${API_BASE_URL}/documentos/${doc.id}/arquivo`,
                             '_blank'
                           );
                         }}

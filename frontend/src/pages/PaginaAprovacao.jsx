@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { CheckCircle, Cancel } from '@mui/icons-material';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 
 export default function PaginaAprovacao() {
   const { token } = useParams();
@@ -31,7 +32,7 @@ export default function PaginaAprovacao() {
 
   const carregarDocumento = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/aprovacao/${token}`);
+      const response = await axios.get(`${API_BASE_URL}/aprovacao/${token}`);
       setDocumento(response.data);
     } catch (error) {
       setError('Documento não encontrado ou token inválido');
@@ -45,7 +46,7 @@ export default function PaginaAprovacao() {
     setError('');
 
     try {
-      await axios.post(`http://localhost:8080/aprovacao/${token}`, {
+      await axios.post(`${API_BASE_URL}/aprovacao/${token}`, {
         aprovado,
         comentarios
       });
@@ -187,7 +188,7 @@ export default function PaginaAprovacao() {
                       color="primary"
                       onClick={() => {
                         window.open(
-                          `http://localhost:8080/aprovacao/${token}/arquivo`,
+                          `${API_BASE_URL}/aprovacao/${token}/arquivo`,
                           '_blank'
                         );
                       }}

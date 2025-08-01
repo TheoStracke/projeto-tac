@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 
 export default function EnviarDocumento() {
   const [formData, setFormData] = useState({
@@ -68,7 +69,7 @@ export default function EnviarDocumento() {
       formDataToSend.append('nomeMotorista', formData.nomeMotorista);
       formDataToSend.append('empresaId', empresaId);
 
-      const response = await axios.post('http://localhost:8080/documentos/enviar', formDataToSend, {
+      const response = await axios.post(`${API_BASE_URL}/documentos/enviar`, formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

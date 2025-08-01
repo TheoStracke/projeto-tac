@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/aprovacao")
-@CrossOrigin(origins = "*")
 public class AprovacaoController {
     
     @Autowired

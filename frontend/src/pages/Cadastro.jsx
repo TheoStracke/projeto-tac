@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Business, Email, Lock, Person } from '@mui/icons-material';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 
 const Cadastro = () => {
   const [formData, setFormData] = useState({
@@ -151,7 +152,7 @@ const Cadastro = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/cadastro', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/cadastro`, {
         cnpj: formData.cnpj.replace(/\D/g, ''), // Remove formatação
         razaoSocial: formData.razaoSocial,
         email: formData.email,
