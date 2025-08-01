@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Container,
   Typography,
@@ -28,6 +28,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalDetalhes, setModalDetalhes] = useState(false);
+  const [documentoSelecionado, setDocumentoSelecionado] = useState(null);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
   const [formData, setFormData] = useState({
     titulo: '',
@@ -48,10 +50,6 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
       const empresaData = JSON.parse(localStorage.getItem('empresa') || '{}');
       
-      console.log('=== DEBUG DASHBOARD ===');
-      console.log('Token:', token ? 'EXISTE' : 'NULO');
-      console.log('EmpresaData:', empresaData);
-      
       if (!token) {
         setError('Token não encontrado - redirecionando para login');
         localStorage.clear();
@@ -70,18 +68,9 @@ export default function Dashboard() {
         return;
       }
       
-      let endpoint;
-      if (empresaData.tipo === 'ESTRADA_FACIL') {
-        // ADMIN vê todos os documentos pendentes
-        endpoint = 'http://localhost:8080/documentos/pendentes';
-        console.log('🔧 ADMIN - buscando documentos pendentes');
-      } else {
-        // DESPACHANTE vê apenas seus documentos
-        endpoint = `http://localhost:8080/documentos/empresa/${empresaData.empresaId}`;
-        console.log('👤 DESPACHANTE - buscando documentos da empresa:', empresaData.empresaId);
-      }
-      
-      console.log('📡 Fazendo requisição para:', endpoint);
+      const endpoint = empresaData.tipo === 'ESTRADA_FACIL' 
+        ? 'http://localhost:8080/documentos/pendentes'
+        : `http://localhost:8080/documentos/empresa/${empresaData.empresaId}`;
       
       const response = await axios.get(endpoint, {
         headers: {
@@ -90,26 +79,15 @@ export default function Dashboard() {
         }
       });
       
-      console.log('✅ Resposta recebida:', response.data);
-      
       // Verificar se a resposta é um array ou ApiResponse
-      let docs = [];
-      if (Array.isArray(response.data)) {
-        docs = response.data;
-      } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
-        docs = response.data.data;
-      } else if (response.data && response.data.success) {
-        docs = response.data.data || [];
-      } else {
-        console.warn('⚠️ Formato inesperado da resposta:', response.data);
-        docs = [];
-      }
+      const docs = Array.isArray(response.data) 
+        ? response.data
+        : response.data?.data || [];
       
       setDocumentos(docs);
       setError('');
       
     } catch (error) {
-      console.error('❌ Erro ao carregar documentos:', error);
       
       if (error.response?.status === 401) {
         setError('Sessão expirada. Redirecionando para login...');
@@ -156,19 +134,12 @@ export default function Dashboard() {
       formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
       formDataToSend.append('empresaId', empresaData.empresaId);
 
-      console.log('📤 Enviando documento...');
-      console.log('Titulo:', formData.titulo);
-      console.log('EmpresaId:', empresaData.empresaId);
-      console.log('Arquivo:', formData.arquivo.name);
-
       const response = await axios.post('http://localhost:8080/documentos/enviar', formDataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
-
-      console.log('✅ Documento enviado:', response.data);
       
       // Fechar modal e limpar form
       setModalAberto(false);
@@ -183,27 +154,75 @@ export default function Dashboard() {
       carregarDocumentos();
 
     } catch (error) {
-      console.error('❌ Erro ao enviar documento:', error);
       setError('Erro ao enviar documento: ' + (error.response?.data?.message || error.message));
     } finally {
       setEnviandoDoc(false);
     }
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = useCallback((event) => {
     const file = event.target.files[0];
-    setFormData({ ...formData, arquivo: file });
+    setFormData(prev => ({ ...prev, arquivo: file }));
+  }, []);
+
+  const handleInputChange = useCallback((field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const visualizarArquivo = async (documentoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Fazer requisição com autorização
+      const response = await fetch(`http://localhost:8080/documentos/${documentoId}/arquivo`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 403) {
+          setError('Você não tem permissão para visualizar este arquivo');
+        } else {
+          setError('Erro ao carregar arquivo: ' + response.status);
+        }
+        return;
+      }
+      
+      // Obter o blob do arquivo e criar URL para abrir
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      
+      // Limpar URL depois de um tempo para liberar memória
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      
+    } catch (error) {
+      setError('Erro ao visualizar arquivo');
+    }
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+  const visualizarDetalhes = async (documentoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await axios.get(`http://localhost:8080/documentos/${documentoId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      setDocumentoSelecionado(response.data);
+      setModalDetalhes(true);
+      
+    } catch (error) {
+      setError('Erro ao carregar detalhes do documento');
+    }
   };
 
   const aprovarDocumento = async (documentoId) => {
     try {
       const token = localStorage.getItem('token');
-      
-      console.log('✅ Aprovando documento:', documentoId);
       
       const response = await axios.post(`http://localhost:8080/documentos/${documentoId}/aprovar`, '', {
         headers: {
@@ -212,13 +231,10 @@ export default function Dashboard() {
         }
       });
       
-      console.log('✅ Documento aprovado:', response.data);
-      
       // Recarregar documentos
       carregarDocumentos();
       
     } catch (error) {
-      console.error('❌ Erro ao aprovar documento:', error);
       setError('Erro ao aprovar documento: ' + (error.response?.data?.message || error.message));
     }
   };
@@ -227,8 +243,6 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       
-      console.log('❌ Rejeitando documento:', documentoId);
-      
       const response = await axios.post(`http://localhost:8080/documentos/${documentoId}/rejeitar`, '', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -236,18 +250,15 @@ export default function Dashboard() {
         }
       });
       
-      console.log('❌ Documento rejeitado:', response.data);
-      
       // Recarregar documentos
       carregarDocumentos();
       
     } catch (error) {
-      console.error('❌ Erro ao rejeitar documento:', error);
       setError('Erro ao rejeitar documento: ' + (error.response?.data?.message || error.message));
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = useCallback((status) => {
     switch (status) {
       case 'PENDENTE':
         return 'warning';
@@ -258,16 +269,21 @@ export default function Dashboard() {
       default:
         return 'default';
     }
-  };
+  }, []);
 
-  const formatarData = (dataString) => {
+  const formatarData = useCallback((dataString) => {
     if (!dataString) return 'N/A';
     const data = new Date(dataString);
     return data.toLocaleString('pt-BR');
-  };
+  }, []);
 
-  const empresaData = JSON.parse(localStorage.getItem('empresa') || '{}');
-  const isAdmin = empresaData.tipo === 'ESTRADA_FACIL';
+  const empresaData = useMemo(() => {
+    return JSON.parse(localStorage.getItem('empresa') || '{}');
+  }, []);
+  
+  const isAdmin = useMemo(() => {
+    return empresaData.tipo === 'ESTRADA_FACIL';
+  }, [empresaData.tipo]);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -327,13 +343,14 @@ export default function Dashboard() {
                 <TableCell><strong>Status</strong></TableCell>
                 <TableCell><strong>Data Envio</strong></TableCell>
                 {isAdmin && <TableCell><strong>Empresa</strong></TableCell>}
+                {isAdmin && <TableCell><strong>Visualizar</strong></TableCell>}
                 <TableCell><strong>Ações</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {documentos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 6 : 5} align="center">
+                  <TableCell colSpan={isAdmin ? 7 : 5} align="center">
                     <Typography color="text.secondary" sx={{ py: 4 }}>
                       {isAdmin ? 
                         '📝 Nenhum documento pendente de aprovação' : 
@@ -358,6 +375,18 @@ export default function Dashboard() {
                     {isAdmin && (
                       <TableCell>{documento.empresa?.razaoSocial || 'N/A'}</TableCell>
                     )}
+                    {isAdmin && (
+                      <TableCell>
+                        <Button
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          onClick={() => visualizarArquivo(documento.id)}
+                        >
+                          📎 Ver Arquivo
+                        </Button>
+                      </TableCell>
+                    )}
                     <TableCell>
                       {isAdmin && documento.status === 'PENDENTE' ? (
                         <Box>
@@ -378,7 +407,11 @@ export default function Dashboard() {
                           </Button>
                         </Box>
                       ) : (
-                        <Button size="small" variant="outlined">
+                        <Button 
+                          size="small" 
+                          variant="outlined"
+                          onClick={() => visualizarDetalhes(documento.id)}
+                        >
                           👁️ Ver Detalhes
                         </Button>
                       )}
@@ -453,15 +486,84 @@ export default function Dashboard() {
         </DialogActions>
       </Dialog>
       
-      {/* Debug info */}
-      <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.100', borderRadius: 1, fontSize: '0.75rem', fontFamily: 'monospace' }}>
-        <Typography variant="caption" display="block">
-          <strong>DEBUG INFO:</strong><br/>
-          📊 Total documentos: {documentos.length}<br/>
-          🔐 Token existe: {localStorage.getItem('token') ? 'SIM' : 'NÃO'}<br/>
-          👤 Dados empresa: {JSON.stringify(empresaData, null, 2)}
-        </Typography>
-      </Box>
+      {/* Modal para ver detalhes do documento */}
+      <Dialog open={modalDetalhes} onClose={() => setModalDetalhes(false)} maxWidth="md" fullWidth>
+        <DialogTitle>📄 Detalhes do Documento</DialogTitle>
+        <DialogContent>
+          {documentoSelecionado && (
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Título</Typography>
+                  <Typography variant="body1">{documentoSelecionado.titulo}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Status</Typography>
+                  <Chip 
+                    label={documentoSelecionado.status} 
+                    color={getStatusColor(documentoSelecionado.status)}
+                    size="small"
+                  />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Motorista</Typography>
+                  <Typography variant="body1">{documentoSelecionado.nomeMotorista || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Data de Envio</Typography>
+                  <Typography variant="body1">
+                    {new Date(documentoSelecionado.dataEnvio).toLocaleString('pt-BR')}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Empresa Remetente</Typography>
+                  <Typography variant="body1">{documentoSelecionado.empresaRemetente?.razaoSocial}</Typography>
+                </Box>
+                {documentoSelecionado.dataAprovacao && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">Data de Aprovação</Typography>
+                    <Typography variant="body1">
+                      {new Date(documentoSelecionado.dataAprovacao).toLocaleString('pt-BR')}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+              
+              {documentoSelecionado.descricao && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" color="text.secondary">Descrição</Typography>
+                  <Typography variant="body1">{documentoSelecionado.descricao}</Typography>
+                </Box>
+              )}
+              
+              {documentoSelecionado.comentarios && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" color="text.secondary">Comentários da Aprovação</Typography>
+                  <Typography variant="body1">{documentoSelecionado.comentarios}</Typography>
+                </Box>
+              )}
+              
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Arquivo</Typography>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  📎 {documentoSelecionado.nomeArquivoOriginal}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => visualizarArquivo(documentoSelecionado.id)}
+                  sx={{ mr: 1 }}
+                >
+                  📥 Abrir/Download Arquivo
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalDetalhes(false)}>Fechar</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

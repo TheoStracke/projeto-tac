@@ -35,14 +35,12 @@ export default function AprovacaoLista() {
         setDocumentos(response.data);
         setError('');
       } else {
-        console.error('Resposta não é um array:', response.data);
         setError('Erro no formato da resposta do servidor');
         setDocumentos([]);
       }
     } catch (err) {
       setError('Erro ao carregar documentos');
       setDocumentos([]);
-      console.error('Erro:', err);
     } finally {
       setLoading(false);
     }
@@ -115,6 +113,7 @@ export default function AprovacaoLista() {
                 <TableCell>Empresa</TableCell>
                 <TableCell>Data Envio</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Arquivo</TableCell>
                 <TableCell>Ações</TableCell>
               </TableRow>
             </TableHead>
@@ -142,6 +141,21 @@ export default function AprovacaoLista() {
                         color={getStatusColor(doc.status)}
                         size="small"
                       />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => {
+                          window.open(
+                            `http://localhost:8080/documentos/${doc.id}/arquivo`,
+                            '_blank'
+                          );
+                        }}
+                        color="primary"
+                      >
+                        📎 Ver Arquivo
+                      </Button>
                     </TableCell>
                     <TableCell>
                       <Button

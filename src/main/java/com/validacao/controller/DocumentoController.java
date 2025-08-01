@@ -3,11 +3,19 @@ package com.validacao.controller;
 import com.validacao.model.Documento;
 import com.validacao.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/documentos")
@@ -25,11 +33,6 @@ public class DocumentoController {
             @RequestParam("nomeMotorista") String nomeMotorista,
             @RequestParam("empresaId") Long empresaId) {
         
-        System.out.println("=== RECEBENDO DOCUMENTO ===");
-        System.out.println("Título: " + titulo);
-        System.out.println("Empresa ID: " + empresaId);
-        System.out.println("Arquivo: " + (arquivo != null ? arquivo.getOriginalFilename() : "null"));
-        
         try {
             if (arquivo == null || arquivo.isEmpty()) {
                 return ResponseEntity.badRequest().body("Arquivo é obrigatório");
@@ -39,7 +42,6 @@ public class DocumentoController {
                 arquivo, titulo, descricao, nomeMotorista, empresaId
             );
             
-            System.out.println("Documento criado com ID: " + documento.getId());
             return ResponseEntity.ok(documento);
             
         } catch (Exception e) {
@@ -66,16 +68,10 @@ public class DocumentoController {
     @PostMapping("/{id}/aprovar")
     public ResponseEntity<?> aprovarDocumento(@PathVariable Long id, @RequestBody(required = false) String comentarios) {
         try {
-            System.out.println("=== APROVANDO DOCUMENTO ===");
-            System.out.println("ID: " + id);
-            System.out.println("Comentários: " + comentarios);
-            
             Documento documento = documentoService.aprovarDocumentoPorId(id, true, comentarios);
-            System.out.println("Documento aprovado com sucesso: " + documento.getId());
             
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
-            System.err.println("Erro ao aprovar documento: " + e.getMessage());
             return ResponseEntity.badRequest().body("Erro ao aprovar documento: " + e.getMessage());
         }
     }
@@ -83,17 +79,79 @@ public class DocumentoController {
     @PostMapping("/{id}/rejeitar")
     public ResponseEntity<?> rejeitarDocumento(@PathVariable Long id, @RequestBody(required = false) String comentarios) {
         try {
-            System.out.println("=== REJEITANDO DOCUMENTO ===");
-            System.out.println("ID: " + id);
-            System.out.println("Comentários: " + comentarios);
-            
             Documento documento = documentoService.aprovarDocumentoPorId(id, false, comentarios);
-            System.out.println("Documento rejeitado com sucesso: " + documento.getId());
             
             return ResponseEntity.ok(documento);
         } catch (Exception e) {
-            System.err.println("Erro ao rejeitar documento: " + e.getMessage());
             return ResponseEntity.badRequest().body("Erro ao rejeitar documento: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Endpoint para buscar detalhes de um documento específico
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarDocumento(@PathVariable Long id) {
+        try {
+            Optional<Documento> documento = documentoService.buscarPorId(id);
+            if (documento.isPresent()) {
+                return ResponseEntity.ok(documento.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao buscar documento: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Endpoint para download/visualização de arquivos
+     */
+    @GetMapping("/{id}/arquivo")
+    public ResponseEntity<Resource> visualizarArquivo(@PathVariable Long id) {
+        try {
+            Optional<Documento> documentoOpt = documentoService.buscarPorId(id);
+            if (!documentoOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Documento documento = documentoOpt.get();
+            Path arquivoPath = Paths.get(documento.getArquivoPath());
+            Resource resource = new UrlResource(arquivoPath.toUri());
+            
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            // Determinar o tipo de mídia baseado na extensão
+            String nomeArquivo = documento.getNomeArquivoOriginal();
+            String contentType = determinarTipoMidia(nomeArquivo);
+            
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + nomeArquivo + "\"")
+                    .body(resource);
+                    
+        } catch (MalformedURLException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * Determina o tipo de mídia com base na extensão do arquivo
+     */
+    private String determinarTipoMidia(String nomeArquivo) {
+        if (nomeArquivo == null) return "application/octet-stream";
+        
+        String extensao = nomeArquivo.toLowerCase();
+        if (extensao.endsWith(".pdf")) return "application/pdf";
+        if (extensao.endsWith(".jpg") || extensao.endsWith(".jpeg")) return "image/jpeg";
+        if (extensao.endsWith(".png")) return "image/png";
+        if (extensao.endsWith(".doc")) return "application/msword";
+        if (extensao.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        
+        return "application/octet-stream";
     }
 }

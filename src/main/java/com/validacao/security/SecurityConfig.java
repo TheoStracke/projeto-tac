@@ -25,7 +25,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Domínio do front
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174")); // Domínios do front
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -50,20 +50,29 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Preflight CORS
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/cadastro").permitAll()
-                .requestMatchers(HttpMethod.GET, "/h2-console/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/h2-console/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/test/**").permitAll() // Endpoints de teste
+                .requestMatchers(HttpMethod.GET, "/api/test/**").permitAll() // Endpoints de teste GET
+                
+                // Endpoints de aprovação rápida via email (sem autenticação - usam token único)
+                .requestMatchers(HttpMethod.GET, "/aprovacao/*/aprovar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/aprovacao/*/rejeitar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/aprovacao/*/arquivo").permitAll() // Visualizar arquivo via token
+                .requestMatchers(HttpMethod.GET, "/aprovacao/*").permitAll() // Para buscar documento por token
                 
                 // Endpoints apenas para ESTRADA_FACIL (CNPJs específicos de admin)
                 .requestMatchers(HttpMethod.GET, "/documentos/pendentes").hasAuthority("ESTRADA_FACIL")
                 .requestMatchers(HttpMethod.POST, "/documentos/*/aprovar").hasAuthority("ESTRADA_FACIL")
                 .requestMatchers(HttpMethod.POST, "/documentos/*/rejeitar").hasAuthority("ESTRADA_FACIL")
-                .requestMatchers(HttpMethod.GET, "/aprovacao/**").hasAuthority("ESTRADA_FACIL")
+                .requestMatchers(HttpMethod.POST, "/aprovacao/**").hasAuthority("ESTRADA_FACIL") // POST para aprovação detalhada
                 
-                // Endpoints para DESPACHANTE (todos os outros CNPJs)
                 .requestMatchers(HttpMethod.POST, "/documentos/enviar").hasAuthority("DESPACHANTE")
                 
                 // Endpoints que ambos podem acessar
                 .requestMatchers(HttpMethod.GET, "/documentos/empresa/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/documentos/*").authenticated() // Buscar documento por ID
+                
+                // Endpoints de visualização de arquivos - ambos os tipos podem acessar
+                .requestMatchers(HttpMethod.GET, "/documentos/*/arquivo").hasAnyAuthority("ESTRADA_FACIL", "DESPACHANTE")
                 
                 // Bloquear qualquer outro acesso
                 .anyRequest().denyAll()

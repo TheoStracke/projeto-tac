@@ -1,9 +1,9 @@
 // src/components/CnpjInput.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TextField } from '@mui/material';
 import { validateCnpj, cleanCnpj } from '../utils/cnpjValidator';
 
-const CnpjInput = ({ value, onChange, error: externalError, helperText: externalHelperText, ...props }) => {
+const CnpjInput = React.memo(({ value, onChange, error: externalError, helperText: externalHelperText, ...props }) => {
   const [internalError, setInternalError] = useState(false);
   const [internalHelperText, setInternalHelperText] = useState('');
 
@@ -69,6 +69,6 @@ const CnpjInput = ({ value, onChange, error: externalError, helperText: external
       }}
     />
   );
-};
+});
 
 export default CnpjInput;

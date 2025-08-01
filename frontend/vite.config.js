@@ -4,11 +4,19 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/pizzas': 'http://localhost:8080',
-      '/carrinho': 'http://localhost:8080',
-      '/clientes': 'http://localhost:8080',
-      '/pedidos': 'http://localhost:8080'
+    host: true,
+    port: 5173,
+  },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          mui: ['@mui/material', '@mui/icons-material']
+        }
+      }
     }
   }
 });

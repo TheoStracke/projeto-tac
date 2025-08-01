@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import CnpjInput from '../components/CnpjInput';
+import { cleanCnpj } from '../utils/cnpjValidator';
 
 const Login = () => {
     const [cnpj, setCnpj] = useState('');
@@ -19,7 +22,10 @@ const Login = () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ cnpj, senha })
+                body: JSON.stringify({ 
+                    cnpj: cleanCnpj(cnpj), // Remove a formatação antes de enviar
+                    senha 
+                })
             });
 
             if (!response.ok) {
@@ -27,7 +33,6 @@ const Login = () => {
             }
 
             const data = await response.json();
-            console.log("Resposta completa do backend:", data);
             
             // Ajustar para o formato ApiResponse
             if (data.success === true || (data.data && data.data.token)) {
@@ -36,8 +41,6 @@ const Login = () => {
                 localStorage.setItem('token', tokenData.token);
                 localStorage.setItem('empresa', JSON.stringify(tokenData));
                 
-                console.log("Login realizado com sucesso:", tokenData);
-                
                 // Redirecionar para dashboard
                 navigate('/dashboard');
             } else {
@@ -45,7 +48,6 @@ const Login = () => {
             }
             
         } catch (error) {
-            console.error("Erro no login:", error);
             setError('Erro de conexão com o servidor');
         } finally {
             setLoading(false);
@@ -74,22 +76,12 @@ const Login = () => {
                 
                 <form onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                            CNPJ:
-                        </label>
-                        <input
-                            type="text"
+                        <CnpjInput
                             value={cnpj}
                             onChange={(e) => setCnpj(e.target.value)}
-                            placeholder="00.000.000/0000-00"
+                            variant="outlined"
+                            size="medium"
                             required
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '1rem'
-                            }}
                         />
                     </div>
                     
@@ -142,18 +134,22 @@ const Login = () => {
                     </button>
                 </form>
                 
-                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                    <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                        <strong>CNPJs ADMIN (podem aprovar):</strong><br/>
-                        43.403.910/0001-28<br/>
-                        20.692.051/0001-39<br/>
-                        Senha: senha123
+                {/* Link para cadastro */}
+                <div style={{ textAlign: 'center', marginTop: '1.5rem', marginBottom: '1rem' }}>
+                    <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        Não tem uma conta?
                     </p>
-                    <p style={{ color: '#666', fontSize: '0.9rem' }}>
-                        <strong>CNPJs DESPACHANTE (apenas enviam):</strong><br/>
-                        Qualquer outro CNPJ cadastrado<br/>
-                        Senha: senha123
-                    </p>
+                    <Link 
+                        to="/cadastro" 
+                        style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            fontWeight: 'bold',
+                            fontSize: '1rem'
+                        }}
+                    >
+                        📝 Cadastrar Nova Empresa
+                    </Link>
                 </div>
             </div>
         </div>

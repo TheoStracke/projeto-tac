@@ -179,9 +179,22 @@ export default function PaginaAprovacao() {
                     <Typography variant="body2" color="text.secondary">
                       Arquivo
                     </Typography>
-                    <Typography variant="body1">
-                      {documento.nomeArquivoOriginal}
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      📎 {documento.nomeArquivoOriginal}
                     </Typography>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => {
+                        window.open(
+                          `http://localhost:8080/aprovacao/${token}/arquivo`,
+                          '_blank'
+                        );
+                      }}
+                      size="small"
+                    >
+                      📥 Visualizar/Baixar Arquivo
+                    </Button>
                   </Grid>
                 </Grid>
               </CardContent>

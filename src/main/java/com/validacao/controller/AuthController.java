@@ -25,38 +25,29 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
-        System.out.println("=== DEBUG LOGIN ===");
-        System.out.println("Request recebido: " + request);
-        System.out.println("CNPJ: " + (request != null ? request.getCnpj() : "null"));
-        System.out.println("Senha: " + (request != null ? request.getSenha() : "null"));
-        
         try {
             if (request == null) {
-                System.out.println("ERRO: Request é null");
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Request inválido"));
             }
             
             if (request.getCnpj() == null || request.getSenha() == null) {
-                System.out.println("ERRO: CNPJ ou senha são null");
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("CNPJ e senha são obrigatórios"));
             }
             
-            Optional<Empresa> empresaOpt = empresaService.autenticar(request.getCnpj(), request.getSenha());
-            System.out.println("Resultado da autenticação: " + (empresaOpt.isPresent() ? "SUCESSO" : "FALHOU"));
+            // Remover formatação do CNPJ (pontos, barras, hífens)
+            String cnpjLimpo = request.getCnpj().replaceAll("[^0-9]", "");
+            
+            Optional<Empresa> empresaOpt = empresaService.autenticar(cnpjLimpo, request.getSenha());
 
             if (empresaOpt.isEmpty()) {
-                System.out.println("ERRO: Empresa não encontrada ou senha incorreta");
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("CNPJ ou senha inválidos"));
             }
 
             Empresa empresa = empresaOpt.get();
-            System.out.println("Empresa encontrada: " + empresa.getRazaoSocial());
-            
             String token = jwtService.generateToken(empresa);
-            System.out.println("Token gerado: " + (token != null ? "OK" : "FALHOU"));
             
             LoginResponse loginResponse = new LoginResponse(
                 token,
@@ -66,7 +57,6 @@ public class AuthController {
                 empresa.getEmail(),
                 empresa.getTipo()
             );
-            System.out.println("LoginResponse criado: OK");
 
             return ResponseEntity.ok(ApiResponse.success("Login realizado com sucesso", loginResponse));
             
@@ -79,13 +69,18 @@ public class AuthController {
     @PostMapping("/cadastro")
     public ResponseEntity<ApiResponse<String>> cadastro(@RequestBody Empresa empresa) {
         try {
+            // Remover formatação do CNPJ (pontos, barras, hífens)
+            String cnpjLimpo = empresa.getCnpj().replaceAll("[^0-9]", "");
+            empresa.setCnpj(cnpjLimpo);
+            
             // Verificar se CNPJ já existe
-            if (empresaService.buscarPorCnpj(empresa.getCnpj()).isPresent()) {
+            if (empresaService.buscarPorCnpj(cnpjLimpo).isPresent()) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("CNPJ já cadastrado"));
             }
             
             empresaService.salvar(empresa);
+            
             return ResponseEntity.ok(ApiResponse.success("Empresa cadastrada com sucesso!", null));
             
         } catch (Exception e) {

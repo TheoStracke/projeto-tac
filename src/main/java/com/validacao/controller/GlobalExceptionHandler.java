@@ -21,11 +21,6 @@ public class GlobalExceptionHandler {
         errorDetails.put("details", request.getDescription(false));
         errorDetails.put("error", "Internal Server Error");
         
-        // Log do erro para debug
-        System.err.println("=== ERRO NO BACKEND ===");
-        System.err.println("Mensagem: " + ex.getMessage());
-        ex.printStackTrace();
-        
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -36,10 +31,6 @@ public class GlobalExceptionHandler {
         errorDetails.put("message", ex.getMessage());
         errorDetails.put("details", request.getDescription(false));
         errorDetails.put("error", "Bad Request");
-        
-        System.err.println("=== RUNTIME EXCEPTION ===");
-        System.err.println("Mensagem: " + ex.getMessage());
-        ex.printStackTrace();
         
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }

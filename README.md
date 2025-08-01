@@ -22,7 +22,7 @@ Este projeto foi adaptado do sistema de pizzaria para ser um **Sistema de Valida
 - Spring Boot 3.4.8
 - Spring Security
 - Spring Mail
-- MySQL/H2
+- MySQL
 - JPA/Hibernate
 
 ### Frontend:
@@ -54,7 +54,7 @@ Este projeto foi adaptado do sistema de pizzaria para ser um **Sistema de Valida
 
 3. **Inserir empresas admin** (execute após primeira inicialização):
    ```sql
-   -- No MySQL ou H2 Console
+   -- No MySQL
    INSERT INTO empresa (cnpj, razao_social, email, senha, tipo) VALUES 
    ('11.111.111/0001-11', 'Estrada Fácil Admin 1', 'admin1@estradafacil.com', 'senha123', 'ESTRADA_FACIL'),
    ('22.222.222/0002-22', 'Estrada Fácil Admin 2', 'admin2@estradafacil.com', 'senha123', 'ESTRADA_FACIL'),

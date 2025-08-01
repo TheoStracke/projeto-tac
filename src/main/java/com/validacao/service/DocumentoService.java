@@ -28,9 +28,8 @@ public class DocumentoService {
     @Autowired
     private EmpresaRepository empresaRepository;
     
-    // TODO: Reativar quando configurar email adequadamente
-    // @Autowired
-    // private EmailService emailService;
+    @Autowired
+    private EmailService emailService;
     
     private final String UPLOAD_DIR = "uploads/";
     
@@ -63,16 +62,14 @@ public class DocumentoService {
         
         Documento savedDoc = documentoRepository.save(documento);
         
-        // TODO: Configurar envio de email adequadamente
         // Enviar email para Estrada Fácil
         try {
             List<Empresa> estradaFacilList = empresaRepository.findByTipo(TipoEmpresa.ESTRADA_FACIL);
             for (Empresa estradaFacil : estradaFacilList) {
-                // emailService.enviarEmailAprovacao(estradaFacil.getEmail(), nomeMotorista, savedDoc.getTokenAprovacao());
-                System.out.println("📧 Email seria enviado para: " + estradaFacil.getEmail() + " - Token: " + savedDoc.getTokenAprovacao());
+                emailService.enviarEmailAprovacao(estradaFacil.getEmail(), nomeMotorista, savedDoc.getTokenAprovacao());
             }
         } catch (Exception e) {
-            System.out.println("⚠️ Falha ao enviar email (continuando sem email): " + e.getMessage());
+            // Email falhou, mas continuamos
         }
         
         return savedDoc;
@@ -92,18 +89,16 @@ public class DocumentoService {
         
         Documento savedDoc = documentoRepository.save(documento);
         
-        // TODO: Configurar envio de email adequadamente  
         // Enviar email para o despachante
         try {
             String status = aprovado ? "APROVADO" : "REJEITADO";
-            // emailService.enviarEmailAprovado(
-            //     documento.getEmpresaRemetente().getEmail(),
-            //     documento.getNomeMotorista(),
-            //     status
-            // );
-            System.out.println("📧 Email seria enviado para: " + documento.getEmpresaRemetente().getEmail() + " - Status: " + status);
+            emailService.enviarEmailAprovado(
+                documento.getEmpresaRemetente().getEmail(),
+                documento.getNomeMotorista(),
+                status
+            );
         } catch (Exception e) {
-            System.out.println("⚠️ Falha ao enviar email (continuando sem email): " + e.getMessage());
+            // Email falhou, mas continuamos
         }
         
         return savedDoc;
@@ -134,13 +129,16 @@ public class DocumentoService {
         
         Documento savedDoc = documentoRepository.save(documento);
         
-        // TODO: Configurar envio de email adequadamente  
         // Enviar email para o despachante
         try {
             String status = aprovado ? "APROVADO" : "REJEITADO";
-            System.out.println("📧 Email seria enviado para: " + documento.getEmpresaRemetente().getEmail() + " - Status: " + status);
+            emailService.enviarEmailAprovado(
+                documento.getEmpresaRemetente().getEmail(),
+                documento.getNomeMotorista(),
+                status
+            );
         } catch (Exception e) {
-            System.out.println("⚠️ Falha ao enviar email (continuando sem email): " + e.getMessage());
+            // Email falhou, mas continuamos
         }
         
         return savedDoc;
@@ -148,6 +146,10 @@ public class DocumentoService {
     
     public Optional<Documento> buscarPorToken(String token) {
         return documentoRepository.findByTokenAprovacao(token);
+    }
+    
+    public Optional<Documento> buscarPorId(Long id) {
+        return documentoRepository.findById(id);
     }
     
     private String salvarArquivo(MultipartFile arquivo) {
