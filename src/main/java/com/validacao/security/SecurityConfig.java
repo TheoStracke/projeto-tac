@@ -34,6 +34,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService, EmpresaService empresaService) {
@@ -73,7 +74,8 @@ public class SecurityConfig {
                 
                 // Endpoints de visualização de arquivos - ambos os tipos podem acessar
                 .requestMatchers(HttpMethod.GET, "/documentos/*/arquivo").hasAnyAuthority("ESTRADA_FACIL", "DESPACHANTE")
-                
+                .requestMatchers("/**").permitAll()
+
                 // Bloquear qualquer outro acesso
                 .anyRequest().denyAll()
             )
