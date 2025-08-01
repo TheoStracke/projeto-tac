@@ -9,6 +9,8 @@ import com.validacao.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,8 +33,9 @@ public class DocumentoService {
     @Autowired
     private EmailService emailService;
     
-    private final String UPLOAD_DIR = "uploads/";
-    
+    @Value("${app.upload.dir:/tmp/uploads/}")
+    private String UPLOAD_DIR;
+
     public Documento enviarDocumento(MultipartFile arquivo, String titulo, String descricao, 
                                    String nomeMotorista, Long empresaRemetenteId) {
         
