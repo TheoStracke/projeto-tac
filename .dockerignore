@@ -1,0 +1,35 @@
+# Ignore build artifacts
+target/
+frontend/dist/
+frontend/node_modules/
+node_modules/
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore temp files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Ignore uploads (will be mounted as volume)
+uploads/
+
+# Ignore local config
+application-local.properties
