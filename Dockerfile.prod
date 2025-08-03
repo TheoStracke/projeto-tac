@@ -1,10 +1,10 @@
 # Dockerfile otimizado para Railway - Baixa memória
 FROM node:20-alpine AS frontend-build
+WORKDIR /app
+COPY frontend/ ./frontend/
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci --only=production --no-cache
-COPY frontend/ ./
-RUN npm run build && rm -rf node_modules
+RUN npm install
+RUN npm run build
 
 # Build do Backend com otimizações de memória
 FROM maven:3.9.6-eclipse-temurin-17 AS backend-build
