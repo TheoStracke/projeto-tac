@@ -1,4 +1,4 @@
-# Railway Configuration
+# Railway Configuration - Test without MySQL
 nixpacks = false
 
 [build]
@@ -13,4 +13,4 @@ restartPolicyMaxRetries = 3
 
 [variables]
 PORT = "8080"
-SPRING_PROFILES_ACTIVE = "prod"
+SPRING_PROFILES_ACTIVE = "test"
