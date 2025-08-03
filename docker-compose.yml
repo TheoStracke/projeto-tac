@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: validacao-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: validacao_db
+      MYSQL_USER: validacao_user
+      MYSQL_PASSWORD: validacao_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./dataBase:/docker-entrypoint-initdb.d
+    networks:
+      - validacao-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Spring Boot Application
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: validacao-app
+    restart: unless-stopped
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Database
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: validacao_db
+      MYSQL_USER: validacao_user
+      MYSQL_PASSWORD: validacao_pass
+      
+      # Email (usar suas credenciais reais)
+      MAIL_USERNAME: docu.floww.br@gmail.com
+      MAIL_PASSWORD: tvclqonkdhitlwmd
+      
+      # Frontend URL
+      FRONTEND_URL: http://localhost:8080
+      
+      # Upload directory
+      UPLOAD_DIR: /app/uploads/
+      
+      # Server port
+      PORT: 8080
+      
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - validacao-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  validacao-network:
+    driver: bridge
