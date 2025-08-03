@@ -1,0 +1,51 @@
+# Dockerfile otimizado para Railway - Baixa memória
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci --only=production --no-cache
+COPY frontend/ ./
+RUN npm run build && rm -rf node_modules
+
+# Build do Backend com otimizações de memória
+FROM maven:3.9.6-eclipse-temurin-17 AS backend-build
+WORKDIR /app
+
+# Configurações de memória otimizadas para Railway
+ENV MAVEN_OPTS="-Xmx768m -Xms256m -XX:+UseContainerSupport"
+
+# Copy everything needed for build
+COPY pom.xml ./
+COPY src/ ./src/
+COPY --from=frontend-build /app/frontend/dist/ ./src/main/resources/static/
+
+# Single build command to minimize memory usage
+RUN mvn clean package -DskipTests -B -Dmaven.repo.local=/tmp/.m2 \
+    -Dspring-boot.repackage.skip=false \
+    -Dmaven.test.skip=true
+
+# Final lightweight runtime image
+FROM eclipse-temurin:17-jre-alpine
+RUN apk add --no-cache wget curl
+
+WORKDIR /app
+
+# Create user and directories
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup && \
+    mkdir -p /app/uploads && \
+    chown -R appuser:appgroup /app
+
+# Copy JAR
+COPY --from=backend-build --chown=appuser:appgroup /app/target/*.jar app.jar
+
+USER appuser
+
+# Optimized JVM settings for Railway
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseG1GC -Xms128m"
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
