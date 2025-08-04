@@ -215,8 +215,20 @@ export default function Dashboard() {
   }, []);
 
   const empresaData = useMemo(() => {
-    return JSON.parse(localStorage.getItem('empresaData') || '{}');
-  }, []);
+    try {
+        return JSON.parse(localStorage.getItem('empresa') || '{}');
+    } catch {
+        return {};
+    }
+}, []);
+
+useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !empresaData?.empresaId) {
+        window.location.replace('/login');
+    }
+}, [empresaData]);
+
   
   const isAdmin = useMemo(() => {
     return empresaData.tipo === 'ESTRADA_FACIL';

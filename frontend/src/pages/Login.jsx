@@ -21,25 +21,20 @@ const Login = () => {
                 senha
             });
             if (result.success) {
-                const dados = result.data;
-                localStorage.setItem('token', dados.token);
-                localStorage.setItem('empresaData', JSON.stringify({
-                    empresaId: dados.empresaId,
-                    cnpj: dados.cnpj,
-                    razaoSocial: dados.razaoSocial,
-                    email: dados.email,
-                    tipo: dados.tipo
-                }));
-                navigate('/dashboard');
-            } else {
-                setError(result.error);
-            }
-        } catch {
-            setError('Erro de conexão. Tente novamente.');
-        } finally {
-            setLoading(false);
+    localStorage.setItem('token', result.data.token);
+    localStorage.setItem('empresa', JSON.stringify(result.data)); // usar mesma chave que Dashboard
+
+    setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+    }, 0);
         }
-    };
+        setLoading(false);
+    } catch (err) {
+        setError('Falha no login. Verifique seu CNPJ e senha.');
+        setLoading(false);
+    }
+};
+
 
     return (
         <div style={{ 
