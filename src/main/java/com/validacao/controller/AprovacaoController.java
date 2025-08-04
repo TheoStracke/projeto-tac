@@ -3,6 +3,7 @@ package com.validacao.controller;
 import com.validacao.model.Documento;
 import com.validacao.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,9 @@ public class AprovacaoController {
     
     @Autowired
     private DocumentoService documentoService;
+    
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
     
     @GetMapping("/{token}")
     public ResponseEntity<?> buscarDocumentoPorToken(@PathVariable String token) {
@@ -79,10 +83,10 @@ public class AprovacaoController {
                         <p><strong>Documento:</strong> %s</p>
                         <p><strong>Status:</strong> APROVADO</p>
                     </div>
-                    <p><a href="http://localhost:5173/dashboard" class="btn">Ir para o Dashboard</a></p>
+                    <p><a href="%s/dashboard" class="btn">Ir para o Dashboard</a></p>
                 </body>
                 </html>
-                """.formatted(documento.getNomeMotorista(), documento.getTitulo());
+                """.formatted(documento.getNomeMotorista(), documento.getTitulo(), frontendUrl);
                 
             return ResponseEntity.ok().header("Content-Type", "text/html; charset=UTF-8").body(html);
             
@@ -94,10 +98,10 @@ public class AprovacaoController {
                 <body style="font-family: Arial; text-align: center; margin: 50px;">
                     <h1 style="color: #dc3545;">❌ Erro ao Aprovar Documento</h1>
                     <p>%s</p>
-                    <a href="http://localhost:5173/dashboard">Voltar ao Dashboard</a>
+                    <a href="%s/dashboard">Voltar ao Dashboard</a>
                 </body>
                 </html>
-                """.formatted(e.getMessage());
+                """.formatted(e.getMessage(), frontendUrl);
                 
             return ResponseEntity.badRequest().header("Content-Type", "text/html; charset=UTF-8").body(errorHtml);
         }
@@ -131,10 +135,10 @@ public class AprovacaoController {
                         <p><strong>Documento:</strong> %s</p>
                         <p><strong>Status:</strong> REJEITADO</p>
                     </div>
-                    <p><a href="http://localhost:5173/dashboard" class="btn">Ir para o Dashboard</a></p>
+                    <p><a href="%s/dashboard" class="btn">Ir para o Dashboard</a></p>
                 </body>
                 </html>
-                """.formatted(documento.getNomeMotorista(), documento.getTitulo());
+                """.formatted(documento.getNomeMotorista(), documento.getTitulo(), frontendUrl);
                 
             return ResponseEntity.ok().header("Content-Type", "text/html; charset=UTF-8").body(html);
             
@@ -146,10 +150,10 @@ public class AprovacaoController {
                 <body style="font-family: Arial; text-align: center; margin: 50px;">
                     <h1 style="color: #dc3545;">❌ Erro ao Rejeitar Documento</h1>
                     <p>%s</p>
-                    <a href="http://localhost:5173/dashboard">Voltar ao Dashboard</a>
+                    <a href="%s/dashboard">Voltar ao Dashboard</a>
                 </body>
                 </html>
-                """.formatted(e.getMessage());
+                """.formatted(e.getMessage(), frontendUrl);
                 
             return ResponseEntity.badRequest().header("Content-Type", "text/html; charset=UTF-8").body(errorHtml);
         }

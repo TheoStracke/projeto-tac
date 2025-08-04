@@ -21,6 +21,12 @@ public class EmailService {
     @Value("${app.email.test-mode:true}")
     private boolean testMode;
     
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+    
+    @Value("${app.base.url:http://localhost:8080}")
+    private String backendUrl;
+    
     public void enviarEmailAprovacao(String emailDestino, String nomeMotorista, String tokenAprovacao) {
         if (fromEmail == null || fromEmail.trim().isEmpty()) {
             return;
@@ -31,7 +37,7 @@ public class EmailService {
         message.setTo(emailDestino);
         message.setSubject("🔔 Novo documento para aprovação - Motorista: " + nomeMotorista);
         
-        String linkAprovacao = "http://localhost:5173/aprovacao/" + tokenAprovacao;
+        String linkAprovacao = frontendUrl + "/aprovacao/" + tokenAprovacao;
         
         String texto = String.format(
             "Olá! 👋\n\n" +
@@ -71,7 +77,7 @@ public class EmailService {
             "Olá! 👋\n\n" +
             "%s O documento do motorista %s foi %s pela Estrada Fácil.\n\n" +
             "📱 Você pode verificar todos os detalhes no sistema:\n" +
-            "🔗 http://localhost:5173/dashboard\n\n" +
+            "🔗 " + frontendUrl + "/dashboard\n\n" +
             "%s\n\n" +
             "Atenciosamente,\n" +
             "🚛 Sistema de Validação de Documentos Estrada Fácil",
@@ -107,9 +113,9 @@ public class EmailService {
         message.setTo(destinatario);
         message.setSubject("🔔 NOVO DOCUMENTO PARA VERIFICAÇÃO - " + nomeMotorista);
         
-        String linkAprovacao = "http://localhost:8080/aprovacao/" + tokenAprovacao + "/aprovar";
-        String linkRejeicao = "http://localhost:8080/aprovacao/" + tokenAprovacao + "/rejeitar";
-        String linkDetalhes = "http://localhost:5173/aprovacao/" + tokenAprovacao;
+        String linkAprovacao = backendUrl + "/aprovacao/" + tokenAprovacao + "/aprovar";
+        String linkRejeicao = backendUrl + "/aprovacao/" + tokenAprovacao + "/rejeitar";
+        String linkDetalhes = frontendUrl + "/aprovacao/" + tokenAprovacao;
         
         String texto = String.format(
             "🚨 NOVA SOLICITAÇÃO DE VERIFICAÇÃO! 🚨\n\n" +

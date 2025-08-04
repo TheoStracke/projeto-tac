@@ -1,4 +1,4 @@
-# Railway Configuration - Test without MySQL
+# Railway Configuration - Debug mode
 nixpacks = false
 
 [build]
@@ -13,4 +13,4 @@ restartPolicyMaxRetries = 3
 
 [variables]
 PORT = "8080"
-SPRING_PROFILES_ACTIVE = "test"
+SPRING_PROFILES_ACTIVE = "debug"

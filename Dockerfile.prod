@@ -41,7 +41,7 @@ COPY --from=backend-build --chown=appuser:appgroup /app/target/*.jar app.jar
 USER appuser
 
 # Optimized JVM settings for Railway - More memory for startup
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=80.0 -XX:+UseG1GC -Xms256m"
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=80.0 -XX:+UseG1GC -Xms256m -Dspring.profiles.active=prod"
 
 EXPOSE 8080
 
