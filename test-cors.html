@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste CORS - Projeto TAC</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Teste de CORS - Projeto TAC</h1>
+    <p>Este arquivo testa se o CORS está funcionando corretamente entre o frontend e backend.</p>
+    
+    <div>
+        <button onclick="testHealth()">Testar Health Check</button>
+        <button onclick="testPreflight()">Testar OPTIONS (Preflight)</button>
+        <button onclick="testLogin()">Testar Login (POST)</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        const VERCEL_API = 'https://projeto-tac-production.up.railway.app/api';
+        
+        function logResult(message, isSuccess = true) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(div);
+        }
+
+        async function testHealth() {
+            try {
+                logResult('🔄 Testando Health Check...', true);
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    logResult(`✅ Health Check OK: ${JSON.stringify(data)}`, true);
+                } else {
+                    logResult(`❌ Health Check falhou: ${response.status} - ${response.statusText}`, false);
+                }
+            } catch (error) {
+                logResult(`❌ Erro no Health Check: ${error.message}`, false);
+            }
+        }
+
+        async function testPreflight() {
+            try {
+                logResult('🔄 Testando OPTIONS (Preflight)...', true);
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                logResult(`✅ OPTIONS respondeu: ${response.status}`, true);
+                logResult(`📋 Headers CORS: ${response.headers.get('Access-Control-Allow-Origin')}`, true);
+            } catch (error) {
+                logResult(`❌ Erro no OPTIONS: ${error.message}`, false);
+            }
+        }
+
+        async function testLogin() {
+            try {
+                logResult('🔄 Testando POST Login...', true);
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cnpj: "00000000000000",
+                        senha: "teste"
+                    })
+                });
+                
+                if (response.status === 401 || response.status === 400) {
+                    logResult(`✅ POST Login OK (erro esperado de credenciais): ${response.status}`, true);
+                } else {
+                    logResult(`⚠️ POST Login respondeu: ${response.status}`, true);
+                }
+            } catch (error) {
+                if (error.message.includes('CORS')) {
+                    logResult(`❌ Erro CORS no POST: ${error.message}`, false);
+                } else {
+                    logResult(`⚠️ Outro erro (pode ser esperado): ${error.message}`, true);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

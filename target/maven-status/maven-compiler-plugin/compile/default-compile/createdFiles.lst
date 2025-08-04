@@ -1,6 +1,5 @@
 com\validacao\config\AppProperties$Email.class
 com\validacao\service\EmpresaService.class
-com\validacao\config\CorsConfig.class
 com\validacao\security\TokenService.class
 com\validacao\repository\EmpresaRepository.class
 com\validacao\service\DocumentoService.class

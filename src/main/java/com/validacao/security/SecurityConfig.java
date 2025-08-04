@@ -36,12 +36,16 @@ public class SecurityConfig {
             origins[i] = origins[i].trim();
         }
         
-        configuration.setAllowedOriginPatterns(List.of(origins)); // Usar allowedOriginPatterns
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Configuração CORS otimizada para produção
+        configuration.setAllowedOriginPatterns(List.of(origins));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Length", "X-Requested-With"));
+        configuration.setMaxAge(3600L); // Cache preflight por 1 hora
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Aplicar CORS para todos os endpoints (incluindo /api/**)
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
@@ -59,34 +63,40 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Preflight CORS
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/cadastro").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/test/**").permitAll() // Endpoints de teste
-                .requestMatchers(HttpMethod.GET, "/api/test/**").permitAll() // Endpoints de teste GET
+                // CORS preflight - DEVE vir primeiro
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Endpoints de autenticação (sem /api pois já está no context-path)
+                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/cadastro").permitAll()
+                
+                // Health check
+                .requestMatchers(HttpMethod.GET, "/health").permitAll()
+                
+                // Endpoints de teste 
+                .requestMatchers(HttpMethod.POST, "/test/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/test/**").permitAll()
                 
                 // Endpoints de aprovação rápida via email (sem autenticação - usam token único)
                 .requestMatchers(HttpMethod.GET, "/aprovacao/*/aprovar").permitAll()
                 .requestMatchers(HttpMethod.GET, "/aprovacao/*/rejeitar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/aprovacao/*/arquivo").permitAll() // Visualizar arquivo via token
-                .requestMatchers(HttpMethod.GET, "/aprovacao/*").permitAll() // Para buscar documento por token
+                .requestMatchers(HttpMethod.GET, "/aprovacao/*/arquivo").permitAll()
+                .requestMatchers(HttpMethod.GET, "/aprovacao/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/aprovacao/*").permitAll()
                 
                 // Endpoints apenas para ESTRADA_FACIL (CNPJs específicos de admin)
                 .requestMatchers(HttpMethod.GET, "/documentos/pendentes").hasAuthority("ESTRADA_FACIL")
                 .requestMatchers(HttpMethod.POST, "/documentos/*/aprovar").hasAuthority("ESTRADA_FACIL")
                 .requestMatchers(HttpMethod.POST, "/documentos/*/rejeitar").hasAuthority("ESTRADA_FACIL")
-                .requestMatchers(HttpMethod.POST, "/aprovacao/**").hasAuthority("ESTRADA_FACIL") // POST para aprovação detalhada
                 
+                // Endpoints apenas para DESPACHANTE
                 .requestMatchers(HttpMethod.POST, "/documentos/enviar").hasAuthority("DESPACHANTE")
                 
                 // Endpoints que ambos podem acessar
                 .requestMatchers(HttpMethod.GET, "/documentos/empresa/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/documentos/*").authenticated() // Buscar documento por ID
-                
-                // Endpoints de visualização de arquivos - ambos os tipos podem acessar
+                .requestMatchers(HttpMethod.GET, "/documentos/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/documentos/*/arquivo").hasAnyAuthority("ESTRADA_FACIL", "DESPACHANTE")
-                .requestMatchers("/**").permitAll()
-
+                
                 // Bloquear qualquer outro acesso
                 .anyRequest().denyAll()
             )
