@@ -1,11 +1,9 @@
-# Railway Configuration - Debug mode
-nixpacks = false
-
+# Railway Configuration - Native Java Build
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.prod"
+buildCommand = "./mvnw clean package -DskipTests"
 
 [deploy]
+startCommand = "java -jar target/*.jar"
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
@@ -13,4 +11,4 @@ restartPolicyMaxRetries = 3
 
 [variables]
 PORT = "8080"
-SPRING_PROFILES_ACTIVE = "debug"
+SPRING_PROFILES_ACTIVE = "prod"
