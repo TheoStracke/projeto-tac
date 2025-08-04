@@ -15,25 +15,26 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
-
         try {
             const result = await loginUser({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
-
             if (result.success) {
-                // Salvar token e dados da empresa no localStorage
-                localStorage.setItem('token', result.data.token);
-                localStorage.setItem('empresaData', JSON.stringify(result.data.empresa));
-                
-                // Redirecionar para dashboard
+                const dados = result.data;
+                localStorage.setItem('token', dados.token);
+                localStorage.setItem('empresaData', JSON.stringify({
+                    empresaId: dados.empresaId,
+                    cnpj: dados.cnpj,
+                    razaoSocial: dados.razaoSocial,
+                    email: dados.email,
+                    tipo: dados.tipo
+                }));
                 navigate('/dashboard');
             } else {
                 setError(result.error);
             }
-            
-        } catch (error) {
+        } catch {
             setError('Erro de conexão. Tente novamente.');
         } finally {
             setLoading(false);
@@ -59,7 +60,6 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
-                
                 <form onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <CnpjInput
@@ -70,7 +70,6 @@ const Login = () => {
                             required
                         />
                     </div>
-                    
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
                             Senha:
@@ -90,7 +89,6 @@ const Login = () => {
                             }}
                         />
                     </div>
-                    
                     {error && (
                         <div style={{
                             color: 'red',
@@ -100,7 +98,6 @@ const Login = () => {
                             {error}
                         </div>
                     )}
-                    
                     <button
                         type="submit"
                         disabled={loading}
@@ -119,8 +116,6 @@ const Login = () => {
                         {loading ? 'Entrando...' : 'Entrar'}
                     </button>
                 </form>
-                
-                {/* Link para cadastro */}
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', marginBottom: '1rem' }}>
                     <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                         Não tem uma conta?

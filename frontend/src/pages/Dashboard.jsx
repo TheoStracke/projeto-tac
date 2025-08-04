@@ -24,11 +24,9 @@ import { Add, Refresh, CloudUpload } from '@mui/icons-material';
 import { 
   buscarDocumentos, 
   enviarDocumento, 
-  downloadArquivo, 
-  buscarDocumento, 
+  buscarDetalhesDocumento,
   aprovarDocumento, 
   rejeitarDocumento,
-  buscarDetalhesDocumento,
   visualizarArquivoDocumento
 } from '../config/api';
 import LogoutButton from '../components/LogoutButton';
@@ -69,7 +67,7 @@ export default function Dashboard() {
         return;
       }
 
-      if (!empresaData.id || !empresaData.tipo) {
+      if (!empresaData.empresaId || !empresaData.tipo) {
         setError('Dados da empresa não encontrados - refaça o login');
         localStorage.clear();
         setTimeout(() => {
@@ -78,18 +76,17 @@ export default function Dashboard() {
         return;
       }
       
-      const empresaId = empresaData.tipo === 'ESTRADA_FACIL' ? null : empresaData.id;
+      const empresaId = empresaData.tipo === 'ESTRADA_FACIL' ? null : empresaData.empresaId;
       const result = await buscarDocumentos(empresaId);
       
       if (result.success) {
         setDocumentos(result.data);
-        setError('');
       } else {
         setError(result.error);
         setDocumentos([]);
       }
       
-    } catch (error) {
+    } catch {
       setError('Erro de conexão. Tente novamente.');
       setDocumentos([]);
     } finally {
@@ -97,13 +94,12 @@ export default function Dashboard() {
     }
   };
 
-  const enviarDocumento = async () => {
+  const handleEnviarDocumento = async () => {
     try {
       setEnviandoDoc(true);
       setError('');
 
-      const token = localStorage.getItem('token');
-      const empresaData = JSON.parse(localStorage.getItem('empresa') || '{}');
+      const empresaData = JSON.parse(localStorage.getItem('empresaData') || '{}');
 
       if (!formData.arquivo) {
         setError('Selecione um arquivo para enviar');
@@ -120,26 +116,19 @@ export default function Dashboard() {
       formDataToSend.append('titulo', formData.titulo);
       formDataToSend.append('descricao', formData.descricao || '');
       formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
-      formDataToSend.append('empresaId', empresaData.id);
+      formDataToSend.append('empresaId', empresaData.empresaId);
 
       const result = await enviarDocumento(formDataToSend);
       
       if (result.success) {
-        // Fechar modal e limpar form
         setModalAberto(false);
-        setFormData({
-          titulo: '',
-          descricao: '',
-          nomeMotorista: '',
-          arquivo: null
-        });
-        // Recarregar documentos
+        setFormData({ titulo: '', descricao: '', nomeMotorista: '', arquivo: null });
         carregarDocumentos();
       } else {
         setError(result.error);
       }
 
-    } catch (error) {
+    } catch {
       setError('Erro de conexão. Tente novamente.');
     } finally {
       setEnviandoDoc(false);
@@ -158,19 +147,14 @@ export default function Dashboard() {
   const visualizarArquivo = async (documentoId) => {
     try {
       const result = await visualizarArquivoDocumento(documentoId);
-      
       if (result.success) {
-        // Criar URL para abrir o arquivo
         const url = URL.createObjectURL(result.data);
         window.open(url, '_blank');
-        
-        // Limpar URL depois de um tempo para liberar memória
         setTimeout(() => URL.revokeObjectURL(url), 5000);
       } else {
         setError(result.error);
       }
-      
-    } catch (error) {
+    } catch {
       setError('Erro ao visualizar arquivo');
     }
   };
@@ -178,15 +162,13 @@ export default function Dashboard() {
   const visualizarDetalhes = async (documentoId) => {
     try {
       const result = await buscarDetalhesDocumento(documentoId);
-      
       if (result.success) {
         setDocumentoSelecionado(result.data);
         setModalDetalhes(true);
       } else {
         setError(result.error);
       }
-      
-    } catch (error) {
+    } catch {
       setError('Erro ao carregar detalhes do documento');
     }
   };
@@ -194,14 +176,12 @@ export default function Dashboard() {
   const handleAprovarDocumento = async (documentoId) => {
     try {
       const result = await aprovarDocumento(documentoId);
-      
       if (result.success) {
         carregarDocumentos();
       } else {
         setError(result.error);
       }
-      
-    } catch (error) {
+    } catch {
       setError('Erro de conexão. Tente novamente.');
     }
   };
@@ -209,28 +189,22 @@ export default function Dashboard() {
   const handleRejeitarDocumento = async (documentoId) => {
     try {
       const result = await rejeitarDocumento(documentoId);
-      
       if (result.success) {
         carregarDocumentos();
       } else {
         setError(result.error);
       }
-      
-    } catch (error) {
+    } catch {
       setError('Erro de conexão. Tente novamente.');
     }
   };
 
   const getStatusColor = useCallback((status) => {
     switch (status) {
-      case 'PENDENTE':
-        return 'warning';
-      case 'APROVADO':
-        return 'success';
-      case 'REJEITADO':
-        return 'error';
-      default:
-        return 'default';
+      case 'PENDENTE': return 'warning';
+      case 'APROVADO': return 'success';
+      case 'REJEITADO': return 'error';
+      default: return 'default';
     }
   }, []);
 
@@ -241,7 +215,7 @@ export default function Dashboard() {
   }, []);
 
   const empresaData = useMemo(() => {
-    return JSON.parse(localStorage.getItem('empresa') || '{}');
+    return JSON.parse(localStorage.getItem('empresaData') || '{}');
   }, []);
   
   const isAdmin = useMemo(() => {
@@ -293,9 +267,7 @@ export default function Dashboard() {
       )}
 
       {loading ? (
-        <Alert severity="info">
-          <Typography>🔄 Carregando documentos...</Typography>
-        </Alert>
+        <Alert severity="info">🔄 Carregando documentos...</Alert>
       ) : (
         <TableContainer component={Paper}>
           <Table>
@@ -315,10 +287,7 @@ export default function Dashboard() {
                 <TableRow>
                   <TableCell colSpan={isAdmin ? 7 : 5} align="center">
                     <Typography color="text.secondary" sx={{ py: 4 }}>
-                      {isAdmin ? 
-                        '📝 Nenhum documento pendente de aprovação' : 
-                        '📋 Nenhum documento enviado ainda'
-                      }
+                      {isAdmin ? '📝 Nenhum documento pendente de aprovação' : '📋 Nenhum documento enviado ainda'}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -387,7 +356,6 @@ export default function Dashboard() {
         </TableContainer>
       )}
       
-      {/* Modal para enviar documento */}
       <Dialog open={modalAberto} onClose={() => setModalAberto(false)} maxWidth="sm" fullWidth>
         <DialogTitle>📤 Enviar Novo Documento</DialogTitle>
         <DialogContent>
@@ -399,7 +367,6 @@ export default function Dashboard() {
               required
               fullWidth
             />
-            
             <TextField
               label="Descrição"
               value={formData.descricao}
@@ -408,14 +375,12 @@ export default function Dashboard() {
               rows={3}
               fullWidth
             />
-            
             <TextField
               label="Nome do Motorista"
               value={formData.nomeMotorista}
               onChange={(e) => handleInputChange('nomeMotorista', e.target.value)}
               fullWidth
             />
-            
             <Box>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 Selecione o arquivo:
@@ -435,11 +400,9 @@ export default function Dashboard() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModalAberto(false)}>
-            Cancelar
-          </Button>
+          <Button onClick={() => setModalAberto(false)}>Cancelar</Button>
           <Button 
-            onClick={enviarDocumento} 
+            onClick={handleEnviarDocumento} 
             variant="contained" 
             disabled={enviandoDoc || !formData.arquivo || !formData.titulo.trim()}
             startIcon={<CloudUpload />}
@@ -449,7 +412,6 @@ export default function Dashboard() {
         </DialogActions>
       </Dialog>
       
-      {/* Modal para ver detalhes do documento */}
       <Dialog open={modalDetalhes} onClose={() => setModalDetalhes(false)} maxWidth="md" fullWidth>
         <DialogTitle>📄 Detalhes do Documento</DialogTitle>
         <DialogContent>
@@ -491,21 +453,18 @@ export default function Dashboard() {
                   </Box>
                 )}
               </Box>
-              
               {documentoSelecionado.descricao && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle2" color="text.secondary">Descrição</Typography>
                   <Typography variant="body1">{documentoSelecionado.descricao}</Typography>
                 </Box>
               )}
-              
               {documentoSelecionado.comentarios && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle2" color="text.secondary">Comentários da Aprovação</Typography>
                   <Typography variant="body1">{documentoSelecionado.comentarios}</Typography>
                 </Box>
               )}
-              
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Arquivo</Typography>
                 <Typography variant="body2" sx={{ mb: 2 }}>
