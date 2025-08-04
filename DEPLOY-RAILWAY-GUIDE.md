@@ -23,9 +23,9 @@ MYSQL_DATABASE=railway
 
 ### 📧 Email (Gmail)
 ```
-MAIL_USERNAME=seuemail@gmail.com
-MAIL_PASSWORD=suasenhadoapp
-ADMIN_EMAIL=admin@exemplo.com
+MAIL_USERNAME=docu.floww.br@gmail.com
+MAIL_PASSWORD=wfmpcsgtbwqlxrsf
+ADMIN_EMAIL=admin@docufloww.com
 ```
 
 ### 🌐 URLs (Opcionais - Railway define automaticamente)
@@ -95,6 +95,15 @@ railway up
 - **Health Check**: `https://seuapp.railway.app/actuator/health`
 
 ## 🐛 Troubleshooting
+
+### ❌ Erro: "The executable `java` could not be found"
+**Causa**: Railway está usando Dockerfile (Node.js) em vez do buildpack Java
+**Solução**: 
+- ✅ **Dockerfiles renomeados** para `.bak`
+- ✅ **railway.toml** configurado para forçar Java
+- ✅ **nixpacks.toml** especifica Java 17
+- ✅ **.buildpacks** força buildpack Java
+- Redeploy o projeto no Railway
 
 ### ❌ Erro: "Failed to execute goal frontend-maven-plugin"
 **Causa**: Node.js não instalado ou versão incompatível

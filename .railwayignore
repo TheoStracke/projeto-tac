@@ -1,0 +1,38 @@
+# Railway Ignore - Para build Java otimizado
+
+# Dockerfiles (não usar)
+Dockerfile.bak
+Dockerfile.prod.bak
+docker-compose.yml
+*.dockerfile
+
+# Frontend build intermediário (será gerado pelo Maven)
+frontend/dist/
+frontend/node_modules/
+frontend/.vite/
+
+# Maven
+target/classes/
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+tmp/
+temp/
+
+# Uploads locais (não enviar para produção)
+uploads/*.pdf
+uploads/*.jpg
+uploads/*.png

@@ -1,0 +1,14 @@
+# Nixpacks Configuration for Java Spring Boot + React
+[phases.build]
+dependsOn = ["install"]
+cmds = ["./mvnw clean package -DskipTests"]
+
+[phases.install]
+cmds = ["echo 'Installing Java 17 and Maven'"]
+
+[providers]
+java = "17"
+
+[variables]
+MAVEN_OPTS = "-Xmx512m"
+JAVA_OPTS = "-Xmx512m -XX:+UseG1GC"

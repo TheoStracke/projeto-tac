@@ -1,5 +1,6 @@
-# Railway Configuration - Native Java Build
+# Railway Configuration - Java Spring Boot + React Integrado
 [build]
+builder = "NIXPACKS"
 buildCommand = "./mvnw clean package -DskipTests"
 
 [deploy]
@@ -10,5 +11,6 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
 [variables]
+NIXPACKS_JAVA_VERSION = "17"
 PORT = "8080"
 SPRING_PROFILES_ACTIVE = "prod"
