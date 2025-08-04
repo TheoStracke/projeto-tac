@@ -15,8 +15,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Business, Email, Lock, Person } from '@mui/icons-material';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { registerUser } from '../config/api';
 
 const Cadastro = () => {
   const [formData, setFormData] = useState({
@@ -152,31 +151,25 @@ const Cadastro = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/cadastro`, {
-        cnpj: formData.cnpj.replace(/\D/g, ''), // Remove formatação
+      const result = await registerUser({
+        cnpj: formData.cnpj.replace(/\D/g, ''),
         razaoSocial: formData.razaoSocial,
         email: formData.email,
         senha: formData.senha,
         tipo: formData.tipo
       });
 
-      if (response.data && response.data.success) {
+      if (result.success) {
         setSuccess('✅ Cadastro realizado com sucesso! Redirecionando para login...');
         setTimeout(() => {
           navigate('/');
         }, 2000);
       } else {
-        setError(response.data?.message || 'Erro no cadastro');
+        setError(result.error);
       }
 
     } catch (error) {
-      if (error.response?.status === 400) {
-        setError(error.response.data?.message || 'CNPJ já cadastrado ou dados inválidos');
-      } else if (error.response?.status === 409) {
-        setError('CNPJ ou email já cadastrado no sistema');
-      } else {
-        setError('Erro no servidor. Tente novamente.');
-      }
+      setError('Erro de conexão. Tente novamente.');
     } finally {
       setLoading(false);
     }

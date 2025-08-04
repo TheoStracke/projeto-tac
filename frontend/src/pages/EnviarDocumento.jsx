@@ -12,8 +12,7 @@ import {
   CardContent
 } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { enviarDocumento } from '../config/api';
 
 export default function EnviarDocumento() {
   const [formData, setFormData] = useState({
@@ -26,11 +25,10 @@ export default function EnviarDocumento() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const empresaId = localStorage.getItem('empresaId');
-  const empresaTipo = localStorage.getItem('empresaTipo');
+  const empresaData = JSON.parse(localStorage.getItem('empresaData') || '{}');
 
   // Verificar se é despachante
-  if (empresaTipo !== 'DESPACHANTE') {
+  if (empresaData.tipo !== 'DESPACHANTE') {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error">
@@ -62,34 +60,35 @@ export default function EnviarDocumento() {
     setSuccess('');
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('arquivo', formData.arquivo);
-      formDataToSend.append('titulo', formData.titulo);
-      formDataToSend.append('descricao', formData.descricao);
-      formDataToSend.append('nomeMotorista', formData.nomeMotorista);
-      formDataToSend.append('empresaId', empresaId);
+      const documentData = {
+        titulo: formData.titulo,
+        descricao: formData.descricao,
+        nomeMotorista: formData.nomeMotorista,
+        arquivo: formData.arquivo,
+        empresaId: empresaData.id
+      };
 
-      const response = await axios.post(`${API_BASE_URL}/documentos/enviar`, formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const result = await enviarDocumento(documentData);
 
-      setSuccess('Documento enviado com sucesso! A Estrada Fácil foi notificada por email.');
-      
-      // Limpar formulário
-      setFormData({
-        titulo: '',
-        descricao: '',
-        nomeMotorista: '',
-        arquivo: null
-      });
-      
-      // Limpar input de arquivo
-      document.getElementById('arquivo-input').value = '';
+      if (result.success) {
+        setSuccess('Documento enviado com sucesso! A Estrada Fácil foi notificada por email.');
+        
+        // Limpar formulário
+        setFormData({
+          titulo: '',
+          descricao: '',
+          nomeMotorista: '',
+          arquivo: null
+        });
+        
+        // Limpar input de arquivo
+        document.getElementById('arquivo-input').value = '';
+      } else {
+        setError(result.error);
+      }
 
     } catch (err) {
-      setError(err.response?.data || 'Erro ao enviar documento');
+      setError('Erro ao enviar documento');
     } finally {
       setLoading(false);
     }

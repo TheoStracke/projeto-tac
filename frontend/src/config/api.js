@@ -1,7 +1,277 @@
-// Configuração da API Base URL
-// Em desenvolvimento: usa VITE_API_URL do .env ou fallback para localhost
-// Em produção: usa URLs relativas (mesmo domínio)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:8080/api');
+import axios from 'axios';
+import API_BASE_URL from '../apiConfig';
 
-export default API_BASE_URL;
+// Configuração do axios com interceptor para token
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+});
+
+// Interceptor para adicionar token automaticamente
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para tratamento de respostas
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Se token expirado, redirecionar para login
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('empresaData');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// === FUNÇÕES DE AUTENTICAÇÃO ===
+
+export const loginUser = async (credentials) => {
+  try {
+    const response = await api.post('/auth/login', credentials);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao fazer login'
+    };
+  }
+};
+
+export const registerUser = async (userData) => {
+  try {
+    const response = await api.post('/auth/cadastro', userData);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao fazer cadastro'
+    };
+  }
+};
+
+// === FUNÇÕES DE DOCUMENTOS ===
+
+export const enviarDocumento = async (formData) => {
+  try {
+    const response = await api.post('/documentos/enviar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao enviar documento'
+    };
+  }
+};
+
+export const buscarDocumentos = async (empresaId = null) => {
+  try {
+    const url = empresaId 
+      ? `/documentos/empresa/${empresaId}` 
+      : '/documentos/pendentes';
+    
+    const response = await api.get(url);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar documentos'
+    };
+  }
+};
+
+export const buscarDocumento = async (documentoId) => {
+  try {
+    const response = await api.get(`/documentos/${documentoId}`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar documento'
+    };
+  }
+};
+
+export const aprovarDocumento = async (documentoId) => {
+  try {
+    const response = await api.post(`/documentos/${documentoId}/aprovar`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao aprovar documento'
+    };
+  }
+};
+
+export const rejeitarDocumento = async (documentoId) => {
+  try {
+    const response = await api.post(`/documentos/${documentoId}/rejeitar`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao rejeitar documento'
+    };
+  }
+};
+
+export const downloadArquivo = async (documentoId) => {
+  try {
+    const response = await api.get(`/documentos/${documentoId}/arquivo`, {
+      responseType: 'blob',
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao baixar arquivo'
+    };
+  }
+};
+
+// === FUNÇÕES DE APROVAÇÃO (via link) ===
+
+export const buscarAprovacao = async (token) => {
+  try {
+    const response = await api.get(`/aprovacao/${token}`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar aprovação'
+    };
+  }
+};
+
+export const processarAprovacao = async (token, decisao, comentario = '') => {
+  try {
+    const response = await api.post(`/aprovacao/${token}`, {
+      decisao,
+      comentario
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao processar aprovação'
+    };
+  }
+};
+
+export const downloadArquivoAprovacao = async (token) => {
+  try {
+    const response = await api.get(`/aprovacao/${token}/arquivo`, {
+      responseType: 'blob',
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao baixar arquivo'
+    };
+  }
+};
+
+// === FUNÇÕES UTILITÁRIAS ===
+
+export const buscarListaAprovacoes = async () => {
+  try {
+    const response = await api.get('/documentos/pendentes');
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar lista de aprovações'
+    };
+  }
+};
+
+export const buscarDetalhesDocumento = async (documentoId) => {
+  try {
+    const response = await api.get(`/documentos/${documentoId}`);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar detalhes do documento'
+    };
+  }
+};
+
+export const visualizarArquivoDocumento = async (documentoId) => {
+  try {
+    const response = await api.get(`/documentos/${documentoId}/arquivo`, {
+      responseType: 'blob',
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao visualizar arquivo'
+    };
+  }
+};
+
+// Exportar também a instância do axios configurada para usos customizados
+export { api };
+
+// Exportar API_BASE_URL para compatibilidade com código existente
+export { API_BASE_URL };

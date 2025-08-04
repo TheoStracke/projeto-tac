@@ -21,8 +21,17 @@ import {
   Input
 } from '@mui/material';
 import { Add, Refresh, CloudUpload } from '@mui/icons-material';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { 
+  buscarDocumentos, 
+  enviarDocumento, 
+  downloadArquivo, 
+  buscarDocumento, 
+  aprovarDocumento, 
+  rejeitarDocumento,
+  buscarDetalhesDocumento,
+  visualizarArquivoDocumento
+} from '../config/api';
+import LogoutButton from '../components/LogoutButton';
 
 export default function Dashboard() {
   const [documentos, setDocumentos] = useState([]);
@@ -49,7 +58,7 @@ export default function Dashboard() {
       setError('');
       
       const token = localStorage.getItem('token');
-      const empresaData = JSON.parse(localStorage.getItem('empresa') || '{}');
+      const empresaData = JSON.parse(localStorage.getItem('empresaData') || '{}');
       
       if (!token) {
         setError('Token não encontrado - redirecionando para login');
@@ -60,7 +69,7 @@ export default function Dashboard() {
         return;
       }
 
-      if (!empresaData.empresaId || !empresaData.tipo) {
+      if (!empresaData.id || !empresaData.tipo) {
         setError('Dados da empresa não encontrados - refaça o login');
         localStorage.clear();
         setTimeout(() => {
@@ -69,41 +78,19 @@ export default function Dashboard() {
         return;
       }
       
-      const endpoint = empresaData.tipo === 'ESTRADA_FACIL' 
-        ? `${API_BASE_URL}/documentos/pendentes`
-        : `${API_BASE_URL}/documentos/empresa/${empresaData.empresaId}`;
+      const empresaId = empresaData.tipo === 'ESTRADA_FACIL' ? null : empresaData.id;
+      const result = await buscarDocumentos(empresaId);
       
-      const response = await axios.get(endpoint, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      // Verificar se a resposta é um array ou ApiResponse
-      const docs = Array.isArray(response.data) 
-        ? response.data
-        : response.data?.data || [];
-      
-      setDocumentos(docs);
-      setError('');
-      
-    } catch (error) {
-      
-      if (error.response?.status === 401) {
-        setError('Sessão expirada. Redirecionando para login...');
-        localStorage.clear();
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
-      } else if (error.response?.status === 403) {
-        setError('Acesso negado. Verifique suas permissões.');
-      } else if (error.response?.status === 500) {
-        setError('Erro interno do servidor. Tente novamente em alguns minutos.');
+      if (result.success) {
+        setDocumentos(result.data);
+        setError('');
       } else {
-        setError('Erro ao carregar documentos: ' + (error.response?.data?.message || error.message));
+        setError(result.error);
+        setDocumentos([]);
       }
       
+    } catch (error) {
+      setError('Erro de conexão. Tente novamente.');
       setDocumentos([]);
     } finally {
       setLoading(false);
@@ -133,29 +120,27 @@ export default function Dashboard() {
       formDataToSend.append('titulo', formData.titulo);
       formDataToSend.append('descricao', formData.descricao || '');
       formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
-      formDataToSend.append('empresaId', empresaData.empresaId);
+      formDataToSend.append('empresaId', empresaData.id);
 
-      const response = await axios.post(`${API_BASE_URL}/documentos/enviar`, formDataToSend, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const result = await enviarDocumento(formDataToSend);
       
-      // Fechar modal e limpar form
-      setModalAberto(false);
-      setFormData({
-        titulo: '',
-        descricao: '',
-        nomeMotorista: '',
-        arquivo: null
-      });
-
-      // Recarregar documentos
-      carregarDocumentos();
+      if (result.success) {
+        // Fechar modal e limpar form
+        setModalAberto(false);
+        setFormData({
+          titulo: '',
+          descricao: '',
+          nomeMotorista: '',
+          arquivo: null
+        });
+        // Recarregar documentos
+        carregarDocumentos();
+      } else {
+        setError(result.error);
+      }
 
     } catch (error) {
-      setError('Erro ao enviar documento: ' + (error.response?.data?.message || error.message));
+      setError('Erro de conexão. Tente novamente.');
     } finally {
       setEnviandoDoc(false);
     }
@@ -172,31 +157,18 @@ export default function Dashboard() {
 
   const visualizarArquivo = async (documentoId) => {
     try {
-      const token = localStorage.getItem('token');
+      const result = await visualizarArquivoDocumento(documentoId);
       
-      // Fazer requisição com autorização
-      const response = await fetch(`${API_BASE_URL}/documentos/${documentoId}/arquivo`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 403) {
-          setError('Você não tem permissão para visualizar este arquivo');
-        } else {
-          setError('Erro ao carregar arquivo: ' + response.status);
-        }
-        return;
+      if (result.success) {
+        // Criar URL para abrir o arquivo
+        const url = URL.createObjectURL(result.data);
+        window.open(url, '_blank');
+        
+        // Limpar URL depois de um tempo para liberar memória
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } else {
+        setError(result.error);
       }
-      
-      // Obter o blob do arquivo e criar URL para abrir
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      
-      // Limpar URL depois de um tempo para liberar memória
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
       
     } catch (error) {
       setError('Erro ao visualizar arquivo');
@@ -205,57 +177,47 @@ export default function Dashboard() {
 
   const visualizarDetalhes = async (documentoId) => {
     try {
-      const token = localStorage.getItem('token');
+      const result = await buscarDetalhesDocumento(documentoId);
       
-      const response = await axios.get(`${API_BASE_URL}/documentos/${documentoId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      setDocumentoSelecionado(response.data);
-      setModalDetalhes(true);
+      if (result.success) {
+        setDocumentoSelecionado(result.data);
+        setModalDetalhes(true);
+      } else {
+        setError(result.error);
+      }
       
     } catch (error) {
       setError('Erro ao carregar detalhes do documento');
     }
   };
 
-  const aprovarDocumento = async (documentoId) => {
+  const handleAprovarDocumento = async (documentoId) => {
     try {
-      const token = localStorage.getItem('token');
+      const result = await aprovarDocumento(documentoId);
       
-      const response = await axios.post(`${API_BASE_URL}/documentos/${documentoId}/aprovar`, '', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      // Recarregar documentos
-      carregarDocumentos();
+      if (result.success) {
+        carregarDocumentos();
+      } else {
+        setError(result.error);
+      }
       
     } catch (error) {
-      setError('Erro ao aprovar documento: ' + (error.response?.data?.message || error.message));
+      setError('Erro de conexão. Tente novamente.');
     }
   };
 
-  const rejeitarDocumento = async (documentoId) => {
+  const handleRejeitarDocumento = async (documentoId) => {
     try {
-      const token = localStorage.getItem('token');
+      const result = await rejeitarDocumento(documentoId);
       
-      const response = await axios.post(`${API_BASE_URL}/documentos/${documentoId}/rejeitar`, '', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      // Recarregar documentos
-      carregarDocumentos();
+      if (result.success) {
+        carregarDocumentos();
+      } else {
+        setError(result.error);
+      }
       
     } catch (error) {
-      setError('Erro ao rejeitar documento: ' + (error.response?.data?.message || error.message));
+      setError('Erro de conexão. Tente novamente.');
     }
   };
 
@@ -301,13 +263,12 @@ export default function Dashboard() {
           </Typography>
         </div>
         
-        <Box>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Button
             variant="outlined"
             startIcon={<Refresh />}
             onClick={carregarDocumentos}
             disabled={loading}
-            sx={{ mr: 2 }}
           >
             {loading ? 'Carregando...' : 'Atualizar'}
           </Button>
@@ -321,6 +282,7 @@ export default function Dashboard() {
               Enviar Documento
             </Button>
           )}
+          <LogoutButton />
         </Box>
       </Box>
 
@@ -395,14 +357,14 @@ export default function Dashboard() {
                             size="small" 
                             color="success" 
                             sx={{ mr: 1 }}
-                            onClick={() => aprovarDocumento(documento.id)}
+                            onClick={() => handleAprovarDocumento(documento.id)}
                           >
                             ✅ Aprovar
                           </Button>
                           <Button 
                             size="small" 
                             color="error"
-                            onClick={() => rejeitarDocumento(documento.id)}
+                            onClick={() => handleRejeitarDocumento(documento.id)}
                           >
                             ❌ Rejeitar
                           </Button>

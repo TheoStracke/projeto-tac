@@ -15,8 +15,7 @@ import {
   Box,
   Alert
 } from '@mui/material';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { buscarListaAprovacoes, downloadArquivo } from '../config/api';
 
 export default function AprovacaoLista() {
   const [documentos, setDocumentos] = useState([]);
@@ -29,18 +28,17 @@ export default function AprovacaoLista() {
 
   const carregarDocumentos = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/documentos/pendentes`);
+      const result = await buscarListaAprovacoes();
       
-      // Verificar se a resposta é um array
-      if (Array.isArray(response.data)) {
-        setDocumentos(response.data);
+      if (result.success) {
+        setDocumentos(result.data);
         setError('');
       } else {
-        setError('Erro no formato da resposta do servidor');
+        setError(result.error);
         setDocumentos([]);
       }
     } catch (err) {
-      setError('Erro ao carregar documentos');
+      setError('Erro de conexão. Tente novamente.');
       setDocumentos([]);
     } finally {
       setLoading(false);
@@ -147,15 +145,22 @@ export default function AprovacaoLista() {
                       <Button
                         variant="text"
                         size="small"
-                        onClick={() => {
-                          window.open(
-                            `${API_BASE_URL}/documentos/${doc.id}/arquivo`,
-                            '_blank'
-                          );
+                        onClick={async () => {
+                          const result = await downloadArquivo(doc.id);
+                          if (result.success) {
+                            const url = window.URL.createObjectURL(result.data);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `documento-${doc.id}`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                          }
                         }}
                         color="primary"
                       >
-                        📎 Ver Arquivo
+                        📎 Baixar Arquivo
                       </Button>
                     </TableCell>
                     <TableCell>

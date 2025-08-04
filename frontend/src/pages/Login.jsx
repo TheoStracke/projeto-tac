@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { loginUser } from '../config/api';
 import CnpjInput from '../components/CnpjInput';
 import { cleanCnpj } from '../utils/cnpjValidator';
 
@@ -18,37 +17,24 @@ const Login = () => {
         setError('');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    cnpj: cleanCnpj(cnpj), // Remove a formatação antes de enviar
-                    senha 
-                })
+            const result = await loginUser({
+                cnpj: cleanCnpj(cnpj),
+                senha
             });
 
-
-            if (!response.ok) {
-                throw new Error(`Erro: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            // Ajustar para o formato ApiResponse
-            if (data.success === true || (data.data && data.data.token)) {
-                // Salvar token no localStorage
-                const tokenData = data.data || data;
-                localStorage.setItem('token', tokenData.token);
-                localStorage.setItem('empresa', JSON.stringify(tokenData));
+            if (result.success) {
+                // Salvar token e dados da empresa no localStorage
+                localStorage.setItem('token', result.data.token);
+                localStorage.setItem('empresaData', JSON.stringify(result.data.empresa));
                 
                 // Redirecionar para dashboard
                 navigate('/dashboard');
             } else {
-                setError(data.message || 'Erro no login');
+                setError(result.error);
             }
             
         } catch (error) {
-            setError('Erro de conexão com o servidor');
+            setError('Erro de conexão. Tente novamente.');
         } finally {
             setLoading(false);
         }

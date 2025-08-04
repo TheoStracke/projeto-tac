@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CircularProgress, Box } from '@mui/material';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Importar páginas com lazy loading
 const Login = lazy(() => import('./pages/Login'));
@@ -16,12 +17,6 @@ const Loading = () => (
     <CircularProgress />
   </Box>
 );
-
-// Componente para proteger rotas
-const ProtectedRoute = React.memo(({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" />;
-});
 
 function App() {
   return (

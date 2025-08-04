@@ -14,8 +14,7 @@ import {
   Chip
 } from '@mui/material';
 import { CheckCircle, Cancel } from '@mui/icons-material';
-import axios from 'axios';
-import API_BASE_URL from '../config/api';
+import { buscarAprovacao, processarAprovacao } from '../config/api';
 
 export default function PaginaAprovacao() {
   const { token } = useParams();
@@ -32,8 +31,13 @@ export default function PaginaAprovacao() {
 
   const carregarDocumento = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/aprovacao/${token}`);
-      setDocumento(response.data);
+      const result = await buscarAprovacao(token);
+      if (result.success) {
+        setDocumento(result.data);
+        setError('');
+      } else {
+        setError(result.error);
+      }
     } catch (error) {
       setError('Documento não encontrado ou token inválido');
     } finally {
@@ -41,25 +45,26 @@ export default function PaginaAprovacao() {
     }
   };
 
-  const processarAprovacao = async (aprovado) => {
+  const handleProcessarAprovacao = async (aprovado) => {
     setProcessing(true);
     setError('');
 
     try {
-      await axios.post(`${API_BASE_URL}/aprovacao/${token}`, {
-        aprovado,
-        comentarios
-      });
-
-      setSuccess(`Documento ${aprovado ? 'aprovado' : 'rejeitado'} com sucesso! O despachante foi notificado por email.`);
+      const result = await processarAprovacao(token, aprovado, comentarios);
       
-      // Recarregar documento para mostrar status atualizado
-      setTimeout(() => {
-        carregarDocumento();
-      }, 2000);
+      if (result.success) {
+        setSuccess(`Documento ${aprovado ? 'aprovado' : 'rejeitado'} com sucesso! O despachante foi notificado por email.`);
+        
+        // Recarregar documento para mostrar status atualizado
+        setTimeout(() => {
+          carregarDocumento();
+        }, 2000);
+      } else {
+        setError(result.error);
+      }
 
     } catch (error) {
-      setError(error.response?.data || 'Erro ao processar aprovação');
+      setError('Erro ao processar aprovação');
     } finally {
       setProcessing(false);
     }
@@ -220,7 +225,7 @@ export default function PaginaAprovacao() {
                     color="success"
                     size="large"
                     startIcon={<CheckCircle />}
-                    onClick={() => processarAprovacao(true)}
+                    onClick={() => handleProcessarAprovacao(true)}
                     disabled={processing}
                     sx={{ minWidth: 150 }}
                   >
@@ -232,7 +237,7 @@ export default function PaginaAprovacao() {
                     color="error"
                     size="large"
                     startIcon={<Cancel />}
-                    onClick={() => processarAprovacao(false)}
+                    onClick={() => handleProcessarAprovacao(false)}
                     disabled={processing}
                     sx={{ minWidth: 150 }}
                   >
