@@ -1,3 +1,0 @@
-# This file forces Railway to detect this as a Java project
-# Railway should use Heroku Java buildpack
-# Project uses Maven with Spring Boot

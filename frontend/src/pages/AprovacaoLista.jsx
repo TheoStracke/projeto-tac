@@ -16,7 +16,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
-import API_BASE_URL from '../api';
+import API_BASE_URL from '../config/api';
 
 export default function AprovacaoLista() {
   const [documentos, setDocumentos] = useState([]);

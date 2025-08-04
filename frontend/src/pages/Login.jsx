@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import API_BASE_URL from '../api';
+import API_BASE_URL from '../config/api';
 import CnpjInput from '../components/CnpjInput';
 import { cleanCnpj } from '../utils/cnpjValidator';
 
