@@ -1,6 +1,7 @@
 # Railway Configuration - FORCE Java Spring Boot Build
 [build]
-builder = "NIXPACKS"
+builder = "HEROKU"
+buildpacks = ["https://github.com/heroku/heroku-buildpack-java"]
 buildCommand = "./mvnw clean package -DskipTests"
 
 [deploy]
@@ -11,7 +12,6 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
 [variables]
-NIXPACKS_JAVA_VERSION = "17"
 PORT = "8080"
 SPRING_PROFILES_ACTIVE = "prod"
-RAILWAY_DOCKERFILE_PATH = ""
+JAVA_OPTS = "-Xmx512m"

@@ -96,6 +96,17 @@ railway up
 
 ## 🐛 Troubleshooting
 
+### ❌ Erro: "java: command not found" no Railway
+**Causa**: Railway não instalou Java corretamente ou não detectou buildpack
+**Solução URGENTE**:
+- ✅ **railway.toml** configurado para HEROKU builder
+- ✅ **buildpacks explícito** para Java
+- ✅ **system.properties** com Java 17 + Maven
+- ✅ **Procfile** com comando Java específico
+- ✅ **.java-version** arquivo marker criado
+- ✅ **Redeploy obrigatório** após mudanças
+- Se persistir: **recriar projeto Railway**
+
 ### ❌ Erro: "The executable `java` could not be found"
 **Causa**: Railway detectando Node.js em vez de Java Spring Boot
 **Solução DEFINITIVA**: 
