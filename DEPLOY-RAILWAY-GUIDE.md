@@ -97,13 +97,17 @@ railway up
 ## 🐛 Troubleshooting
 
 ### ❌ Erro: "The executable `java` could not be found"
-**Causa**: Railway está usando Dockerfile (Node.js) em vez do buildpack Java
-**Solução**: 
-- ✅ **Dockerfiles renomeados** para `.bak`
-- ✅ **railway.toml** configurado para forçar Java
+**Causa**: Railway detectando Node.js em vez de Java Spring Boot
+**Solução DEFINITIVA**: 
+- ✅ **package.json removido** da raiz (principal causa!)
+- ✅ **Todos Dockerfiles removidos** 
+- ✅ **node_modules/ removido** da raiz
+- ✅ **frontend/Dockerfile removido**
+- ✅ **railway.toml** força buildpack Java
 - ✅ **nixpacks.toml** especifica Java 17
-- ✅ **.buildpacks** força buildpack Java
-- Redeploy o projeto no Railway
+- ✅ **.buildpacks** força Java buildpack
+- ✅ **system.properties** define Java version
+- Commit, push e redeploy no Railway
 
 ### ❌ Erro: "Failed to execute goal frontend-maven-plugin"
 **Causa**: Node.js não instalado ou versão incompatível

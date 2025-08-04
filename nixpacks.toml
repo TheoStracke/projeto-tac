@@ -1,14 +1,18 @@
-# Nixpacks Configuration for Java Spring Boot + React
-[phases.build]
-dependsOn = ["install"]
-cmds = ["./mvnw clean package -DskipTests"]
-
-[phases.install]
-cmds = ["echo 'Installing Java 17 and Maven'"]
-
+# Nixpacks Configuration - FORCE Java Spring Boot
 [providers]
 java = "17"
 
+[phases.setup]
+nixPkgs = ["openjdk17"]
+
+[phases.build]
+dependsOn = ["setup"]
+cmds = ["./mvnw clean package -DskipTests"]
+
+[start]
+cmd = "java -jar target/validacao-documentos-1.0.jar"
+
 [variables]
-MAVEN_OPTS = "-Xmx512m"
+MAVEN_OPTS = "-Xmx1024m"
 JAVA_OPTS = "-Xmx512m -XX:+UseG1GC"
+PORT = "8080"

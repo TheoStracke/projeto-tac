@@ -1,8 +1,7 @@
 # Railway Ignore - Para build Java otimizado
 
-# Dockerfiles (não usar)
-Dockerfile.bak
-Dockerfile.prod.bak
+# IMPORTANTE: Ignorar todos os Dockerfiles
+**/Dockerfile*
 docker-compose.yml
 *.dockerfile
 
@@ -10,6 +9,7 @@ docker-compose.yml
 frontend/dist/
 frontend/node_modules/
 frontend/.vite/
+frontend/node/
 
 # Maven
 target/classes/
@@ -36,3 +36,7 @@ temp/
 uploads/*.pdf
 uploads/*.jpg
 uploads/*.png
+
+# Node modules da raiz (se houver)
+node_modules/
+package-lock.json

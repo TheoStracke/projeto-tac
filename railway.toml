@@ -1,10 +1,10 @@
-# Railway Configuration - Java Spring Boot + React Integrado
+# Railway Configuration - FORCE Java Spring Boot Build
 [build]
 builder = "NIXPACKS"
 buildCommand = "./mvnw clean package -DskipTests"
 
 [deploy]
-startCommand = "java -jar target/*.jar"
+startCommand = "java -jar target/validacao-documentos-1.0.jar"
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
@@ -14,3 +14,4 @@ restartPolicyMaxRetries = 3
 NIXPACKS_JAVA_VERSION = "17"
 PORT = "8080"
 SPRING_PROFILES_ACTIVE = "prod"
+RAILWAY_DOCKERFILE_PATH = ""

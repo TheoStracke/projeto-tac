@@ -1,0 +1,3 @@
+# This is a Java Spring Boot project with integrated React frontend
+# Railway should use Java buildpack, NOT Node.js
+# Frontend is built by Maven frontend-maven-plugin
