@@ -71,26 +71,22 @@ export default function Dashboard() {
   // Dados da empresa usando fonte única, sem dependência que cause re-render
   const [empresaData, setEmpresaData] = useState(null);
 
-  useEffect(() => {
-    // Carregar dados da empresa de forma segura
-    const loadEmpresaData = () => {
-      const data = getEmpresaData();
-      setEmpresaData(data);
-      return data;
-    };
 
-    const currentEmpresaData = loadEmpresaData();
+  useEffect(() => {
+    // A lógica de redirecionamento foi removida.
+    // O Dashboard agora confia que, se ele foi renderizado, a rota está protegida.
     
-    // Se não há dados válidos, o ProtectedRoute já deveria ter redirecionado
-    // Aqui apenas carregamos os documentos se tudo estiver OK
-    if (currentEmpresaData) {
+    // Se empresaData existir, carregamos os documentos.
+    if (empresaData?.empresaId) {
       carregarDocumentos();
     } else {
-      // Fallback: se mesmo assim não há dados, limpar e redirecionar
-      clearAuthData();
-      window.location.replace('/login');
+      // Se, por alguma razão extrema, os dados não estiverem aqui,
+      // é melhor exibir um erro do que forçar um logout que apaga a sessão.
+      // O ProtectedRoute já deve ter prevenido este cenário.
+      setError('Não foi possível carregar os dados da empresa. Tente atualizar a página.');
+      setLoading(false);
     }
-  }, []); // Executar apenas uma vez na montagem
+  }, []); // A dependência vazia está correta para executar apenas na montagem.
 
   const carregarDocumentos = async () => {
     try {
@@ -98,16 +94,17 @@ export default function Dashboard() {
       setError('');
       
       const token = localStorage.getItem('token');
-      const currentEmpresaData = getEmpresaData();
       
-      if (!token || !currentEmpresaData) {
-        setError('Sessão expirada - redirecionando para login');
-        clearAuthData();
-        setTimeout(() => window.location.replace('/login'), 2000);
+      // A verificação de empresaData e token aqui dentro ainda é uma boa prática
+      // para evitar chamadas de API desnecessárias.
+      if (!token || !empresaData?.empresaId) {
+        setError('Sessão inválida ou dados da empresa não encontrados.');
+        setLoading(false);
+        // Não redirecione daqui! Apenas informe o erro.
         return;
       }
       
-      const empresaId = currentEmpresaData.tipo === 'ESTRADA_FACIL' ? null : currentEmpresaData.empresaId;
+      const empresaId = empresaData.tipo === 'ESTRADA_FACIL' ? null : empresaData.empresaId;
       const result = await buscarDocumentos(empresaId);
       
       if (result.success) {
@@ -124,6 +121,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
 
   const handleEnviarDocumento = async () => {
     try {
