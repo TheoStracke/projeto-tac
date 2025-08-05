@@ -67,6 +67,8 @@ const Login = () => {
                 <form onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <CnpjInput
+                            id="cnpj"
+                            name="cnpj"
                             value={cnpj}
                             onChange={(e) => setCnpj(e.target.value)}
                             variant="outlined"
@@ -75,10 +77,12 @@ const Login = () => {
                         />
                     </div>
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                        <label htmlFor="senha" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             Senha:
                         </label>
                         <input
+                            id="senha"
+                            name="senha"
                             type="password"
                             value={senha}
                             onChange={(e) => setSenha(e.target.value)}

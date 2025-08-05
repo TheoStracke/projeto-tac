@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { TextField } from '@mui/material';
 import { validateCnpj, cleanCnpj } from '../utils/cnpjValidator';
 
-const CnpjInput = React.memo(({ value, onChange, error: externalError, helperText: externalHelperText, ...props }) => {
+const CnpjInput = React.memo(({ value, onChange, error: externalError, helperText: externalHelperText, id, name, ...props }) => {
   const [internalError, setInternalError] = useState(false);
   const [internalHelperText, setInternalHelperText] = useState('');
 
@@ -56,6 +56,8 @@ const CnpjInput = React.memo(({ value, onChange, error: externalError, helperTex
   return (
     <TextField
       {...props}
+      id={id}
+      name={name}
       value={value}
       onChange={handleChange}
       error={externalError || internalError}
