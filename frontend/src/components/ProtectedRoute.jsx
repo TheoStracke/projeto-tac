@@ -26,14 +26,15 @@ const ProtectedRoute = ({ children }) => {
     // Verificar se os dados da empresa são válidos
     const empresaData = JSON.parse(empresaDataStr);
     
-    // Validação consistente: id/empresaId e tipo são obrigatórios
-    if (!empresaData.id || !empresaData.empresaId || !empresaData.tipo) {
+    // Validação robusta: empresaId e tipo são obrigatórios
+    // Note: removida validação de 'id' pois pode estar undefined em casos específicos
+    if (!empresaData.empresaId || !empresaData.tipo) {
       clearAuthData();
       return <Navigate to="/login" replace />;
     }
     
-    // Verificar se o token no dados da empresa corresponde ao token armazenado
-    if (empresaData.token !== token) {
+    // Verificar se o token nos dados da empresa corresponde ao token armazenado
+    if (empresaData.token && empresaData.token !== token) {
       clearAuthData();
       return <Navigate to="/login" replace />;
     }

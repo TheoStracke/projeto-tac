@@ -42,7 +42,8 @@ const getEmpresaData = () => {
     if (!empresaDataStr) return null;
     
     const empresaData = JSON.parse(empresaDataStr);
-    if (!empresaData.id || !empresaData.empresaId || !empresaData.tipo) {
+    // Validação robusta: empresaId e tipo são obrigatórios
+    if (!empresaData.empresaId || !empresaData.tipo) {
       return null;
     }
     
@@ -67,21 +68,29 @@ export default function Dashboard() {
     arquivo: null
   });
 
-  // Dados da empresa usando fonte única
-  const empresaData = useMemo(() => getEmpresaData(), []);
+  // Dados da empresa usando fonte única, sem dependência que cause re-render
+  const [empresaData, setEmpresaData] = useState(null);
 
   useEffect(() => {
-    // Verificação de autenticação única e centralizada
-    const token = localStorage.getItem('token');
-    if (!token || !empresaData) {
+    // Carregar dados da empresa de forma segura
+    const loadEmpresaData = () => {
+      const data = getEmpresaData();
+      setEmpresaData(data);
+      return data;
+    };
+
+    const currentEmpresaData = loadEmpresaData();
+    
+    // Se não há dados válidos, o ProtectedRoute já deveria ter redirecionado
+    // Aqui apenas carregamos os documentos se tudo estiver OK
+    if (currentEmpresaData) {
+      carregarDocumentos();
+    } else {
+      // Fallback: se mesmo assim não há dados, limpar e redirecionar
       clearAuthData();
       window.location.replace('/login');
-      return;
     }
-    
-    // Carregar documentos após validação
-    carregarDocumentos();
-  }, [empresaData]);
+  }, []); // Executar apenas uma vez na montagem
 
   const carregarDocumentos = async () => {
     try {
@@ -121,7 +130,7 @@ export default function Dashboard() {
       setEnviandoDoc(true);
       setError('');
 
-      const currentEmpresaData = getEmpresaData();
+      const currentEmpresaData = empresaData || getEmpresaData();
       if (!currentEmpresaData) {
         setError('Sessão expirada - refaça o login');
         return;
@@ -249,13 +258,13 @@ export default function Dashboard() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <div>
           <Typography variant="h4" gutterBottom>
-            {isAdmin ? '🔧 Painel do Administrador' : `📋 Dashboard - ${empresaData.razaoSocial || 'Despachante'}`}
+            {isAdmin ? '🔧 Painel do Administrador' : `📋 Dashboard - ${empresaData?.razaoSocial || 'Despachante'}`}
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
             {isAdmin ? 'Documentos Pendentes de Aprovação' : 'Seus Documentos Enviados'}
           </Typography>
           <Typography variant="caption" display="block" sx={{ mt: 1, fontFamily: 'monospace' }}>
-            🏢 Tipo: <strong>{empresaData.tipo}</strong> | 📄 CNPJ: <strong>{empresaData.cnpj}</strong> | 🆔 ID: <strong>{empresaData.empresaId}</strong>
+            🏢 Tipo: <strong>{empresaData?.tipo}</strong> | 📄 CNPJ: <strong>{empresaData?.cnpj}</strong> | 🆔 ID: <strong>{empresaData?.empresaId}</strong>
           </Typography>
         </div>
         

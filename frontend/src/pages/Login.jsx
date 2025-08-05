@@ -29,23 +29,27 @@ const Login = () => {
             });
             
             if (result.success) {
-                // Estrutura padronizada dos dados da empresa
+                // Corrigir mapeamento baseado na estrutura real do backend
+                const responseData = result.data.data || result.data; // Suporte a ApiResponse encapsulado
+                
                 const empresaData = {
-                    id: result.data.id,
-                    empresaId: result.data.id,
-                    cnpj: result.data.cnpj,
-                    razaoSocial: result.data.razaoSocial,
-                    email: result.data.email,
-                    tipo: result.data.tipo,
-                    token: result.data.token
+                    id: responseData.empresaId,           // Usar empresaId como id
+                    empresaId: responseData.empresaId,    // Campo correto do backend
+                    cnpj: responseData.cnpj,
+                    razaoSocial: responseData.razaoSocial,
+                    email: responseData.email,
+                    tipo: responseData.tipo,
+                    token: responseData.token
                 };
 
-                // Salvar token e dados da empresa com chave padronizada
-                localStorage.setItem('token', result.data.token);
+                // Salvar de forma síncrona para evitar race conditions
+                localStorage.setItem('token', responseData.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaData));
 
-                // Navegação imediata sem timeout
-                navigate('/dashboard', { replace: true });
+                // Aguardar brevemente para garantir que localStorage foi atualizado
+                setTimeout(() => {
+                    navigate('/dashboard', { replace: true });
+                }, 50);
             } else {
                 setError(result.error || 'Falha no login. Verifique seu CNPJ e senha.');
             }

@@ -45,14 +45,26 @@ api.interceptors.response.use(
 export const loginUser = async (credentials) => {
   try {
     const response = await api.post('/auth/login', credentials);
+    
+    // Verificar se a resposta está encapsulada em ApiResponse
+    let responseData = response.data;
+    
+    // Se há uma propriedade 'data' aninhada, usar ela (ApiResponse)
+    if (responseData.data && typeof responseData.data === 'object') {
+      responseData = {
+        ...responseData,
+        data: responseData.data
+      };
+    }
+    
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error) {
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao fazer login'
+      error: error.response?.data?.message || error.response?.data?.error || 'Erro ao fazer login'
     };
   }
 };
