@@ -66,6 +66,9 @@ public class SecurityConfig {
                 // CORS preflight - DEVE vir primeiro e permitir TUDO
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
+                // Endpoints de teste (sem autenticação)
+                .requestMatchers("/test/**").permitAll()
+                
                 // Endpoints de autenticação (sem /api pois já está no context-path)
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/cadastro").permitAll()

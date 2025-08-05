@@ -10,21 +10,27 @@ import java.util.HashMap;
 public class TestController {
 
     @GetMapping("/cors")
-    public ResponseEntity<Map<String, String>> testCors() {
+    public ResponseEntity<Map<String, String>> testCors(@RequestHeader(value = "Origin", required = false) String origin) {
         Map<String, String> response = new HashMap<>();
         response.put("status", "OK");
         response.put("message", "CORS está funcionando!");
+        response.put("origin", origin != null ? origin : "não informado");
         response.put("timestamp", new java.util.Date().toString());
+        System.out.println("🔹 Teste CORS recebido - Origin: " + origin);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/cors")
-    public ResponseEntity<Map<String, String>> testCorsPost(@RequestBody(required = false) Map<String, Object> body) {
+    public ResponseEntity<Map<String, String>> testCorsPost(
+            @RequestBody(required = false) Map<String, Object> body,
+            @RequestHeader(value = "Origin", required = false) String origin) {
         Map<String, String> response = new HashMap<>();
         response.put("status", "OK");
         response.put("message", "POST CORS está funcionando!");
+        response.put("origin", origin != null ? origin : "não informado");
         response.put("received", body != null ? body.toString() : "null");
         response.put("timestamp", new java.util.Date().toString());
+        System.out.println("🔹 Teste CORS POST recebido - Origin: " + origin);
         return ResponseEntity.ok(response);
     }
 

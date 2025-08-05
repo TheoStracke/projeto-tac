@@ -56,7 +56,7 @@ public class AppProperties {
     
     // Inner classes
     public static class Cors {
-        private String allowedOrigins = "http://localhost:5173";
+        private String allowedOrigins = "http://localhost:5173,https://projeto-tac.vercel.app,https://projeto-tac-production.up.railway.app";
         
         public String getAllowedOrigins() {
             return allowedOrigins;

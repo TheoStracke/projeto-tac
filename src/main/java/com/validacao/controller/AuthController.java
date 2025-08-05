@@ -68,21 +68,29 @@ public class AuthController {
     @PostMapping("/cadastro")
     public ResponseEntity<ApiResponse<String>> cadastro(@RequestBody Empresa empresa) {
         try {
+            System.out.println("🔹 Recebendo requisição de cadastro...");
+            System.out.println("📋 CNPJ recebido: " + empresa.getCnpj());
+            System.out.println("🏢 Razão Social: " + empresa.getRazaoSocial());
+            
             // Remover formatação do CNPJ (pontos, barras, hífens)
             String cnpjLimpo = empresa.getCnpj().replaceAll("[^0-9]", "");
             empresa.setCnpj(cnpjLimpo);
             
             // Verificar se CNPJ já existe
             if (empresaService.buscarPorCnpj(cnpjLimpo).isPresent()) {
+                System.out.println("❌ CNPJ já cadastrado: " + cnpjLimpo);
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("CNPJ já cadastrado"));
             }
             
             empresaService.salvar(empresa);
+            System.out.println("✅ Empresa cadastrada com sucesso!");
             
             return ResponseEntity.ok(ApiResponse.success("Empresa cadastrada com sucesso!", null));
             
         } catch (Exception e) {
+            System.out.println("❌ Erro ao cadastrar: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError()
                 .body(ApiResponse.error("Erro ao cadastrar: " + e.getMessage()));
         }
