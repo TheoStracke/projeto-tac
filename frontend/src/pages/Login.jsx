@@ -13,6 +13,7 @@ const Login = () => {
 
     const login = async (e) => {
         e.preventDefault();
+        console.log("🔹 Iniciando login...");
         setLoading(true);
         setError('');
         try {
@@ -21,19 +22,26 @@ const Login = () => {
                 senha
             });
             if (result.success) {
-    localStorage.setItem('token', result.data.token);
-    localStorage.setItem('empresa', JSON.stringify(result.data)); // usar mesma chave que Dashboard
+                console.log("📦 Salvando token:", result.data.token);
+                console.log("🏢 Salvando empresa:", result.data);
+                localStorage.setItem('token', result.data.token);
+                localStorage.setItem('empresa', JSON.stringify(result.data)); // usar mesma chave que Dashboard
 
-    setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-    }, 0);
+                console.log("➡️ Navegando para dashboard...");
+                setTimeout(() => {
+                    navigate('/dashboard', { replace: true });
+                }, 0);
+            } else {
+                console.log("❌ Login falhou:", result.error);
+                setError(result.error || 'Falha no login. Verifique seu CNPJ e senha.');
+            }
+        } catch (err) {
+            console.log("❌ Erro no login:", err);
+            setError('Falha no login. Verifique seu CNPJ e senha.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
-    } catch (err) {
-        setError('Falha no login. Verifique seu CNPJ e senha.');
-        setLoading(false);
-    }
-};
+    };
 
 
     return (
