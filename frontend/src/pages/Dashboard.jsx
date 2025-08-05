@@ -68,25 +68,19 @@ export default function Dashboard() {
     arquivo: null
   });
 
-  // Dados da empresa usando fonte única, sem dependência que cause re-render
-  const [empresaData, setEmpresaData] = useState(null);
+  const [empresaData, setEmpresaData] = useState(() => getEmpresaData());
 
 
-  useEffect(() => {
-    // A lógica de redirecionamento foi removida.
-    // O Dashboard agora confia que, se ele foi renderizado, a rota está protegida.
-    
-    // Se empresaData existir, carregamos os documentos.
-    if (empresaData?.empresaId) {
-      carregarDocumentos();
-    } else {
-      // Se, por alguma razão extrema, os dados não estiverem aqui,
-      // é melhor exibir um erro do que forçar um logout que apaga a sessão.
-      // O ProtectedRoute já deve ter prevenido este cenário.
-      setError('Não foi possível carregar os dados da empresa. Tente atualizar a página.');
-      setLoading(false);
-    }
-  }, []); // A dependência vazia está correta para executar apenas na montagem.
+    useEffect(() => {
+    if (!empresaData) {
+      clearAuthData(); 
+      navigate('/login', { replace: true });
+      return; 
+    }
+
+    carregarDocumentos();
+
+  }, []);
 
   const carregarDocumentos = async () => {
     try {
