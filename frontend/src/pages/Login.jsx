@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../config/api';
 import CnpjInput from '../components/CnpjInput';
@@ -11,33 +11,45 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    useEffect(() => {
+        // Limpar localStorage ao carregar o login
+        localStorage.removeItem('token');
+        localStorage.removeItem('empresaData');
+    }, []);
+
     const login = async (e) => {
         e.preventDefault();
-        console.log("🔹 Iniciando login...");
-        console.log("🌐 API URL sendo usada:", import.meta.env.VITE_API_URL || 'http://localhost:8080/api');
         setLoading(true);
         setError('');
+        
         try {
             const result = await loginUser({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
+            
             if (result.success) {
-                console.log("📦 Salvando token:", result.data.token);
-                console.log("🏢 Salvando empresa:", result.data);
-                localStorage.setItem('token', result.data.token);
-                localStorage.setItem('empresa', JSON.stringify(result.data)); // usar mesma chave que Dashboard
+                // Estrutura padronizada dos dados da empresa
+                const empresaData = {
+                    id: result.data.id,
+                    empresaId: result.data.id,
+                    cnpj: result.data.cnpj,
+                    razaoSocial: result.data.razaoSocial,
+                    email: result.data.email,
+                    tipo: result.data.tipo,
+                    token: result.data.token
+                };
 
-                console.log("➡️ Navegando para dashboard...");
-                setTimeout(() => {
-                    navigate('/dashboard', { replace: true });
-                }, 0);
+                // Salvar token e dados da empresa com chave padronizada
+                localStorage.setItem('token', result.data.token);
+                localStorage.setItem('empresaData', JSON.stringify(empresaData));
+
+                // Navegação imediata sem timeout
+                navigate('/dashboard', { replace: true });
             } else {
-                console.log("❌ Login falhou:", result.error);
                 setError(result.error || 'Falha no login. Verifique seu CNPJ e senha.');
             }
         } catch (err) {
-            console.log("❌ Erro no login:", err);
             setError('Falha no login. Verifique seu CNPJ e senha.');
         } finally {
             setLoading(false);
@@ -67,7 +79,7 @@ const Login = () => {
                 <form onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <CnpjInput
-                            id="cnpj"
+                            id="cnpj-input"
                             name="cnpj"
                             value={cnpj}
                             onChange={(e) => setCnpj(e.target.value)}
@@ -77,11 +89,11 @@ const Login = () => {
                         />
                     </div>
                     <div style={{ marginBottom: '1.5rem' }}>
-                        <label htmlFor="senha" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                        <label htmlFor="senha-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             Senha:
                         </label>
                         <input
-                            id="senha"
+                            id="senha-input"
                             name="senha"
                             type="password"
                             value={senha}

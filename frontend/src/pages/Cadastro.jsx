@@ -210,6 +210,8 @@ const Cadastro = () => {
             <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
               {/* CNPJ */}
               <TextField
+                id="cnpj-cadastro"
+                name="cnpj"
                 margin="normal"
                 required
                 fullWidth
@@ -228,6 +230,8 @@ const Cadastro = () => {
 
               {/* Razão Social */}
               <TextField
+                id="razao-social-cadastro"
+                name="razaoSocial"
                 margin="normal"
                 required
                 fullWidth
@@ -241,6 +245,8 @@ const Cadastro = () => {
 
               {/* Email */}
               <TextField
+                id="email-cadastro"
+                name="email"
                 margin="normal"
                 required
                 fullWidth
@@ -255,8 +261,11 @@ const Cadastro = () => {
 
               {/* Tipo de Empresa */}
               <FormControl fullWidth margin="normal">
-                <InputLabel>Tipo de Empresa</InputLabel>
+                <InputLabel id="tipo-empresa-label">Tipo de Empresa</InputLabel>
                 <Select
+                  id="tipo-empresa-cadastro"
+                  name="tipo"
+                  labelId="tipo-empresa-label"
                   value={formData.tipo}
                   label="Tipo de Empresa"
                   onChange={(e) => handleChange('tipo', e.target.value)}
@@ -269,6 +278,8 @@ const Cadastro = () => {
 
               {/* Senha */}
               <TextField
+                id="senha-cadastro"
+                name="senha"
                 margin="normal"
                 required
                 fullWidth
@@ -284,6 +295,8 @@ const Cadastro = () => {
 
               {/* Confirmar Senha */}
               <TextField
+                id="confirmar-senha-cadastro"
+                name="confirmarSenha"
                 margin="normal"
                 required
                 fullWidth

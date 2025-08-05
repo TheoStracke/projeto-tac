@@ -1,30 +1,46 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
+const clearAuthData = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('empresaData');
+};
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  const empresaData = localStorage.getItem('empresaData');
+  const empresaDataStr = localStorage.getItem('empresaData');
   
-  // Se não há token ou dados da empresa, redirecionar para login
-  if (!token || !empresaData) {
-    // Limpar localStorage se dados estão incompletos
-    localStorage.removeItem('token');
-    localStorage.removeItem('empresaData');
+  // Verificar se há token
+  if (!token) {
+    clearAuthData();
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Verificar se há dados da empresa
+  if (!empresaDataStr) {
+    clearAuthData();
     return <Navigate to="/login" replace />;
   }
   
   try {
     // Verificar se os dados da empresa são válidos
-    const empresa = JSON.parse(empresaData);
-    if (!empresa.id || !empresa.tipo) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('empresaData');
+    const empresaData = JSON.parse(empresaDataStr);
+    
+    // Validação consistente: id/empresaId e tipo são obrigatórios
+    if (!empresaData.id || !empresaData.empresaId || !empresaData.tipo) {
+      clearAuthData();
       return <Navigate to="/login" replace />;
     }
+    
+    // Verificar se o token no dados da empresa corresponde ao token armazenado
+    if (empresaData.token !== token) {
+      clearAuthData();
+      return <Navigate to="/login" replace />;
+    }
+    
   } catch (error) {
     // Se não conseguir fazer parse dos dados, limpar e redirecionar
-    localStorage.removeItem('token');
-    localStorage.removeItem('empresaData');
+    clearAuthData();
     return <Navigate to="/login" replace />;
   }
   

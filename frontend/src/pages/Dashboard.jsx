@@ -31,6 +31,27 @@ import {
 } from '../config/api';
 import LogoutButton from '../components/LogoutButton';
 
+const clearAuthData = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('empresaData');
+};
+
+const getEmpresaData = () => {
+  try {
+    const empresaDataStr = localStorage.getItem('empresaData');
+    if (!empresaDataStr) return null;
+    
+    const empresaData = JSON.parse(empresaDataStr);
+    if (!empresaData.id || !empresaData.empresaId || !empresaData.tipo) {
+      return null;
+    }
+    
+    return empresaData;
+  } catch {
+    return null;
+  }
+};
+
 export default function Dashboard() {
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,9 +67,21 @@ export default function Dashboard() {
     arquivo: null
   });
 
+  // Dados da empresa usando fonte única
+  const empresaData = useMemo(() => getEmpresaData(), []);
+
   useEffect(() => {
+    // Verificação de autenticação única e centralizada
+    const token = localStorage.getItem('token');
+    if (!token || !empresaData) {
+      clearAuthData();
+      window.location.replace('/login');
+      return;
+    }
+    
+    // Carregar documentos após validação
     carregarDocumentos();
-  }, []);
+  }, [empresaData]);
 
   const carregarDocumentos = async () => {
     try {
@@ -56,27 +89,16 @@ export default function Dashboard() {
       setError('');
       
       const token = localStorage.getItem('token');
-      const empresaData = JSON.parse(localStorage.getItem('empresaData') || '{}');
+      const currentEmpresaData = getEmpresaData();
       
-      if (!token) {
-        setError('Token não encontrado - redirecionando para login');
-        localStorage.clear();
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
-        return;
-      }
-
-      if (!empresaData.empresaId || !empresaData.tipo) {
-        setError('Dados da empresa não encontrados - refaça o login');
-        localStorage.clear();
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
+      if (!token || !currentEmpresaData) {
+        setError('Sessão expirada - redirecionando para login');
+        clearAuthData();
+        setTimeout(() => window.location.replace('/login'), 2000);
         return;
       }
       
-      const empresaId = empresaData.tipo === 'ESTRADA_FACIL' ? null : empresaData.empresaId;
+      const empresaId = currentEmpresaData.tipo === 'ESTRADA_FACIL' ? null : currentEmpresaData.empresaId;
       const result = await buscarDocumentos(empresaId);
       
       if (result.success) {
@@ -99,7 +121,11 @@ export default function Dashboard() {
       setEnviandoDoc(true);
       setError('');
 
-      const empresaData = JSON.parse(localStorage.getItem('empresaData') || '{}');
+      const currentEmpresaData = getEmpresaData();
+      if (!currentEmpresaData) {
+        setError('Sessão expirada - refaça o login');
+        return;
+      }
 
       if (!formData.arquivo) {
         setError('Selecione um arquivo para enviar');
@@ -116,7 +142,7 @@ export default function Dashboard() {
       formDataToSend.append('titulo', formData.titulo);
       formDataToSend.append('descricao', formData.descricao || '');
       formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
-      formDataToSend.append('empresaId', empresaData.empresaId);
+      formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
       const result = await enviarDocumento(formDataToSend);
       
@@ -214,25 +240,9 @@ export default function Dashboard() {
     return data.toLocaleString('pt-BR');
   }, []);
 
-  const empresaData = useMemo(() => {
-    try {
-        return JSON.parse(localStorage.getItem('empresa') || '{}');
-    } catch {
-        return {};
-    }
-}, []);
-
-useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token || !empresaData?.empresaId) {
-        window.location.replace('/login');
-    }
-}, [empresaData]);
-
-  
   const isAdmin = useMemo(() => {
-    return empresaData.tipo === 'ESTRADA_FACIL';
-  }, [empresaData.tipo]);
+    return empresaData?.tipo === 'ESTRADA_FACIL';
+  }, [empresaData?.tipo]);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -373,6 +383,8 @@ useEffect(() => {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
             <TextField
+              id="titulo-documento"
+              name="titulo"
               label="Título do Documento"
               value={formData.titulo}
               onChange={(e) => handleInputChange('titulo', e.target.value)}
@@ -380,6 +392,8 @@ useEffect(() => {
               fullWidth
             />
             <TextField
+              id="descricao-documento"
+              name="descricao"
               label="Descrição"
               value={formData.descricao}
               onChange={(e) => handleInputChange('descricao', e.target.value)}
@@ -388,16 +402,20 @@ useEffect(() => {
               fullWidth
             />
             <TextField
+              id="nome-motorista"
+              name="nomeMotorista"
               label="Nome do Motorista"
               value={formData.nomeMotorista}
               onChange={(e) => handleInputChange('nomeMotorista', e.target.value)}
               fullWidth
             />
             <Box>
-              <Typography variant="body2" sx={{ mb: 1 }}>
+              <Typography variant="body2" sx={{ mb: 1 }} component="label" htmlFor="arquivo-upload">
                 Selecione o arquivo:
               </Typography>
               <Input
+                id="arquivo-upload"
+                name="arquivo"
                 type="file"
                 onChange={handleFileChange}
                 inputProps={{ accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx' }}
