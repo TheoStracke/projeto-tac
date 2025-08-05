@@ -12,7 +12,7 @@ const Login = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Limpar localStorage ao carregar o login
+        // Limpar localStorage ao carregar a página de login
         localStorage.removeItem('token');
         localStorage.removeItem('empresaData');
     }, []);
@@ -23,18 +23,23 @@ const Login = () => {
         setError('');
         
         try {
-            const result = await loginUser({
+            // Chamamos a API e guardamos a resposta completa
+            const response = await loginUser({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
             
-            if (result.success) {
-                // Corrigir mapeamento baseado na estrutura real do backend
-                const responseData = result.data.data || result.data; // Suporte a ApiResponse encapsulado
+            // ==================================================================
+            // AQUI ESTÁ A MUDANÇA PRINCIPAL
+            // Verificamos a condição correta baseada na resposta da sua API
+            // ==================================================================
+            if (response && response.status === 'success') {
+                // Os dados do usuário estão diretamente dentro de 'response.data'
+                const responseData = response.data;
                 
                 const empresaData = {
-                    id: responseData.empresaId,           // Usar empresaId como id
-                    empresaId: responseData.empresaId,    // Campo correto do backend
+                    id: responseData.empresaId,
+                    empresaId: responseData.empresaId,
                     cnpj: responseData.cnpj,
                     razaoSocial: responseData.razaoSocial,
                     email: responseData.email,
@@ -42,19 +47,20 @@ const Login = () => {
                     token: responseData.token
                 };
 
-                // Salvar de forma síncrona para evitar race conditions
                 localStorage.setItem('token', responseData.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaData));
 
-                // Aguardar brevemente para garantir que localStorage foi atualizado
-                setTimeout(() => {
-                    navigate('/dashboard', { replace: true });
-                }, 50);
+                // Redirecionamento direto, sem a necessidade de setTimeout
+                navigate('/dashboard', { replace: true });
+
             } else {
-                setError(result.error || 'Falha no login. Verifique seu CNPJ e senha.');
+                // Mostra a mensagem de erro que vem da API, se houver
+                setError(response.message || 'Falha no login. Verifique seu CNPJ e senha.');
             }
         } catch (err) {
-            setError('Falha no login. Verifique seu CNPJ e senha.');
+            // Captura erros de rede ou falhas na chamada da API
+            const errorMessage = err.response?.data?.message || 'Erro de conexão. Tente novamente.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
