@@ -14,6 +14,7 @@ const Login = () => {
     const login = async (e) => {
         e.preventDefault();
         console.log("🔹 Iniciando login...");
+        console.log("🌐 API URL sendo usada:", import.meta.env.VITE_API_URL || 'http://localhost:8080/api');
         setLoading(true);
         setError('');
         try {

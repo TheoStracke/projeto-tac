@@ -36,8 +36,8 @@ public class SecurityConfig {
             origins[i] = origins[i].trim();
         }
         
-        // Configuração CORS otimizada para produção
-        configuration.setAllowedOriginPatterns(List.of(origins));
+        // Configuração CORS mais robusta para produção
+        configuration.setAllowedOrigins(List.of(origins)); // Usar allowedOrigins em vez de allowedOriginPatterns
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -49,7 +49,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-    
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService, EmpresaService empresaService) {
@@ -59,11 +58,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
+            // CORS deve vir ANTES de qualquer outra configuração
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // CORS preflight - DEVE vir primeiro
+                // CORS preflight - DEVE vir primeiro e permitir TUDO
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Endpoints de autenticação (sem /api pois já está no context-path)
@@ -72,10 +72,6 @@ public class SecurityConfig {
                 
                 // Health check
                 .requestMatchers(HttpMethod.GET, "/health").permitAll()
-                
-                // Endpoints de teste 
-                .requestMatchers(HttpMethod.POST, "/test/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/test/**").permitAll()
                 
                 // Endpoints de aprovação rápida via email (sem autenticação - usam token único)
                 .requestMatchers(HttpMethod.GET, "/aprovacao/*/aprovar").permitAll()
@@ -100,6 +96,7 @@ public class SecurityConfig {
                 // Bloquear qualquer outro acesso
                 .anyRequest().denyAll()
             )
+            // JWT Filter DEPOIS das configurações de CORS
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

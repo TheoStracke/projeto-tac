@@ -9,51 +9,57 @@
       "name": "app.cors",
       "type": "com.validacao.config.AppProperties$Cors",
       "sourceType": "com.validacao.config.AppProperties",
-      "sourceMethod": "public com.validacao.config.AppProperties.Cors getCors() "
+      "sourceMethod": "getCors()"
     },
     {
       "name": "app.email",
       "type": "com.validacao.config.AppProperties$Email",
       "sourceType": "com.validacao.config.AppProperties",
-      "sourceMethod": "public com.validacao.config.AppProperties.Email getEmail() "
+      "sourceMethod": "getEmail()"
     },
     {
       "name": "app.upload",
       "type": "com.validacao.config.AppProperties$Upload",
       "sourceType": "com.validacao.config.AppProperties",
-      "sourceMethod": "public com.validacao.config.AppProperties.Upload getUpload() "
+      "sourceMethod": "getUpload()"
     }
   ],
   "properties": [
     {
       "name": "app.base-url",
       "type": "java.lang.String",
-      "sourceType": "com.validacao.config.AppProperties"
+      "sourceType": "com.validacao.config.AppProperties",
+      "defaultValue": "http:\/\/localhost:8080"
     },
     {
       "name": "app.cors.allowed-origins",
       "type": "java.lang.String",
-      "sourceType": "com.validacao.config.AppProperties$Cors"
+      "sourceType": "com.validacao.config.AppProperties$Cors",
+      "defaultValue": "http:\/\/localhost:5173"
     },
     {
       "name": "app.email.admin",
       "type": "java.lang.String",
-      "sourceType": "com.validacao.config.AppProperties$Email"
+      "sourceType": "com.validacao.config.AppProperties$Email",
+      "defaultValue": "theostracke11@gmail.com"
     },
     {
       "name": "app.email.test-mode",
       "type": "java.lang.Boolean",
-      "sourceType": "com.validacao.config.AppProperties$Email"
+      "sourceType": "com.validacao.config.AppProperties$Email",
+      "defaultValue": true
     },
     {
       "name": "app.frontend-url",
       "type": "java.lang.String",
-      "sourceType": "com.validacao.config.AppProperties"
+      "sourceType": "com.validacao.config.AppProperties",
+      "defaultValue": "http:\/\/localhost:5173"
     },
     {
       "name": "app.upload.dir",
       "type": "java.lang.String",
-      "sourceType": "com.validacao.config.AppProperties$Upload"
+      "sourceType": "com.validacao.config.AppProperties$Upload",
+      "defaultValue": "\/tmp\/uploads\/"
     }
   ],
   "hints": []
