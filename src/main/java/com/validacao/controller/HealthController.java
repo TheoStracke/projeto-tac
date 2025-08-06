@@ -8,13 +8,14 @@ import java.util.Map;
 @RestController
 public class HealthController {
 
-    // Este endpoint já existe e está correto
+    /**
+     * Este endpoint responde em /api/health e pode ser usado para um health check específico.
+     */
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
         return ResponseEntity.ok(Map.of(
             "status", "OK",
-            "message", "Aplicação funcionando",
-            "cors", "Configurado para localhost e Vercel"
+            "message", "Aplicação funcionando"
         ));
     }
 
