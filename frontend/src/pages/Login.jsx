@@ -48,6 +48,9 @@ const Login = () => {
                 localStorage.setItem('token', empresaInfo.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
                 navigate('/dashboard', { replace: true });
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
             } else {
                 setError(result.error || 'Dados de login inválidos.');
                 alert('Erro no login: ' + (result.error || 'Dados de login inválidos.'));
