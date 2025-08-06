@@ -23,22 +23,15 @@ const Login = () => {
         setError('');
 
         try {
-            // A função loginUser retorna { success: true, data: { ... } }
             const result = await loginUser({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
 
-            // A verificação é feita em 'result.success', conforme o padrão do seu api.js
             if (result.success) {
+                // 'result.data' now directly contains the company information
+                const empresaInfo = result.data;
 
-                // O objeto da API (com status, message) está em 'result.data'
-                const apiResponse = result.data;
-
-                // E os dados da empresa (token, cnpj) estão um nível mais adentro, em 'apiResponse.data'
-                const empresaInfo = apiResponse.data;
-
-                // Montamos o objeto para salvar, pegando os dados do lugar certo
                 const empresaDataToSave = {
                     id: empresaInfo.empresaId,
                     empresaId: empresaInfo.empresaId,
@@ -49,19 +42,15 @@ const Login = () => {
                     token: empresaInfo.token
                 };
 
-                // Salvamos o token e os dados da empresa no localStorage
                 localStorage.setItem('token', empresaInfo.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
 
-                // Navegamos para o dashboard com sucesso
                 navigate('/dashboard', { replace: true });
 
             } else {
-                // O objeto de erro já vem formatado pelo seu api.js
                 setError(result.error);
             }
         } catch (err) {
-            // Este catch agora é para segurança, caso algo muito inesperado aconteça
             setError('Ocorreu um erro inesperado. Tente novamente.');
         } finally {
             setLoading(false);
