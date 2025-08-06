@@ -30,22 +30,18 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Usar a mesma configuração do application.properties
         String[] origins = allowedOrigins.split(",");
         for (int i = 0; i < origins.length; i++) {
             origins[i] = origins[i].trim();
         }
         
-        // Configuração CORS mais robusta para produção
-        configuration.setAllowedOrigins(List.of(origins)); // Usar allowedOrigins em vez de allowedOriginPatterns
+        configuration.setAllowedOrigins(List.of(origins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "Content-Length", "X-Requested-With"));
-        configuration.setMaxAge(3600L); // Cache preflight por 1 hora
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Aplicar CORS para todos os endpoints (incluindo /api/**)
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
@@ -58,49 +54,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-            // CORS deve vir ANTES de qualquer outra configuração
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // CORS preflight - DEVE vir primeiro e permitir TUDO
+                // Regra 1: Permitir todos os pedidos de pre-flight (OPTIONS)
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
-                // Endpoints de teste (sem autenticação)
-                .requestMatchers("/test/**").permitAll()
+                // Regra 2: Permitir acesso público aos endpoints essenciais
+                .requestMatchers(
+                    "/",              // Raiz para health check
+                    "/health",        // Endpoint de health check explícito
+                    "/test/**",       // Endpoints de teste
+                    "/auth/**",       // Permite /auth/login, /auth/cadastro, etc.
+                    "/aprovacao/**"   // Permite os links de aprovação por e-mail
+                ).permitAll()
                 
-                // Endpoints de autenticação (sem /api pois já está no context-path)
-                .requestMatchers("/auth/**").permitAll()
-
-
-                
-                // Health check
-                .requestMatchers(HttpMethod.GET, "/health").permitAll()
-                
-                // Endpoints de aprovação rápida via email (sem autenticação - usam token único)
-                .requestMatchers(HttpMethod.GET, "/aprovacao/*/aprovar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/aprovacao/*/rejeitar").permitAll()
-                .requestMatchers(HttpMethod.GET, "/aprovacao/*/arquivo").permitAll()
-                .requestMatchers(HttpMethod.GET, "/aprovacao/*").permitAll()
-                .requestMatchers(HttpMethod.POST, "/aprovacao/*").permitAll()
-                
-                // Endpoints apenas para ESTRADA_FACIL (CNPJs específicos de admin)
-                .requestMatchers(HttpMethod.GET, "/documentos/pendentes").hasAuthority("ESTRADA_FACIL")
-                .requestMatchers(HttpMethod.POST, "/documentos/*/aprovar").hasAuthority("ESTRADA_FACIL")
-                .requestMatchers(HttpMethod.POST, "/documentos/*/rejeitar").hasAuthority("ESTRADA_FACIL")
-                
-                // Endpoints apenas para DESPACHANTE
-                .requestMatchers(HttpMethod.POST, "/documentos/enviar").hasAuthority("DESPACHANTE")
-                
-                // Endpoints que ambos podem acessar
-                .requestMatchers(HttpMethod.GET, "/documentos/empresa/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/documentos/*").authenticated()
-                .requestMatchers(HttpMethod.GET, "/documentos/*/arquivo").hasAnyAuthority("ESTRADA_FACIL", "DESPACHANTE")
-                
-                // Bloquear qualquer outro acesso
-                .anyRequest().denyAll()
+                // Regra 3: Exigir autenticação para qualquer outro pedido
+                .anyRequest().authenticated()
             )
-            // JWT Filter DEPOIS das configurações de CORS
+            // Adicionar o nosso filtro JWT para validar tokens em pedidos autenticados
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -110,4 +83,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-}
+}   
