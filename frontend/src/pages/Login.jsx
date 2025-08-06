@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 console.log('Login.jsx carregado e renderizando!');
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../config/api';
+import { loginUser as loginUserApi } from '../config/api';
 import CnpjInput from '../components/CnpjInput';
 import { cleanCnpj } from '../utils/cnpjValidator';
 
@@ -26,10 +26,12 @@ const Login = () => {
             console.log('Função login chamada sem evento');
         }
         try {
-            const result = await loginUser({
+            console.log('Antes do await loginUserApi');
+            const result = await loginUserApi({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
+            console.log('Depois do await loginUserApi');
             console.log('Login result:', result); // log para depuração
 
             if (result.success && result.data) {
