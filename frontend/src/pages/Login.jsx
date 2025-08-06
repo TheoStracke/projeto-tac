@@ -21,7 +21,8 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
-
+        alert('Função login chamada');
+        console.log('Iniciando loginUser', { cnpj: cleanCnpj(cnpj), senha });
         try {
             const result = await loginUser({
                 cnpj: cleanCnpj(cnpj),
@@ -44,10 +45,12 @@ const Login = () => {
                 navigate('/dashboard', { replace: true });
             } else {
                 setError(result.error || 'Dados de login inválidos.');
+                alert('Erro no login: ' + (result.error || 'Dados de login inválidos.'));
             }
         } catch (err) {
             setError('Ocorreu um erro inesperado. Tente novamente.');
             console.error('Login error:', err); // log para depuração
+            alert('Erro inesperado no login. Veja o console.');
         } finally {
             setLoading(false);
         }
@@ -77,38 +80,38 @@ const Login = () => {
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             CNPJ:
+                            <CnpjInput
+                                id="cnpj-input"
+                                name="cnpj"
+                                value={cnpj}
+                                onChange={(e) => setCnpj(e.target.value)}
+                                variant="outlined"
+                                size="medium"
+                                required
+                            />
                         </label>
-                        <CnpjInput
-                            id="cnpj-input"
-                            name="cnpj"
-                            value={cnpj}
-                            onChange={(e) => setCnpj(e.target.value)}
-                            variant="outlined"
-                            size="medium"
-                            required
-                        />
                     </div>
                     <div style={{ marginBottom: '1.5rem' }}>
                         <label htmlFor="senha-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             Senha:
+                            <input
+                                id="senha-input"
+                                name="senha"
+                                type="password"
+                                value={senha}
+                                onChange={(e) => setSenha(e.target.value)}
+                                placeholder="Digite sua senha"
+                                required
+                                autoComplete="current-password"
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    fontSize: '1rem'
+                                }}
+                            />
                         </label>
-                        <input
-                            id="senha-input"
-                            name="senha"
-                            type="password"
-                            value={senha}
-                            onChange={(e) => setSenha(e.target.value)}
-                            placeholder="Digite sua senha"
-                            required
-                            autoComplete="current-password"
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '1rem'
-                            }}
-                        />
                     </div>
                     {error && (
                         <div style={{
@@ -120,6 +123,8 @@ const Login = () => {
                         </div>
                     )}
                     <button
+                        id="login-submit"
+                        name="login-submit"
                         type="submit"
                         disabled={loading}
                         style={{
