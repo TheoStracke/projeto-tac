@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+console.log('Login.jsx carregado e renderizando!');
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../config/api';
 import CnpjInput from '../components/CnpjInput';
@@ -61,6 +62,7 @@ const Login = () => {
     };
 
     // O restante do seu JSX continua aqui...
+    console.log('Renderizando Login.jsx, estado:', { cnpj, senha, loading });
     return (
         <div style={{
             display: 'flex',
@@ -131,7 +133,7 @@ const Login = () => {
                         name="login-submit"
                         type="button"
                         disabled={loading}
-                        onClick={login}
+                        onClick={(e) => { console.log('Botão clicado!'); login(e); }}
                         style={{
                             width: '100%',
                             padding: '0.75rem',
