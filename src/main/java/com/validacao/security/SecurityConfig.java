@@ -58,22 +58,13 @@ public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilte
         .csrf(csrf -> csrf.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(authz -> authz
-            // Regra 1: Permitir todos os pedidos de pre-flight (OPTIONS)
+            // Allow unauthenticated access to the health check endpoint
+            .requestMatchers("/health").permitAll()
+            // Permit all OPTIONS requests
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            
-            // Regra 2: Permitir acesso público aos endpoints essenciais (COM O PREFIXO /api)
-            .requestMatchers(
-                "/api/",              // Raiz da API
-                "/api/health",        // Endpoint de health check
-                "/api/test/**",       // Endpoints de teste
-                "/api/auth/**",       // Endpoints de autenticação
-                "/api/aprovacao/**"   // Endpoints de aprovação por e-mail
-            ).permitAll()
-            
-            // Regra 3: Exigir autenticação para qualquer outro pedido
+            // Secure all other endpoints
             .anyRequest().authenticated()
         )
-        // Adicionar o nosso filtro JWT para validar tokens em pedidos autenticados
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
