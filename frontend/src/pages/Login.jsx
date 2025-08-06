@@ -18,11 +18,15 @@ const Login = () => {
     }, []);
 
     const login = async (e) => {
-        e.preventDefault();
         setLoading(true);
         setError('');
         alert('Função login chamada');
         console.log('Iniciando loginUser', { cnpj: cleanCnpj(cnpj), senha });
+        if (typeof e !== 'undefined') {
+            console.log('Evento recebido em login:', e.type);
+        } else {
+            console.log('Função login chamada sem evento');
+        }
         try {
             const result = await loginUser({
                 cnpj: cleanCnpj(cnpj),
