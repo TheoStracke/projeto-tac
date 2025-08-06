@@ -29,6 +29,7 @@ import {
   rejeitarDocumento,
   visualizarArquivoDocumento
 } from '../config/api';
+import { useNavigate } from 'react-router-dom';
 import LogoutButton from '../components/LogoutButton';
 
 const clearAuthData = () => {
@@ -54,6 +55,7 @@ const getEmpresaData = () => {
 };
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
