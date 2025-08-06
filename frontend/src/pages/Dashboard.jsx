@@ -55,6 +55,9 @@ const getEmpresaData = () => {
 
 export default function Dashboard() {
   const navigate = useNavigate(); // <-- ADICIONADO AQUI
+  // LOGS DE DEPURAÇÃO DE AUTENTICAÇÃO
+  console.log('Dashboard: empresaData', empresaData);
+  console.log('Dashboard: token', localStorage.getItem('token'));
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

@@ -82,7 +82,7 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
-                <form autoComplete="on">
+                <form autoComplete="on" onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             CNPJ:
@@ -131,9 +131,8 @@ const Login = () => {
                     <button
                         id="login-submit"
                         name="login-submit"
-                        type="button"
+                        type="submit"
                         disabled={loading}
-                        onClick={(e) => { console.log('Botão clicado!'); login(e); }}
                         style={{
                             width: '100%',
                             padding: '0.75rem',

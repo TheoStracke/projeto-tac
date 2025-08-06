@@ -9,43 +9,39 @@ const clearAuthData = () => {
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const empresaDataStr = localStorage.getItem('empresaData');
-  
-  // Verificar se há token
+  console.log('ProtectedRoute: token', token);
+  console.log('ProtectedRoute: empresaDataStr', empresaDataStr);
+
   if (!token) {
+    console.log('ProtectedRoute: sem token');
     clearAuthData();
     return <Navigate to="/login" replace />;
   }
-  
-  // Verificar se há dados da empresa
+
   if (!empresaDataStr) {
+    console.log('ProtectedRoute: sem empresaData');
     clearAuthData();
     return <Navigate to="/login" replace />;
   }
-  
+
   try {
-    // Verificar se os dados da empresa são válidos
     const empresaData = JSON.parse(empresaDataStr);
-    
-    // Validação robusta: empresaId e tipo são obrigatórios
-    // Note: removida validação de 'id' pois pode estar undefined em casos específicos
+    console.log('ProtectedRoute: empresaData', empresaData);
     if (!empresaData.empresaId || !empresaData.tipo) {
+      console.log('ProtectedRoute: empresaData incompleto');
       clearAuthData();
       return <Navigate to="/login" replace />;
     }
-    
-    // Verificar se o token nos dados da empresa corresponde ao token armazenado
     if (empresaData.token && empresaData.token !== token) {
+      console.log('ProtectedRoute: token divergente');
       clearAuthData();
       return <Navigate to="/login" replace />;
     }
-    
   } catch (error) {
-    // Se não conseguir fazer parse dos dados, limpar e redirecionar
+    console.log('ProtectedRoute: erro no parse', error);
     clearAuthData();
     return <Navigate to="/login" replace />;
   }
-  
-  // Se tudo estiver ok, renderizar o componente protegido
   return children;
 };
 
