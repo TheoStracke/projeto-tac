@@ -24,32 +24,30 @@ const Login = () => {
 
         try {
             const result = await loginUser({
+                cnpj: cleanCnpj(cnpj),
                 senha
             });
+            console.log('Login result:', result); // log para depuração
 
-            if (result.success) {
-                // 'result.data' now directly contains the company information
+            if (result.success && result.data) {
                 const empresaInfo = result.data;
-
                 const empresaDataToSave = {
-                    id: empresaInfo.empresaId,
                     empresaId: empresaInfo.empresaId,
                     cnpj: empresaInfo.cnpj,
                     razaoSocial: empresaInfo.razaoSocial,
                     email: empresaInfo.email,
+                    tipo: empresaInfo.tipo,
                     token: empresaInfo.token
                 };
-
                 localStorage.setItem('token', empresaInfo.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
-
                 navigate('/dashboard', { replace: true });
-
             } else {
-                setError(result.error);
+                setError(result.error || 'Dados de login inválidos.');
             }
         } catch (err) {
             setError('Ocorreu um erro inesperado. Tente novamente.');
+            console.error('Login error:', err); // log para depuração
         } finally {
             setLoading(false);
         }
@@ -75,8 +73,11 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
-                <form onSubmit={login}>
+                <form onSubmit={login} autoComplete="on">
                     <div style={{ marginBottom: '1rem' }}>
+                        <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                            CNPJ:
+                        </label>
                         <CnpjInput
                             id="cnpj-input"
                             name="cnpj"
@@ -99,6 +100,7 @@ const Login = () => {
                             onChange={(e) => setSenha(e.target.value)}
                             placeholder="Digite sua senha"
                             required
+                            autoComplete="current-password"
                             style={{
                                 width: '100%',
                                 padding: '0.75rem',
