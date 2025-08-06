@@ -51,24 +51,35 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtService, empresaService);
     }
 
-    @Bean
-public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-    http
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(authz -> authz
-            // Allow unauthenticated access to the health check endpoint
-            .requestMatchers("/health").permitAll()
-            // Permit all OPTIONS requests
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            // Secure all other endpoints
-            .anyRequest().authenticated()
-        )
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+     @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authz -> authz
+                // Permite acesso público para o health check do Railway
+                .requestMatchers("/health").permitAll()
+                
+                // Permite acesso público à raiz da aplicação
+                .requestMatchers("/").permitAll()
 
-    return http.build();
-}
+                // Permite todos os requests de pre-flight (OPTIONS) para o CORS
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Permite acesso público aos endpoints da API para autenticação e aprovação
+                .requestMatchers(
+                    "/api/auth/**",       // Para login e cadastro
+                    "/api/aprovacao/**"   // Para os links de aprovação por e-mail
+                ).permitAll()
+                
+                // Exige autenticação para qualquer outro request
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
