@@ -15,6 +15,7 @@ const Login = () => {
     // Removido o useEffect que limpava o localStorage ao montar a página de login
 
     const login = async (e) => {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
         setLoading(true);
         setError('');
         alert('Função login chamada');
