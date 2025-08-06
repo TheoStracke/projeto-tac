@@ -11,20 +11,27 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
+    const login = async (e) => {
+        // Previne o comportamento padrão do formulário de recarregar a página
+        if (e) e.preventDefault();
+        
         setLoading(true);
         setError('');
-        console.log('Iniciando loginUser', { cnpj: cleanCnpj(cnpj), senha });
+        console.log('Iniciando o processo de login...');
 
         try {
             const result = await loginUserApi({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
-            console.log('Login result:', result);
+            console.log('Resposta da API recebida:', result);
 
-            if (result.success && result.data) {
-                const empresaInfo = result.data;
+            // CORREÇÃO: Acessa o objeto 'data' que contém as informações da empresa.
+            // A API retorna uma estrutura aninhada: { success: true, data: { ...empresaInfo } }
+            const empresaInfo = result.success ? result.data : null;
+
+            // Validação robusta para garantir que 'empresaInfo' e o 'token' existem
+            if (empresaInfo && empresaInfo.token) {
                 const empresaDataToSave = {
                     empresaId: empresaInfo.empresaId,
                     cnpj: empresaInfo.cnpj,
@@ -33,23 +40,25 @@ const Login = () => {
                     tipo: empresaInfo.tipo,
                     token: empresaInfo.token
                 };
+                
+                // Salva os dados corretos no localStorage
                 localStorage.setItem('token', empresaInfo.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
+                
+                console.log('Login bem-sucedido! Redirecionando para o dashboard...');
+                // Redireciona o usuário para o dashboard
                 navigate('/dashboard', { replace: true });
+
             } else {
-                setError(result.error || 'Dados de login inválidos.');
+                // Mensagem de erro caso a resposta não venha no formato esperado
+                setError(result.error || 'Dados de login inválidos ou resposta inesperada do servidor.');
             }
         } catch (err) {
-            setError('Ocorreu um erro inesperado. Tente novamente.');
-            console.error('Login error:', err);
+            setError('Ocorreu um erro inesperado de conexão. Tente novamente.');
+            console.error('Erro de login:', err);
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        handleLogin();
     };
 
     return (
@@ -71,7 +80,7 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
-                <form autoComplete="on" onSubmit={handleFormSubmit}>
+                <form autoComplete="on" onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             CNPJ:
@@ -118,8 +127,8 @@ const Login = () => {
                         </div>
                     )}
                     <button
-                        id="login-button"
-                        name="login-button"
+                        id="login-submit"
+                        name="login-submit"
                         type="submit"
                         disabled={loading}
                         style={{
