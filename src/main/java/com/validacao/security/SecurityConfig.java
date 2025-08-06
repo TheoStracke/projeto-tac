@@ -70,8 +70,8 @@ public class SecurityConfig {
                 .requestMatchers("/test/**").permitAll()
                 
                 // Endpoints de autenticação (sem /api pois já está no context-path)
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/cadastro").permitAll()
+                .requestMatchers("/auth/**").permitAll()
+
 
                 
                 // Health check
