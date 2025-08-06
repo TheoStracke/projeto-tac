@@ -24,7 +24,6 @@ const Login = () => {
 
         try {
             const result = await loginUser({
-                cnpj: cleanCnpj(cnpj),
                 senha
             });
 
@@ -38,7 +37,6 @@ const Login = () => {
                     cnpj: empresaInfo.cnpj,
                     razaoSocial: empresaInfo.razaoSocial,
                     email: empresaInfo.email,
-                    tipo: empresaInfo.tipo,
                     token: empresaInfo.token
                 };
 
@@ -156,6 +154,6 @@ const Login = () => {
             </div>
         </div>
     );
-};
+}
 
 export default Login;

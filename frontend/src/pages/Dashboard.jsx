@@ -72,21 +72,30 @@ export default function Dashboard() {
   const [empresaData, setEmpresaData] = useState(() => getEmpresaData());
 
   useEffect(() => {
-    // Se não houver dados da empresa, o usuário não está logado.
-    // Redirecione para a página de login para evitar crash.
+    // Se o estado empresaData não estiver definido...
     if (!empresaData) {
-      clearAuthData(); 
-      navigate('/login', { replace: true });
-      return; 
+      // ...tentamos buscar os dados mais recentes do localStorage.
+      const freshData = getEmpresaData();
+
+      if (freshData) {
+        // Se encontrarmos, ATUALIZAMOS O ESTADO.
+        // Esta é a correção crucial.
+        setEmpresaData(freshData);
+      } else {
+        // Se ainda assim não houver dados, o usuário não está logado.
+        clearAuthData(); 
+        navigate('/login', { replace: true });
+        return; 
+      }
     }
 
-    // Se chegou aqui, os dados existem. Carregue os documentos.
+    // Este código só será executado se 'empresaData' for válido.
     carregarDocumentos();
 
-  }, []); // A dependência vazia está correta, executa apenas na montagem.
-
-  // ... O RESTANTE DO SEU CÓDIGO CONTINUA EXATAMENTE IGUAL ...
-  // (carregarDocumentos, handleEnviarDocumento, handleFileChange, etc.)
+  // Adicionamos 'empresaData' e 'navigate' como dependências.
+  // O efeito será re-executado se 'empresaData' for atualizado pelo setEmpresaData.
+  }, [empresaData, navigate]);
+ 
 
   const carregarDocumentos = async () => {
     try {
