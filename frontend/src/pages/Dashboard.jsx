@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom'; // <-- ADICIONADO AQUI
 import {
   Container,
   Typography,
@@ -29,7 +30,6 @@ import {
   rejeitarDocumento,
   visualizarArquivoDocumento
 } from '../config/api';
-import { useNavigate } from 'react-router-dom';
 import LogoutButton from '../components/LogoutButton';
 
 const clearAuthData = () => {
@@ -43,7 +43,6 @@ const getEmpresaData = () => {
     if (!empresaDataStr) return null;
     
     const empresaData = JSON.parse(empresaDataStr);
-    // Validação robusta: empresaId e tipo são obrigatórios
     if (!empresaData.empresaId || !empresaData.tipo) {
       return null;
     }
@@ -55,7 +54,7 @@ const getEmpresaData = () => {
 };
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // <-- ADICIONADO AQUI
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,19 +69,24 @@ export default function Dashboard() {
     arquivo: null
   });
 
-  const [empresaData, setEmpresaData] = useState(() => getEmpresaData());
+  const [empresaData, setEmpresaData] = useState(() => getEmpresaData());
 
+  useEffect(() => {
+    // Se não houver dados da empresa, o usuário não está logado.
+    // Redirecione para a página de login para evitar crash.
+    if (!empresaData) {
+      clearAuthData(); 
+      navigate('/login', { replace: true });
+      return; 
+    }
 
-    useEffect(() => {
-    if (!empresaData) {
-      clearAuthData(); 
-      navigate('/login', { replace: true });
-      return; 
-    }
+    // Se chegou aqui, os dados existem. Carregue os documentos.
+    carregarDocumentos();
 
-    carregarDocumentos();
+  }, []); // A dependência vazia está correta, executa apenas na montagem.
 
-  }, []);
+  // ... O RESTANTE DO SEU CÓDIGO CONTINUA EXATAMENTE IGUAL ...
+  // (carregarDocumentos, handleEnviarDocumento, handleFileChange, etc.)
 
   const carregarDocumentos = async () => {
     try {
@@ -91,12 +95,9 @@ export default function Dashboard() {
       
       const token = localStorage.getItem('token');
       
-      // A verificação de empresaData e token aqui dentro ainda é uma boa prática
-      // para evitar chamadas de API desnecessárias.
       if (!token || !empresaData?.empresaId) {
         setError('Sessão inválida ou dados da empresa não encontrados.');
         setLoading(false);
-        // Não redirecione daqui! Apenas informe o erro.
         return;
       }
       
