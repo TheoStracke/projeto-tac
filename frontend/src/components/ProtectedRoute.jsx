@@ -9,6 +9,12 @@ const clearAuthData = () => {
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const empresaDataStr = localStorage.getItem('empresaData');
+  window._debugProtectedRoute = window._debugProtectedRoute || [];
+  window._debugProtectedRoute.push({
+    token,
+    empresaDataStr,
+    time: new Date().toISOString()
+  });
   console.log('ProtectedRoute: token', token);
   console.log('ProtectedRoute: empresaDataStr', empresaDataStr);
 
