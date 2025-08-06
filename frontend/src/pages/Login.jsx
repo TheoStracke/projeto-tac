@@ -41,6 +41,8 @@ const Login = () => {
                     tipo: empresaInfo.tipo,
                     token: empresaInfo.token
                 };
+                console.log('empresaInfo recebido do backend:', empresaInfo);
+                console.log('empresaDataToSave que será salvo:', empresaDataToSave);
                 localStorage.setItem('token', empresaInfo.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
                 navigate('/dashboard', { replace: true });
