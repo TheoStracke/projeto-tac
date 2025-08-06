@@ -8,6 +8,7 @@ import java.util.Map;
 @RestController
 public class HealthController {
 
+    // Este endpoint já existe e está correto
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
         return ResponseEntity.ok(Map.of(
@@ -15,5 +16,10 @@ public class HealthController {
             "message", "Aplicação funcionando",
             "cors", "Configurado para localhost e Vercel"
         ));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<Map<String, String>> rootCheck() {
+        return ResponseEntity.ok(Map.of("status", "API is running"));
     }
 }
