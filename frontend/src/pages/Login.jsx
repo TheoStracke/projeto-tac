@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-console.log('Login.jsx carregado e renderizando!');
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser as loginUserApi } from '../config/api';
 import CnpjInput from '../components/CnpjInput';
@@ -12,27 +11,17 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    // Removido o useEffect que limpava o localStorage ao montar a página de login
-
-    const login = async (e) => {
-        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    const handleLogin = async () => {
         setLoading(true);
         setError('');
-        alert('Função login chamada');
         console.log('Iniciando loginUser', { cnpj: cleanCnpj(cnpj), senha });
-        if (typeof e !== 'undefined') {
-            console.log('Evento recebido em login:', e.type);
-        } else {
-            console.log('Função login chamada sem evento');
-        }
+
         try {
-            console.log('Antes do await loginUserApi');
             const result = await loginUserApi({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
-            console.log('Depois do await loginUserApi');
-            console.log('Login result:', result); // log para depuração
+            console.log('Login result:', result);
 
             if (result.success && result.data) {
                 const empresaInfo = result.data;
@@ -44,26 +33,25 @@ const Login = () => {
                     tipo: empresaInfo.tipo,
                     token: empresaInfo.token
                 };
-                console.log('empresaInfo recebido do backend:', empresaInfo);
-                console.log('empresaDataToSave que será salvo:', empresaDataToSave);
                 localStorage.setItem('token', empresaInfo.token);
                 localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
                 navigate('/dashboard', { replace: true });
             } else {
                 setError(result.error || 'Dados de login inválidos.');
-                alert('Erro no login: ' + (result.error || 'Dados de login inválidos.'));
             }
         } catch (err) {
             setError('Ocorreu um erro inesperado. Tente novamente.');
-            console.error('Login error:', err); // log para depuração
-            alert('Erro inesperado no login. Veja o console.');
+            console.error('Login error:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    // O restante do seu JSX continua aqui...
-    console.log('Renderizando Login.jsx, estado:', { cnpj, senha, loading });
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        handleLogin();
+    };
+
     return (
         <div style={{
             display: 'flex',
@@ -83,7 +71,7 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
-                <form autoComplete="on" onSubmit={login}>
+                <form autoComplete="on" onSubmit={handleFormSubmit}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             CNPJ:
@@ -130,8 +118,8 @@ const Login = () => {
                         </div>
                     )}
                     <button
-                        id="login-submit"
-                        name="login-submit"
+                        id="login-button"
+                        name="login-button"
                         type="submit"
                         disabled={loading}
                         style={{
