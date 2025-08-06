@@ -76,7 +76,7 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
-                <form onSubmit={login} autoComplete="on">
+                <form autoComplete="on">
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                             CNPJ:
@@ -125,8 +125,9 @@ const Login = () => {
                     <button
                         id="login-submit"
                         name="login-submit"
-                        type="submit"
+                        type="button"
                         disabled={loading}
+                        onClick={login}
                         style={{
                             width: '100%',
                             padding: '0.75rem',
