@@ -46,21 +46,22 @@ export const loginUser = async (credentials) => {
   try {
     const response = await api.post('/auth/login', credentials);
     
-    // Verificar se a resposta está encapsulada em ApiResponse
-    let responseData = response.data;
-    
-    // Se há uma propriedade 'data' aninhada, usar ela (ApiResponse)
-    if (responseData.data && typeof responseData.data === 'object') {
-      responseData = {
-        ...responseData,
-        data: responseData.data
+    // The server returns an ApiResponse object which has a 'data' property
+    // containing the actual login information (token, company details, etc.).
+    // We should return that nested 'data' object directly.
+    if (response.data && response.data.data) {
+      return {
+        success: true,
+        data: response.data.data // Return the nested data object
       };
     }
     
+    // Fallback in case the response structure is different
     return {
       success: true,
-      data: responseData
+      data: response.data
     };
+    
   } catch (error) {
     return {
       success: false,
