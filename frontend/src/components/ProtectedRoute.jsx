@@ -9,14 +9,11 @@ const clearAuthData = () => {
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const empresaDataStr = localStorage.getItem('empresaData');
-  window._debugProtectedRoute = window._debugProtectedRoute || [];
-  window._debugProtectedRoute.push({
-    token,
-    empresaDataStr,
-    time: new Date().toISOString()
-  });
-  console.log('ProtectedRoute: token', token);
-  console.log('ProtectedRoute: empresaDataStr', empresaDataStr);
+    // Sempre definir window._debugProtectedRoute, mesmo se não autenticado
+    if (typeof window !== 'undefined') {
+        window._debugProtectedRoute = { token, empresaDataStr, time: new Date().toISOString() };
+    }
+    console.log('ProtectedRoute:', { token, empresaDataStr });
 
   if (!token) {
     console.log('ProtectedRoute: sem token');
