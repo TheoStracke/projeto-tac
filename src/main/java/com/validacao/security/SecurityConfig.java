@@ -52,35 +52,35 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
-                // Regra 1: Permitir todos os pedidos de pre-flight (OPTIONS)
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // Regra 2: Permitir acesso público aos endpoints essenciais
-                .requestMatchers(
-                    "/",              // Raiz para health check
-                    "/health",        // Endpoint de health check explícito
-                    "/test/**",       // Endpoints de teste
-                    "/auth/**",       // Permite /auth/login, /auth/cadastro, etc.
-                    "/aprovacao/**"   // Permite os links de aprovação por e-mail
-                ).permitAll()
-                
-                // Regra 3: Exigir autenticação para qualquer outro pedido
-                .anyRequest().authenticated()
-            )
-            // Adicionar o nosso filtro JWT para validar tokens em pedidos autenticados
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(authz -> authz
+            // Regra 1: Permitir todos os pedidos de pre-flight (OPTIONS)
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            
+            // Regra 2: Permitir acesso público aos endpoints essenciais (COM O PREFIXO /api)
+            .requestMatchers(
+                "/api/",              // Raiz da API
+                "/api/health",        // Endpoint de health check
+                "/api/test/**",       // Endpoints de teste
+                "/api/auth/**",       // Endpoints de autenticação
+                "/api/aprovacao/**"   // Endpoints de aprovação por e-mail
+            ).permitAll()
+            
+            // Regra 3: Exigir autenticação para qualquer outro pedido
+            .anyRequest().authenticated()
+        )
+        // Adicionar o nosso filtro JWT para validar tokens em pedidos autenticados
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-}   
+}
