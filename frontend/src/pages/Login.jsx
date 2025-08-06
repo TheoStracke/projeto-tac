@@ -12,11 +12,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {
-        // Limpar qualquer dado de sessão anterior ao carregar a página de login
-        localStorage.removeItem('token');
-        localStorage.removeItem('empresaData');
-    }, []);
+    // Removido o useEffect que limpava o localStorage ao montar a página de login
 
     const login = async (e) => {
         setLoading(true);
