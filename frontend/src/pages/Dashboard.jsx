@@ -659,6 +659,46 @@ export default function Dashboard() {
                   <Typography variant="body1">{documentoSelecionado.nomeMotorista || 'Não informado'}</Typography>
                 </Box>
                 <Box>
+                  <Typography variant="subtitle2" color="text.secondary">CPF</Typography>
+                  <Typography variant="body1">{documentoSelecionado.cpf || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Data de Nascimento</Typography>
+                  <Typography variant="body1">{documentoSelecionado.dataNascimento || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Sexo</Typography>
+                  <Typography variant="body1">{documentoSelecionado.sexo || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">E-mail</Typography>
+                  <Typography variant="body1">{documentoSelecionado.email || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Identidade</Typography>
+                  <Typography variant="body1">{documentoSelecionado.identidade || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Orgão Emissor</Typography>
+                  <Typography variant="body1">{documentoSelecionado.orgaoEmissor || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">UF Emissor</Typography>
+                  <Typography variant="body1">{documentoSelecionado.ufEmissor || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Telefone</Typography>
+                  <Typography variant="body1">{documentoSelecionado.telefone || 'Não informado'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Curso TAC Completo</Typography>
+                  <Typography variant="body1">{documentoSelecionado.cursoTAC ? 'Sim' : 'Não'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Curso RT Completo</Typography>
+                  <Typography variant="body1">{documentoSelecionado.cursoRT ? 'Sim' : 'Não'}</Typography>
+                </Box>
+                <Box>
                   <Typography variant="subtitle2" color="text.secondary">Data de Envio</Typography>
                   <Typography variant="body1">
                     {new Date(documentoSelecionado.dataEnvio).toLocaleString('pt-BR')}
