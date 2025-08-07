@@ -28,7 +28,8 @@ export default function EnviarDocumento() {
     orgaoEmissor: '',
     ufEmissor: '',
     telefone: '',
-    curso: ''
+    cursoTAC: false,
+    cursoRT: false
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -104,7 +105,8 @@ export default function EnviarDocumento() {
           orgaoEmissor: '',
           ufEmissor: '',
           telefone: '',
-          curso: ''
+          cursoTAC: false,
+          cursoRT: false
         });
         document.getElementById('arquivo-input').value = '';
       } else {
@@ -305,21 +307,23 @@ export default function EnviarDocumento() {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
-  id="curso"
-  name="curso"
-  label="Curso"
-  select
-  SelectProps={{ native: true }}
-  value={formData.curso}
-  onChange={e => handleInputChange('curso', e.target.value)}
-  required
-  fullWidth
->
-  <option value="">Nenhum</option>
-  <option value="TAC">TAC Completo</option>
-  <option value="RT">RT Completo</option>
-</TextField>
+              <Typography variant="subtitle1" gutterBottom>Curso</Typography>
+              <label>
+                <input
+                  type="checkbox"
+                  name="cursoTAC"
+                  checked={formData.cursoTAC}
+                  onChange={handleInputChange}
+                /> TAC Completo
+              </label>
+              <label style={{ marginLeft: 16 }}>
+                <input
+                  type="checkbox"
+                  name="cursoRT"
+                  checked={formData.cursoRT}
+                  onChange={handleInputChange}
+                /> RT Completo
+              </label>
             </Grid>
 
             <Grid item xs={12}>
