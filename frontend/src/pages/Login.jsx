@@ -12,25 +12,35 @@ const Login = () => {
     const navigate = useNavigate();
 
     const login = async (e) => {
-        // Previne o comportamento padrão do formulário de recarregar a página
-        if (e) e.preventDefault();
-        
+        // PATCH DE DEBUG COMPLETO
+        console.log('---[DEBUG LOGIN]---');
+        if (e) {
+            console.log('Evento recebido:', e.type);
+        } else {
+            console.log('Nenhum evento recebido');
+        }
+        // Previne recarregamento
+        if (e && typeof e.preventDefault === 'function') {
+            e.preventDefault();
+            console.log('e.preventDefault() chamado');
+        } else {
+            console.log('e.preventDefault() NÃO chamado');
+        }
         setLoading(true);
         setError('');
-        console.log('Iniciando o processo de login...');
-
+        console.log('Valores do formulário:', { cnpj, senha });
         try {
+            console.log('Chamando loginUserApi...');
             const result = await loginUserApi({
                 cnpj: cleanCnpj(cnpj),
                 senha
             });
             console.log('Resposta da API recebida:', result);
-
-            // CORREÇÃO: Acessa o objeto 'data' que contém as informações da empresa.
-            // A API retorna uma estrutura aninhada: { success: true, data: { ...empresaInfo } }
-            const empresaInfo = result.success ? result.data : null;
-
-            // Validação robusta para garantir que 'empresaInfo' e o 'token' existem
+            if (!result) {
+                console.error('Nenhum resultado retornado da API!');
+            }
+            const empresaInfo = result && result.success ? result.data : null;
+            console.log('empresaInfo extraído:', empresaInfo);
             if (empresaInfo && empresaInfo.token) {
                 const empresaDataToSave = {
                     empresaId: empresaInfo.empresaId,
@@ -40,24 +50,27 @@ const Login = () => {
                     tipo: empresaInfo.tipo,
                     token: empresaInfo.token
                 };
-                
-                // Salva os dados corretos no localStorage
-                localStorage.setItem('token', empresaInfo.token);
-                localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
-                
+                console.log('Preparando para salvar no localStorage:', empresaDataToSave);
+                try {
+                    localStorage.setItem('token', empresaInfo.token);
+                    localStorage.setItem('empresaData', JSON.stringify(empresaDataToSave));
+                    console.log('Token salvo no localStorage:', localStorage.getItem('token'));
+                    console.log('empresaData salvo:', localStorage.getItem('empresaData'));
+                } catch (storageErr) {
+                    console.error('Erro ao salvar no localStorage:', storageErr);
+                }
                 console.log('Login bem-sucedido! Redirecionando para o dashboard...');
-                // Redireciona o usuário para o dashboard
                 navigate('/dashboard', { replace: true });
-
             } else {
-                // Mensagem de erro caso a resposta não venha no formato esperado
-                setError(result.error || 'Dados de login inválidos ou resposta inesperada do servidor.');
+                setError(result && result.error ? result.error : 'Dados de login inválidos ou resposta inesperada do servidor.');
+                console.error('empresaInfo ou token ausente:', result);
             }
         } catch (err) {
             setError('Ocorreu um erro inesperado de conexão. Tente novamente.');
-            console.error('Erro de login:', err);
+            console.error('Erro de login (catch):', err);
         } finally {
             setLoading(false);
+            console.log('---[FIM DEBUG LOGIN]---');
         }
     };
 
