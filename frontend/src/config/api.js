@@ -1,7 +1,15 @@
 // === FUNÇÃO PARA BUSCAR TODOS OS PEDIDOS (ADMIN) ===
 export const buscarPedidos = async () => {
   try {
-    const response = await api.get('/api/pedidos');
+    const empresaDataStr = localStorage.getItem('empresaData');
+    let url = '/api/pedidos';
+    if (empresaDataStr) {
+      const empresaData = JSON.parse(empresaDataStr);
+      if (empresaData.tipo !== 'ESTRADA_FACIL' && empresaData.empresaId) {
+        url = `/api/pedidos/empresa/${empresaData.empresaId}`;
+      }
+    }
+    const response = await api.get(url);
     return {
       success: true,
       data: response.data
