@@ -104,7 +104,6 @@ const Login = () => {
                                 type="password"
                                 value={senha}
                                 onChange={(e) => setSenha(e.target.value)}
-                                placeholder="Digite sua senha"
                                 required
                                 autoComplete="current-password"
                                 style={{
@@ -142,9 +141,9 @@ const Login = () => {
                             cursor: loading ? 'not-allowed' : 'pointer',
                             opacity: loading ? 0.6 : 1
                         }}
-                    >
-                        {loading ? 'Entrando...' : 'Entrar'}
-                    </button>
+        >
+            {loading ? 'Entrando...' : 'Entrar'}
+        </button>
                 </form>
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', marginBottom: '1rem' }}>
                     <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
