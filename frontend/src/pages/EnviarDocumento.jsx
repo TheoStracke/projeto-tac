@@ -19,7 +19,17 @@ export default function EnviarDocumento() {
     titulo: '',
     descricao: '',
     nomeMotorista: '',
-    arquivo: null
+    arquivo: null,
+    cpf: '',
+    dataNascimento: '',
+    sexo: '',
+    email: '',
+    identidade: '',
+    orgaoEmissor: '',
+    ufEmissor: '',
+    telefone: '',
+    cursoTAC: false,
+    cursoRT: false
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -39,10 +49,10 @@ export default function EnviarDocumento() {
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -60,33 +70,48 @@ export default function EnviarDocumento() {
     setSuccess('');
 
     try {
-      const documentData = {
-        titulo: formData.titulo,
-        descricao: formData.descricao,
-        nomeMotorista: formData.nomeMotorista,
-        arquivo: formData.arquivo,
-        empresaId: empresaData.id
-      };
+      const data = new FormData();
+      data.append('titulo', formData.titulo);
+      data.append('descricao', formData.descricao);
+      data.append('nomeMotorista', formData.nomeMotorista);
+      data.append('cpf', formData.cpf);
+      data.append('dataNascimento', formData.dataNascimento);
+      data.append('sexo', formData.sexo);
+      data.append('email', formData.email);
+      data.append('identidade', formData.identidade);
+      data.append('orgaoEmissor', formData.orgaoEmissor);
+      data.append('ufEmissor', formData.ufEmissor);
+      data.append('telefone', formData.telefone);
+      data.append('cursoTAC', formData.cursoTAC);
+      data.append('cursoRT', formData.cursoRT);
+      data.append('empresaId', empresaData.id);
+      if (formData.arquivo) data.append('arquivo', formData.arquivo);
 
-      const result = await enviarDocumento(documentData);
+      const result = await enviarDocumento(data);
 
       if (result.success) {
         setSuccess('Documento enviado com sucesso! A Estrada Fácil foi notificada por email.');
-        
         // Limpar formulário
         setFormData({
           titulo: '',
           descricao: '',
           nomeMotorista: '',
-          arquivo: null
+          arquivo: null,
+          cpf: '',
+          dataNascimento: '',
+          sexo: '',
+          email: '',
+          identidade: '',
+          orgaoEmissor: '',
+          ufEmissor: '',
+          telefone: '',
+          cursoTAC: false,
+          cursoRT: false
         });
-        
-        // Limpar input de arquivo
         document.getElementById('arquivo-input').value = '';
       } else {
         setError(result.error);
       }
-
     } catch (err) {
       setError('Erro ao enviar documento');
     } finally {
@@ -149,13 +174,156 @@ export default function EnviarDocumento() {
               />
             </Grid>
 
+
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                label="CPF"
+                name="cpf"
+                value={formData.cpf}
                 onChange={handleInputChange}
                 required
                 placeholder="000.000.000-00"
               />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Data de Nascimento"
+                name="dataNascimento"
+                type="date"
+                value={formData.dataNascimento}
+                onChange={handleInputChange}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Sexo"
+                name="sexo"
+                select
+                SelectProps={{ native: true }}
+                value={formData.sexo}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Selecione</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro</option>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="E-mail"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                type="email"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Identidade"
+                name="identidade"
+                value={formData.identidade}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Orgão Emissor"
+                name="orgaoEmissor"
+                value={formData.orgaoEmissor}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="UF Emissor"
+                name="ufEmissor"
+                select
+                SelectProps={{ native: true }}
+                value={formData.ufEmissor}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Selecione</option>
+                <option value="AC">AC</option>
+                <option value="AL">AL</option>
+                <option value="AP">AP</option>
+                <option value="AM">AM</option>
+                <option value="BA">BA</option>
+                <option value="CE">CE</option>
+                <option value="DF">DF</option>
+                <option value="ES">ES</option>
+                <option value="GO">GO</option>
+                <option value="MA">MA</option>
+                <option value="MT">MT</option>
+                <option value="MS">MS</option>
+                <option value="MG">MG</option>
+                <option value="PA">PA</option>
+                <option value="PB">PB</option>
+                <option value="PR">PR</option>
+                <option value="PE">PE</option>
+                <option value="PI">PI</option>
+                <option value="RJ">RJ</option>
+                <option value="RN">RN</option>
+                <option value="RS">RS</option>
+                <option value="RO">RO</option>
+                <option value="RR">RR</option>
+                <option value="SC">SC</option>
+                <option value="SP">SP</option>
+                <option value="SE">SE</option>
+                <option value="TO">TO</option>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Telefone com DDD"
+                name="telefone"
+                value={formData.telefone}
+                onChange={handleInputChange}
+                required
+                placeholder="(00) 00000-0000"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle1" gutterBottom>Curso</Typography>
+              <label>
+                <input
+                  type="checkbox"
+                  name="cursoTAC"
+                  checked={formData.cursoTAC}
+                  onChange={handleInputChange}
+                /> TAC Completo
+              </label>
+              <label style={{ marginLeft: 16 }}>
+                <input
+                  type="checkbox"
+                  name="cursoRT"
+                  checked={formData.cursoRT}
+                  onChange={handleInputChange}
+                /> RT Completo
+              </label>
             </Grid>
 
             <Grid item xs={12}>
