@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useNavigate } from 'react-router-dom'; // <-- ADICIONADO AQUI
 import {
   Container,
@@ -71,6 +73,7 @@ export default function Dashboard() {
   const [modalAberto, setModalAberto] = useState(false);
   const [modalDetalhes, setModalDetalhes] = useState(false);
   const [documentoSelecionado, setDocumentoSelecionado] = useState(null);
+  const [expandedRows, setExpandedRows] = useState([]); // Para controlar linhas expandidas
   const [enviandoDoc, setEnviandoDoc] = useState(false);
   const [formData, setFormData] = useState({
     titulo: '',
@@ -304,6 +307,12 @@ export default function Dashboard() {
     return empresaData?.tipo === 'ESTRADA_FACIL';
   }, [empresaData?.tipo]);
 
+  const handleExpandRow = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -355,6 +364,7 @@ export default function Dashboard() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell></TableCell>
                 <TableCell><strong>ID</strong></TableCell>
                 <TableCell><strong>Tipo</strong></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
@@ -367,15 +377,20 @@ export default function Dashboard() {
             <TableBody>
               {documentos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 7 : 5} align="center">
+                  <TableCell colSpan={isAdmin ? 8 : 6} align="center">
                     <Typography color="text.secondary" sx={{ py: 4 }}>
                       {isAdmin ? '📝 Nenhum documento pendente de aprovação' : '📋 Nenhum documento enviado ainda'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                documentos.map((documento, index) => (
+                documentos.map((documento, index) => [
                   <TableRow key={documento.id || index}>
+                    <TableCell>
+                      <Button size="small" onClick={() => handleExpandRow(documento.id)}>
+                        {expandedRows.includes(documento.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      </Button>
+                    </TableCell>
                     <TableCell>{documento.id || 'N/A'}</TableCell>
                     <TableCell>{documento.tipo || 'N/A'}</TableCell>
                     <TableCell>
@@ -387,7 +402,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>{formatarData(documento.dataEnvio)}</TableCell>
                     {isAdmin && (
-                      <TableCell>{documento.empresa?.razaoSocial || 'N/A'}</TableCell>
+                      <TableCell>{documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
                     )}
                     {isAdmin && (
                       <TableCell>
@@ -420,18 +435,45 @@ export default function Dashboard() {
                             ❌ Rejeitar
                           </Button>
                         </Box>
-                      ) : (
-                        <Button 
-                          size="small" 
-                          variant="outlined"
-                          onClick={() => visualizarDetalhes(documento.id)}
-                        >
-                          👁️ Ver Detalhes
-                        </Button>
-                      )}
+                      ) : null}
                     </TableCell>
-                  </TableRow>
-                ))
+                  </TableRow>,
+                  expandedRows.includes(documento.id) && (
+                    <TableRow key={documento.id + '-details'}>
+                      <TableCell colSpan={isAdmin ? 8 : 6} sx={{ background: '#f9f9f9', p: 2 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 2 }}>
+                          <div><strong>Título:</strong> {documento.titulo}</div>
+                          <div><strong>Tipo:</strong> {documento.tipo || 'N/A'}</div>
+                          <div><strong>Status:</strong> {documento.status}</div>
+                          <div><strong>Motorista:</strong> {documento.nomeMotorista || 'Não informado'}</div>
+                          <div><strong>CPF:</strong> {documento.cpf || 'Não informado'}</div>
+                          <div><strong>Data de Nascimento:</strong> {documento.dataNascimento || 'Não informado'}</div>
+                          <div><strong>Sexo:</strong> {documento.sexo || 'Não informado'}</div>
+                          <div><strong>E-mail:</strong> {documento.email || 'Não informado'}</div>
+                          <div><strong>Identidade:</strong> {documento.identidade || 'Não informado'}</div>
+                          <div><strong>Orgão Emissor:</strong> {documento.orgaoEmissor || 'Não informado'}</div>
+                          <div><strong>UF Emissor:</strong> {documento.ufEmissor || 'Não informado'}</div>
+                          <div><strong>Telefone:</strong> {documento.telefone || 'Não informado'}</div>
+                          <div><strong>Curso TAC Completo:</strong> {documento.cursoTAC ? 'Sim' : 'Não'}</div>
+                          <div><strong>Curso RT Completo:</strong> {documento.cursoRT ? 'Sim' : 'Não'}</div>
+                          <div><strong>Empresa:</strong> {documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</div>
+                          <div><strong>Data de Envio:</strong> {formatarData(documento.dataEnvio)}</div>
+                          <div><strong>Arquivo:</strong> {documento.nomeArquivoOriginal || 'N/A'} <Button size="small" onClick={() => visualizarArquivo(documento.id)}>Abrir</Button></div>
+                        </Box>
+                        {documento.descricao && (
+                          <Box sx={{ mt: 2 }}>
+                            <strong>Descrição:</strong> {documento.descricao}
+                          </Box>
+                        )}
+                        {documento.comentarios && (
+                          <Box sx={{ mt: 2 }}>
+                            <strong>Comentários da Aprovação:</strong> {documento.comentarios}
+                          </Box>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                ])
               )}
             </TableBody>
           </Table>
