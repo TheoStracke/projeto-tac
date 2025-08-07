@@ -79,7 +79,7 @@ export default function Dashboard() {
     titulo: '',
     descricao: '',
     nomeMotorista: '',
-    arquivo: null,
+    arquivos: [],
     cpf: '',
     dataNascimento: '',
     sexo: '',
@@ -162,8 +162,8 @@ export default function Dashboard() {
         return;
       }
 
-      if (!formData.arquivo) {
-        setError('Selecione um arquivo para enviar');
+      if (!formData.arquivos || formData.arquivos.length === 0) {
+        setError('Selecione pelo menos um arquivo para enviar');
         return;
       }
 
@@ -172,32 +172,40 @@ export default function Dashboard() {
         return;
       }
 
-      const formDataToSend = new FormData();
-      formDataToSend.append('arquivo', formData.arquivo);
-      formDataToSend.append('titulo', formData.titulo);
-      formDataToSend.append('descricao', formData.descricao || '');
-      formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
-      formDataToSend.append('cpf', formData.cpf);
-      formDataToSend.append('dataNascimento', formData.dataNascimento);
-      formDataToSend.append('sexo', formData.sexo);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('identidade', formData.identidade);
-      formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
-      formDataToSend.append('ufEmissor', formData.ufEmissor);
-      formDataToSend.append('telefone', formData.telefone);
-      formDataToSend.append('cursoTAC', formData.cursoTAC);
-      formDataToSend.append('cursoRT', formData.cursoRT);
-      formDataToSend.append('empresaId', currentEmpresaData.empresaId);
+      let allSuccess = true;
+      let lastError = '';
+      for (const arquivo of formData.arquivos) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('arquivo', arquivo);
+        formDataToSend.append('titulo', formData.titulo);
+        formDataToSend.append('descricao', formData.descricao || '');
+        formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
+        formDataToSend.append('cpf', formData.cpf);
+        formDataToSend.append('dataNascimento', formData.dataNascimento);
+        formDataToSend.append('sexo', formData.sexo);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('identidade', formData.identidade);
+        formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
+        formDataToSend.append('ufEmissor', formData.ufEmissor);
+        formDataToSend.append('telefone', formData.telefone);
+        formDataToSend.append('cursoTAC', formData.cursoTAC);
+        formDataToSend.append('cursoRT', formData.cursoRT);
+        formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
-      const result = await enviarDocumento(formDataToSend);
-      
-      if (result.success) {
+        const result = await enviarDocumento(formDataToSend);
+        if (!result.success) {
+          allSuccess = false;
+          lastError = result.error;
+        }
+      }
+
+      if (allSuccess) {
         setModalAberto(false);
         setFormData({
           titulo: '',
           descricao: '',
           nomeMotorista: '',
-          arquivo: null,
+          arquivos: [],
           cpf: '',
           dataNascimento: '',
           sexo: '',
@@ -211,7 +219,7 @@ export default function Dashboard() {
         });
         carregarDocumentos();
       } else {
-        setError(result.error);
+        setError(lastError || 'Erro ao enviar um ou mais arquivos.');
       }
 
     } catch {
@@ -222,8 +230,8 @@ export default function Dashboard() {
   };
 
   const handleFileChange = useCallback((event) => {
-    const file = event.target.files[0];
-    setFormData(prev => ({ ...prev, arquivo: file }));
+    const files = Array.from(event.target.files);
+    setFormData(prev => ({ ...prev, arquivos: files }));
   }, []);
 
   const handleInputChange = useCallback((field, value, type) => {
@@ -291,7 +299,7 @@ export default function Dashboard() {
   const getStatusColor = useCallback((status) => {
     switch (status) {
       case 'PENDENTE': return 'warning';
-      case 'APROVADO': return 'success';
+        formDataToSend.append('arquivo', arquivo);
       case 'REJEITADO': return 'error';
       default: return 'default';
     }
@@ -650,15 +658,17 @@ export default function Dashboard() {
               </Typography>
               <Input
                 id="arquivo-upload"
-                name="arquivo"
+                name="arquivos"
                 type="file"
                 onChange={handleFileChange}
-                inputProps={{ accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx' }}
+                inputProps={{ accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx', multiple: true }}
                 fullWidth
               />
-              {formData.arquivo && (
+              {formData.arquivos && formData.arquivos.length > 0 && (
                 <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
-                  ✅ Arquivo selecionado: {formData.arquivo.name}
+                  {formData.arquivos.length === 1
+                    ? `✅ Arquivo selecionado: ${formData.arquivos[0].name}`
+                    : `✅ ${formData.arquivos.length} arquivos selecionados: ${formData.arquivos.map(f => f.name).join(', ')}`}
                 </Typography>
               )}
             </Box>
@@ -669,7 +679,7 @@ export default function Dashboard() {
           <Button 
             onClick={handleEnviarDocumento} 
             variant="contained" 
-            disabled={enviandoDoc || !formData.arquivo || !formData.titulo.trim()}
+            disabled={enviandoDoc || !formData.arquivos || formData.arquivos.length === 0 || !formData.titulo.trim()}
             startIcon={<CloudUpload />}
           >
             {enviandoDoc ? 'Enviando...' : 'Enviar Documento'}
