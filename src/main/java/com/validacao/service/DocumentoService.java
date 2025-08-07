@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.IOException;
@@ -23,6 +25,8 @@ import java.util.UUID;
 
 @Service
 public class DocumentoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DocumentoService.class);
     
     @Autowired
     private DocumentoRepository documentoRepository;
@@ -40,16 +44,19 @@ public class DocumentoService {
                                    String nomeMotorista, Long empresaRemetenteId) {
         
         // Buscar empresa remetente
+        logger.info("[DOC] Iniciando envio de documento: empresaId={}, titulo={}, nomeMotorista={}", empresaRemetenteId, titulo, nomeMotorista);
         Empresa empresaRemetente = empresaRepository.findById(empresaRemetenteId)
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
         
         // Verificar se é despachante
         if (empresaRemetente.getTipo() != TipoEmpresa.DESPACHANTE) {
+            logger.warn("[DOC] Empresa {} não é despachante!", empresaRemetenteId);
             throw new RuntimeException("Apenas despachantes podem enviar documentos");
         }
         
         // Salvar arquivo
         String nomeArquivo = salvarArquivo(arquivo);
+        logger.info("[DOC] Arquivo salvo: {}", nomeArquivo);
         
         // Criar documento
         Documento documento = new Documento();
@@ -64,6 +71,7 @@ public class DocumentoService {
         documento.setTokenAprovacao(UUID.randomUUID().toString());
         
         Documento savedDoc = documentoRepository.save(documento);
+        logger.info("[DOC] Documento salvo no banco: id={}", savedDoc.getId());
         
         // Enviar email para Estrada Fácil
         try {
@@ -72,7 +80,7 @@ public class DocumentoService {
                 emailService.enviarEmailAprovacao(estradaFacil.getEmail(), nomeMotorista, savedDoc.getTokenAprovacao());
             }
         } catch (Exception e) {
-            // Email falhou, mas continuamos
+            logger.error("[DOC] Falha ao enviar email de aprovação", e);
         }
         
         return savedDoc;
@@ -157,12 +165,13 @@ public class DocumentoService {
     
     private String salvarArquivo(MultipartFile arquivo) {
         try {
+            logger.info("[DOC] Salvando arquivo: {}", arquivo.getOriginalFilename());
             // Criar diretório se não existir
             Path uploadPath = Paths.get(UPLOAD_DIR);
             if (!Files.exists(uploadPath)) {
+                logger.info("[DOC] Diretório de upload não existe. Criando: {}", uploadPath);
                 Files.createDirectories(uploadPath);
             }
-            
             // Gerar nome único para o arquivo
             String nomeOriginal = arquivo.getOriginalFilename();
             if (nomeOriginal == null || nomeOriginal.isEmpty()) {
@@ -171,14 +180,13 @@ public class DocumentoService {
             String extensao = nomeOriginal.contains(".") ? 
                 nomeOriginal.substring(nomeOriginal.lastIndexOf(".")) : ".pdf";
             String nomeUnico = UUID.randomUUID().toString() + extensao;
-            
             // Salvar arquivo
             Path arquivoPath = uploadPath.resolve(nomeUnico);
             Files.copy(arquivo.getInputStream(), arquivoPath);
-            
+            logger.info("[DOC] Arquivo salvo em: {}", arquivoPath);
             return nomeUnico;
-            
         } catch (IOException e) {
+            logger.error("[DOC] Erro ao salvar arquivo", e);
             throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
         }
     }
