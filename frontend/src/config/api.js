@@ -96,9 +96,18 @@ export const enviarDocumento = async (formData) => {
       data: response.data
     };
   } catch (error) {
+    // Log detalhado no console do navegador
+    if (error.response) {
+      console.error('[ENVIAR DOCUMENTO] Erro ao enviar documento:');
+      console.error('Status:', error.response.status);
+      console.error('Headers:', error.response.headers);
+      console.error('Data:', error.response.data);
+    } else {
+      console.error('[ENVIAR DOCUMENTO] Erro desconhecido:', error);
+    }
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao enviar documento'
+      error: error.response?.data?.message || error.response?.data || error.message || 'Erro ao enviar documento'
     };
   }
 };
