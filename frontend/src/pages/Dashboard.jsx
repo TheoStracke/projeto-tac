@@ -76,21 +76,20 @@ export default function Dashboard() {
   const [expandedRows, setExpandedRows] = useState([]); // Para controlar linhas expandidas
   const [enviandoDoc, setEnviandoDoc] = useState(false);
   const [formData, setFormData] = useState({
-    titulo: '',
-    descricao: '',
-    nomeMotorista: '',
-    arquivos: [],
-    cpf: '',
-    dataNascimento: '',
-    sexo: '',
-    email: '',
-    identidade: '',
-    orgaoEmissor: '',
-    ufEmissor: '',
-    telefone: '',
-    cursoTAC: false,
-    cursoRT: false
-  });
+  titulo: '',
+  descricao: '',
+  nomeMotorista: '',
+  arquivos: [],
+  cpf: '',
+  dataNascimento: '',
+  sexo: '',
+  email: '',
+  identidade: '',
+  orgaoEmissor: '',
+  ufEmissor: '',
+  telefone: '',
+  curso: '' // "TAC", "RT" ou ""
+});
 
 
   useEffect(() => {
@@ -188,8 +187,7 @@ export default function Dashboard() {
         formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
         formDataToSend.append('ufEmissor', formData.ufEmissor);
         formDataToSend.append('telefone', formData.telefone);
-        formDataToSend.append('cursoTAC', formData.cursoTAC);
-        formDataToSend.append('cursoRT', formData.cursoRT);
+        formDataToSend.append('curso', formData.curso);
         formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
         const result = await enviarDocumento(formDataToSend);
@@ -214,8 +212,7 @@ export default function Dashboard() {
           orgaoEmissor: '',
           ufEmissor: '',
           telefone: '',
-          cursoTAC: false,
-          cursoRT: false
+          curso: ''
         });
         carregarDocumentos();
       } else {
@@ -461,8 +458,7 @@ export default function Dashboard() {
                           <div><strong>Orgão Emissor:</strong> {documento.orgaoEmissor || 'Não informado'}</div>
                           <div><strong>UF Emissor:</strong> {documento.ufEmissor || 'Não informado'}</div>
                           <div><strong>Telefone:</strong> {documento.telefone || 'Não informado'}</div>
-                          <div><strong>Curso TAC Completo:</strong> {documento.cursoTAC ? 'Sim' : 'Não'}</div>
-                          <div><strong>Curso RT Completo:</strong> {documento.cursoRT ? 'Sim' : 'Não'}</div>
+                          <div><strong>Curso:</strong> {documento.curso === 'TAC' ? 'TAC Completo' : documento.curso === 'RT' ? 'RT Completo' : 'Não informado'}</div>
                           <div><strong>Empresa:</strong> {documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</div>
                           <div><strong>Data de Envio:</strong> {formatarData(documento.dataEnvio)}</div>
                           <div><strong>Arquivo:</strong> {documento.nomeArquivoOriginal || 'N/A'} <Button size="small" onClick={() => visualizarArquivo(documento.id)}>Abrir</Button></div>
@@ -634,24 +630,11 @@ export default function Dashboard() {
               placeholder="(00) 00000-0000"
             />
             <Box>
-              <Typography variant="subtitle1" gutterBottom>Curso</Typography>
-              <label>
-                <input
-                  type="checkbox"
-                  name="cursoTAC"
-                  checked={formData.cursoTAC}
-                  onChange={e => handleInputChange('cursoTAC', e.target.checked, 'checkbox')}
-                /> TAC Completo
-              </label>
-              <label style={{ marginLeft: 16 }}>
-                <input
-                  type="checkbox"
-                  name="cursoRT"
-                  checked={formData.cursoRT}
-                  onChange={e => handleInputChange('cursoRT', e.target.checked, 'checkbox')}
-                /> RT Completo
-              </label>
-            </Box>
+  <Typography variant="subtitle2" color="text.secondary">Curso</Typography>
+  <Typography variant="body1">
+    {documentoSelecionado.curso === 'TAC' ? 'TAC Completo' : documentoSelecionado.curso === 'RT' ? 'RT Completo' : 'Não informado'}
+  </Typography>
+</Box>
             <Box>
               <Typography variant="body2" sx={{ mb: 1 }} component="label" htmlFor="arquivo-upload">
                 Selecione o arquivo:
