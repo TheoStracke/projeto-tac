@@ -39,6 +39,18 @@ public class Documento {
     private String comentarios;
     
     private LocalDateTime dataAprovacao;
+
+    // Novos campos para painel de despachante
+    private Boolean cursoTACCompleto;
+    private Boolean cursoRTCompleto;
+    private String cpf;
+    private String dataNascimento;
+    private String sexo;
+    private String email;
+    private String identidade;
+    private String orgaoEmissor;
+    private String ufEmissor;
+    private String telefone;
     
     // Getters e Setters
     public Long getId() { return id; }
@@ -76,4 +88,25 @@ public class Documento {
     
     public LocalDateTime getDataAprovacao() { return dataAprovacao; }
     public void setDataAprovacao(LocalDateTime dataAprovacao) { this.dataAprovacao = dataAprovacao; }
+    // Getters e Setters para novos campos
+    public Boolean getCursoTACCompleto() { return cursoTACCompleto; }
+    public void setCursoTACCompleto(Boolean cursoTACCompleto) { this.cursoTACCompleto = cursoTACCompleto; }
+    public Boolean getCursoRTCompleto() { return cursoRTCompleto; }
+    public void setCursoRTCompleto(Boolean cursoRTCompleto) { this.cursoRTCompleto = cursoRTCompleto; }
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
+    public String getDataNascimento() { return dataNascimento; }
+    public void setDataNascimento(String dataNascimento) { this.dataNascimento = dataNascimento; }
+    public String getSexo() { return sexo; }
+    public void setSexo(String sexo) { this.sexo = sexo; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getIdentidade() { return identidade; }
+    public void setIdentidade(String identidade) { this.identidade = identidade; }
+    public String getOrgaoEmissor() { return orgaoEmissor; }
+    public void setOrgaoEmissor(String orgaoEmissor) { this.orgaoEmissor = orgaoEmissor; }
+    public String getUfEmissor() { return ufEmissor; }
+    public void setUfEmissor(String ufEmissor) { this.ufEmissor = ufEmissor; }
+    public String getTelefone() { return telefone; }
+    public void setTelefone(String telefone) { this.telefone = telefone; }
 }
