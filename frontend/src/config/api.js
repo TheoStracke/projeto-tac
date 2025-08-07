@@ -72,7 +72,7 @@ export const loginUser = async (credentials) => {
 
 export const registerUser = async (userData) => {
   try {
-    const response = await api.post('/auth/cadastro', userData);
+    const response = await api.post('/api/auth/cadastro', userData);
     return {
       success: true,
       data: response.data
