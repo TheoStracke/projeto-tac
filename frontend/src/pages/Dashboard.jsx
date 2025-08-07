@@ -54,8 +54,9 @@ const getEmpresaData = () => {
 };
 
 export default function Dashboard() {
-  const navigate = useNavigate(); // <-- ADICIONADO AQUI
-  // LOGS DE DEPURAÇÃO DE AUTENTICAÇÃO
+  const navigate = useNavigate();
+  const [empresaData, setEmpresaData] = useState(() => getEmpresaData());
+  // LOGS DE DEPURAÇÃO DE AUTENTICAÇÃO (após empresaData existir)
   window._debugDashboard = window._debugDashboard || [];
   window._debugDashboard.push({
     empresaData,
@@ -78,7 +79,6 @@ export default function Dashboard() {
     arquivo: null
   });
 
-  const [empresaData, setEmpresaData] = useState(() => getEmpresaData());
 
   useEffect(() => {
     // Se o estado empresaData não estiver definido...
