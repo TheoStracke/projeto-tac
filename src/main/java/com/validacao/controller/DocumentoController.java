@@ -2,6 +2,8 @@ package com.validacao.controller;
 
 import com.validacao.model.Documento;
 import com.validacao.service.DocumentoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -20,6 +22,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/documentos")
 public class DocumentoController {
+    private static final Logger logger = LoggerFactory.getLogger(DocumentoController.class);
     
     @Autowired
     private DocumentoService documentoService;
@@ -31,20 +34,23 @@ public class DocumentoController {
             @RequestParam("descricao") String descricao,
             @RequestParam("nomeMotorista") String nomeMotorista,
             @RequestParam("empresaId") Long empresaId) {
-        
+        logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null");
         try {
             if (arquivo == null || arquivo.isEmpty()) {
+                logger.warn("[UPLOAD] Arquivo não enviado ou vazio");
                 return ResponseEntity.badRequest().body("Arquivo é obrigatório");
             }
-            
+
             Documento documento = documentoService.enviarDocumento(
                 arquivo, titulo, descricao, nomeMotorista, empresaId
             );
-            
+
+            logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
             return ResponseEntity.ok(documento);
-            
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao enviar documento: " + e.getMessage());
+            logger.error("[UPLOAD] Erro ao enviar documento", e);
+            return ResponseEntity.status(500).body("Erro ao enviar documento: " + e.getMessage());
         }
     }
     
