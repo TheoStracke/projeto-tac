@@ -29,13 +29,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        String[] origins = allowedOrigins.split(",");
-        for (int i = 0; i < origins.length; i++) {
-            origins[i] = origins[i].trim();
+
+        // Permite domínios explícitos e padrões profissionais (wildcard) para produção
+        // Exemplo: https://*.vercel.app, https://projeto-tac.vercel.app, etc
+        String[] originPatterns = allowedOrigins.split(",");
+        for (int i = 0; i < originPatterns.length; i++) {
+            originPatterns[i] = originPatterns[i].trim();
         }
-        
-        configuration.setAllowedOrigins(List.of(origins));
+        configuration.setAllowedOriginPatterns(List.of(originPatterns));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
