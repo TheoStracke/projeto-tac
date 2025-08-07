@@ -131,36 +131,7 @@ export default function Dashboard() {
   };
  
 
-  const carregarDocumentos = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      const token = localStorage.getItem('token');
-      
-      if (!token || !empresaData?.empresaId) {
-        setError('Sessão inválida ou dados da empresa não encontrados.');
-        setLoading(false);
-        return;
-      }
-      
-      const empresaId = empresaData.tipo === 'ESTRADA_FACIL' ? null : empresaData.empresaId;
-      const result = await buscarDocumentos(empresaId);
-      
-      if (result.success) {
-        setDocumentos(result.data);
-      } else {
-        setError(result.error);
-        setDocumentos([]);
-      }
-      
-    } catch {
-      setError('Erro de conexão. Tente novamente.');
-      setDocumentos([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // função carregarDocumentos removida
 
 
   const handleEnviarDocumento = async () => {
