@@ -187,8 +187,7 @@ export default function Dashboard() {
         formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
         formDataToSend.append('ufEmissor', formData.ufEmissor);
         formDataToSend.append('telefone', formData.telefone);
-        formDataToSend.append('cursoTAC', formData.cursoTAC);
-        formDataToSend.append('cursoRT', formData.cursoRT);
+        formDataToSend.append('curso', formData.curso);
         formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
         const result = await enviarDocumento(formDataToSend);
@@ -213,8 +212,7 @@ export default function Dashboard() {
           orgaoEmissor: '',
           ufEmissor: '',
           telefone: '',
-          cursoTAC: false,
-          cursoRT: false
+          curso: ''
         });
         carregarDocumentos();
       } else {
