@@ -111,6 +111,7 @@ export default function Dashboard() {
       setLoading(true);
       setError('');
       const result = await buscarPedidos();
+          console.log('Resultado buscarPedidos:', result); 
       if (result.success) {
         setPedidos(result.data);
       } else {
