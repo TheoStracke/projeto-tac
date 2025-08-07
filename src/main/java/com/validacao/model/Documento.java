@@ -1,13 +1,4 @@
-// ...existing code...
-
-    @ManyToOne
-    @JoinColumn(name = "pedido_id")
-    private PedidoDocumentos pedido;
-
-// ...existing code...
-
-    public PedidoDocumentos getPedido() { return pedido; }
-    public void setPedido(PedidoDocumentos pedido) { this.pedido = pedido; }
+// (arquivo corrigido: package deve ser a primeira linha, removido código corrompido/duplicado)
 package com.validacao.model;
 
 import jakarta.persistence.*;
