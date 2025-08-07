@@ -1,3 +1,13 @@
+// ...existing code...
+
+    @ManyToOne
+    @JoinColumn(name = "pedido_id")
+    private PedidoDocumentos pedido;
+
+// ...existing code...
+
+    public PedidoDocumentos getPedido() { return pedido; }
+    public void setPedido(PedidoDocumentos pedido) { this.pedido = pedido; }
 package com.validacao.model;
 
 import jakarta.persistence.*;
@@ -37,6 +47,11 @@ public class Documento {
     private String tokenAprovacao; // token único para link de aprovação
     
     private String comentarios;
+
+    // Relacionamento com PedidoDocumentos
+    @ManyToOne
+    @JoinColumn(name = "pedido_id")
+    private PedidoDocumentos pedido;
     
     private LocalDateTime dataAprovacao;
 
@@ -52,6 +67,8 @@ public class Documento {
     private String telefone;
     
     // Getters e Setters
+    public PedidoDocumentos getPedido() { return pedido; }
+    public void setPedido(PedidoDocumentos pedido) { this.pedido = pedido; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

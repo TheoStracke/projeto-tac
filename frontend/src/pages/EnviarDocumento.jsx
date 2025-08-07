@@ -12,14 +12,14 @@ import {
   CardContent
 } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import { enviarDocumento } from '../config/api';
+import { enviarPedidoDocumentos } from '../config/api';
 
 export default function EnviarDocumento() {
   const [formData, setFormData] = useState({
     titulo: '',
     descricao: '',
     nomeMotorista: '',
-    arquivo: null,
+    arquivos: [],
     cpf: '',
     dataNascimento: '',
     sexo: '',
@@ -57,9 +57,10 @@ export default function EnviarDocumento() {
   };
 
   const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
     setFormData(prev => ({
       ...prev,
-      arquivo: e.target.files[0]
+      arquivos: files
     }));
   };
 
@@ -68,6 +69,13 @@ export default function EnviarDocumento() {
     setLoading(true);
     setError('');
     setSuccess('');
+
+    // Validação: 2 ou 3 arquivos obrigatórios
+    if (!formData.arquivos || formData.arquivos.length < 2 || formData.arquivos.length > 3) {
+      setError('Selecione no mínimo 2 e no máximo 3 arquivos para enviar.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const data = new FormData();
@@ -82,21 +90,22 @@ export default function EnviarDocumento() {
       data.append('orgaoEmissor', formData.orgaoEmissor);
       data.append('ufEmissor', formData.ufEmissor);
       data.append('telefone', formData.telefone);
-      data.append('cursoTAC', formData.cursoTAC);
-      data.append('cursoRT', formData.cursoRT);
+      data.append('curso', formData.cursoTAC ? 'TAC' : (formData.cursoRT ? 'RT' : ''));
       data.append('empresaId', empresaData.id);
-      if (formData.arquivo) data.append('arquivo', formData.arquivo);
+      formData.arquivos.forEach((file) => {
+        data.append('arquivos', file);
+      });
 
-      const result = await enviarDocumento(data);
+      const result = await enviarPedidoDocumentos(data);
 
       if (result.success) {
-        setSuccess('Documento enviado com sucesso! A Estrada Fácil foi notificada por email.');
+        setSuccess('Pedido de aprovação enviado com sucesso! A Estrada Fácil foi notificada por email.');
         // Limpar formulário
         setFormData({
           titulo: '',
           descricao: '',
           nomeMotorista: '',
-          arquivo: null,
+          arquivos: [],
           cpf: '',
           dataNascimento: '',
           sexo: '',
@@ -108,12 +117,12 @@ export default function EnviarDocumento() {
           cursoTAC: false,
           cursoRT: false
         });
-        document.getElementById('arquivo-input').value = '';
+        document.getElementById('arquivos-input').value = '';
       } else {
         setError(result.error);
       }
     } catch (err) {
-      setError('Erro ao enviar documento');
+      setError('Erro ao enviar pedido de documentos');
     } finally {
       setLoading(false);
     }
@@ -330,19 +339,27 @@ export default function EnviarDocumento() {
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Arquivo do Documento
+                    Arquivos do Pedido (2 a 3 arquivos)
                   </Typography>
                   <input
-                    id="arquivo-input"
+                    id="arquivos-input"
                     type="file"
                     onChange={handleFileChange}
                     required
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     style={{ marginBottom: '10px' }}
+                    multiple
                   />
                   <Typography variant="caption" display="block" color="text.secondary">
-                    Formatos aceitos: PDF, JPG, PNG, DOC, DOCX (máx. 10MB)
+                    Selecione de 2 a 3 arquivos. Formatos aceitos: PDF, JPG, PNG, DOC, DOCX (máx. 10MB cada)
                   </Typography>
+                  {formData.arquivos && formData.arquivos.length > 0 && (
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {formData.arquivos.map((file, idx) => (
+                        <li key={idx}>{file.name}</li>
+                      ))}
+                    </ul>
+                  )}
                 </CardContent>
               </Card>
             </Grid>

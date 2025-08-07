@@ -1,3 +1,27 @@
+// === FUNÇÃO PARA ENVIAR PEDIDO DE DOCUMENTOS (MÚLTIPLOS) ===
+export const enviarPedidoDocumentos = async (formData) => {
+  try {
+    const response = await api.post('/api/pedidos/enviar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    if (error.response) {
+      console.error('[ENVIAR PEDIDO DOCUMENTOS] Erro ao enviar pedido:', error.response);
+    } else {
+      console.error('[ENVIAR PEDIDO DOCUMENTOS] Erro desconhecido:', error);
+    }
+    return {
+      success: false,
+      error: error.response?.data?.message || error.response?.data || error.message || 'Erro ao enviar pedido de documentos'
+    };
+  }
+};
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
 
