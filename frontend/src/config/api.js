@@ -132,7 +132,7 @@ export const buscarDocumentos = async (empresaId = null) => {
 
 export const buscarDocumento = async (documentoId) => {
   try {
-    const response = await api.get(`/documentos/${documentoId}`);
+    const response = await api.get(`/api/documentos/${documentoId}`);
     return {
       success: true,
       data: response.data
@@ -147,7 +147,7 @@ export const buscarDocumento = async (documentoId) => {
 
 export const aprovarDocumento = async (documentoId) => {
   try {
-    const response = await api.post(`/documentos/${documentoId}/aprovar`);
+    const response = await api.post(`/api/documentos/${documentoId}/aprovar`);
     return {
       success: true,
       data: response.data
@@ -162,7 +162,7 @@ export const aprovarDocumento = async (documentoId) => {
 
 export const rejeitarDocumento = async (documentoId) => {
   try {
-    const response = await api.post(`/documentos/${documentoId}/rejeitar`);
+    const response = await api.post(`/api/documentos/${documentoId}/rejeitar`);
     return {
       success: true,
       data: response.data
@@ -177,7 +177,7 @@ export const rejeitarDocumento = async (documentoId) => {
 
 export const downloadArquivo = async (documentoId) => {
   try {
-    const response = await api.get(`/documentos/${documentoId}/arquivo`, {
+    const response = await api.get(`/api/documentos/${documentoId}/arquivo`, {
       responseType: 'blob',
     });
     return {
@@ -196,7 +196,7 @@ export const downloadArquivo = async (documentoId) => {
 
 export const buscarAprovacao = async (token) => {
   try {
-    const response = await api.get(`/aprovacao/${token}`);
+    const response = await api.get(`/api/aprovacao/${token}`);
     return {
       success: true,
       data: response.data
@@ -211,7 +211,7 @@ export const buscarAprovacao = async (token) => {
 
 export const processarAprovacao = async (token, decisao, comentario = '') => {
   try {
-    const response = await api.post(`/aprovacao/${token}`, {
+    const response = await api.post(`/api/aprovacao/${token}`, {
       decisao,
       comentario
     });
@@ -229,7 +229,7 @@ export const processarAprovacao = async (token, decisao, comentario = '') => {
 
 export const downloadArquivoAprovacao = async (token) => {
   try {
-    const response = await api.get(`/aprovacao/${token}/arquivo`, {
+    const response = await api.get(`/api/aprovacao/${token}/arquivo`, {
       responseType: 'blob',
     });
     return {
@@ -248,7 +248,7 @@ export const downloadArquivoAprovacao = async (token) => {
 
 export const buscarListaAprovacoes = async () => {
   try {
-    const response = await api.get('/documentos/pendentes');
+    const response = await api.get('/api/documentos/pendentes');
     return {
       success: true,
       data: response.data
@@ -263,7 +263,7 @@ export const buscarListaAprovacoes = async () => {
 
 export const buscarDetalhesDocumento = async (documentoId) => {
   try {
-    const response = await api.get(`/documentos/${documentoId}`);
+    const response = await api.get(`/api/documentos/${documentoId}`);
     return {
       success: true,
       data: response.data
@@ -278,7 +278,7 @@ export const buscarDetalhesDocumento = async (documentoId) => {
 
 export const visualizarArquivoDocumento = async (documentoId) => {
   try {
-    const response = await api.get(`/documentos/${documentoId}/arquivo`, {
+    const response = await api.get(`/api/documentos/${documentoId}/arquivo`, {
       responseType: 'blob',
     });
     return {
