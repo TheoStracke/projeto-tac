@@ -115,9 +115,8 @@ export const enviarDocumento = async (formData) => {
 export const buscarDocumentos = async (empresaId = null) => {
   try {
     const url = empresaId 
-      ? `/documentos/empresa/${empresaId}` 
-      : '/documentos/pendentes';
-    
+      ? `/api/documentos/empresa/${empresaId}`  // <-- Corrija aqui
+      : '/api/documentos/pendentes';           // <-- E aqui
     const response = await api.get(url);
     return {
       success: true,
