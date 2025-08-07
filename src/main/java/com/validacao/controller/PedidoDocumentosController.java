@@ -1,4 +1,19 @@
-// ...existing code...
+
+package com.validacao.controller;
+
+import com.validacao.model.PedidoDocumentos;
+import com.validacao.model.Documento;
+import com.validacao.model.Empresa;
+import com.validacao.repository.EmpresaRepository;
+import com.validacao.repository.PedidoDocumentosRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -9,45 +24,19 @@ public class PedidoDocumentosController {
     private EmpresaRepository empresaRepository;
 
     // LOGS DE DEBUG PARA O FRONTEND
-    private static final java.util.List<String> debugLogs = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final List<String> debugLogs = new CopyOnWriteArrayList<>();
 
     private void addDebugLog(String msg) {
-        String log = java.time.LocalDateTime.now() + " | " + msg;
+        String log = LocalDateTime.now() + " | " + msg;
         debugLogs.add(log);
         if (debugLogs.size() > 100) debugLogs.remove(0);
         System.out.println(log);
     }
 
     @GetMapping("/debug/logs")
-    public ResponseEntity<java.util.List<String>> getDebugLogs() {
-        return ResponseEntity.ok(new java.util.ArrayList<>(debugLogs));
+    public ResponseEntity<List<String>> getDebugLogs() {
+        return ResponseEntity.ok(new ArrayList<>(debugLogs));
     }
-// ...existing code...
-package com.validacao.controller;
-
-import com.validacao.model.PedidoDocumentos;
-import com.validacao.model.Documento;
-import com.validacao.model.Empresa;
-import com.validacao.repository.EmpresaRepository;
-import com.validacao.repository.PedidoDocumentosRepository;
-// ...existing code...
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/pedidos")
-public class PedidoDocumentosController {
-    @Autowired
-    private PedidoDocumentosRepository pedidoRepository;
-    @Autowired
-    private EmpresaRepository empresaRepository;
-    // ...existing code...
 
     @PostMapping("/enviar")
     public ResponseEntity<?> enviarPedido(
