@@ -1,3 +1,4 @@
+// ...existing code...
 package com.validacao.controller;
 
 import com.validacao.model.PedidoDocumentos;
@@ -105,5 +106,20 @@ public class PedidoDocumentosController {
     public ResponseEntity<List<PedidoDocumentos>> listarPedidos() {
         List<PedidoDocumentos> pedidos = pedidoRepository.findAll();
         return ResponseEntity.ok(pedidos);
+    }
+
+    /**
+     * Endpoint para listar pedidos de uma empresa específica (despachante)
+     */
+    @GetMapping("/empresa/{empresaId}")
+    public ResponseEntity<List<PedidoDocumentos>> listarPedidosPorEmpresa(@PathVariable Long empresaId) {
+        List<PedidoDocumentos> pedidos = pedidoRepository.findAll();
+        List<PedidoDocumentos> pedidosEmpresa = new ArrayList<>();
+        for (PedidoDocumentos pedido : pedidos) {
+            if (pedido.getEmpresaRemetente() != null && pedido.getEmpresaRemetente().getId().equals(empresaId)) {
+                pedidosEmpresa.add(pedido);
+            }
+        }
+        return ResponseEntity.ok(pedidosEmpresa);
     }
 }
