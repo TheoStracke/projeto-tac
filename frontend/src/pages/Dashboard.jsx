@@ -198,7 +198,7 @@ export default function Dashboard() {
           telefone: '',
           curso: ''
         });
-        carregarDocumentos();
+        carregarPedidos();
       } else {
         setError(lastError || 'Erro ao enviar um ou mais arquivos.');
       }
@@ -256,7 +256,7 @@ export default function Dashboard() {
     try {
       const result = await aprovarDocumento(documentoId);
       if (result.success) {
-        carregarDocumentos();
+        carregarPedidos();
       } else {
         setError(result.error);
       }
@@ -269,7 +269,7 @@ export default function Dashboard() {
     try {
       const result = await rejeitarDocumento(documentoId);
       if (result.success) {
-        carregarDocumentos();
+        carregarPedidos();
       } else {
         setError(result.error);
       }
@@ -322,7 +322,7 @@ export default function Dashboard() {
           <Button
             variant="outlined"
             startIcon={<Refresh />}
-            onClick={carregarDocumentos}
+            onClick={carregarPedidos}
             disabled={loading}
           >
             {loading ? 'Carregando...' : 'Atualizar'}
