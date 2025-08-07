@@ -86,7 +86,7 @@ export const registerUser = async (userData) => {
 
 export const enviarDocumento = async (formData) => {
   try {
-    const response = await api.post('/documentos/enviar', formData, {
+    const response = await api.post('/api/documentos/enviar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
