@@ -95,6 +95,7 @@ public class PedidoDocumentosController {
             docs.add(doc);
         }
         pedido.setDocumentos(docs);
+        System.out.println("[ENVIAR PEDIDO] Salvando pedido para empresaRemetente.id=" + (empresa != null ? empresa.getId() : "null"));
         pedidoRepository.save(pedido);
         // Os arquivos ainda precisam ser salvos fisicamente!
         return ResponseEntity.ok(pedido);
@@ -114,6 +115,10 @@ public class PedidoDocumentosController {
     @GetMapping("/empresa/{empresaId}")
     public ResponseEntity<List<PedidoDocumentos>> listarPedidosPorEmpresa(@PathVariable Long empresaId) {
         List<PedidoDocumentos> pedidosEmpresa = pedidoRepository.findByEmpresaRemetenteId(empresaId);
+        System.out.println("[LISTAR PEDIDOS POR EMPRESA] empresaId=" + empresaId + ", encontrados=" + pedidosEmpresa.size());
+        for (PedidoDocumentos p : pedidosEmpresa) {
+            System.out.println("  Pedido id=" + p.getId() + ", empresaRemetente.id=" + (p.getEmpresaRemetente() != null ? p.getEmpresaRemetente().getId() : "null") + ", status=" + p.getStatus());
+        }
         return ResponseEntity.ok(pedidosEmpresa);
     }
 }
