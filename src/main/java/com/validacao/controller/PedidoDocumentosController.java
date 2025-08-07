@@ -5,7 +5,7 @@ import com.validacao.model.Documento;
 import com.validacao.model.Empresa;
 import com.validacao.repository.EmpresaRepository;
 import com.validacao.repository.PedidoDocumentosRepository;
-import com.validacao.repository.DocumentoRepository;
+// ...existing code...
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +22,7 @@ public class PedidoDocumentosController {
     private PedidoDocumentosRepository pedidoRepository;
     @Autowired
     private EmpresaRepository empresaRepository;
-    @Autowired
-    private DocumentoRepository documentoRepository;
+    // ...existing code...
 
     @PostMapping("/enviar")
     public ResponseEntity<?> enviarPedido(
@@ -69,7 +68,7 @@ public class PedidoDocumentosController {
         pedido.setDataEnvio(LocalDateTime.now());
         pedido.setStatus("PENDENTE");
         List<Documento> docs = new ArrayList<>();
-        for (MultipartFile arquivo : arquivos) {
+        for (MultipartFile unused : arquivos) { // variável não utilizada
             Documento doc = new Documento();
             doc.setTitulo(titulo);
             doc.setDescricao(descricao);
@@ -82,7 +81,9 @@ public class PedidoDocumentosController {
             doc.setOrgaoEmissor(orgaoEmissor);
             doc.setUfEmissor(ufEmissor);
             doc.setTelefone(telefone);
-            doc.setCurso(curso);
+            // Define o curso correto
+            doc.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
+            doc.setCursoRTCompleto("RT".equalsIgnoreCase(curso));
             doc.setEmpresaRemetente(empresa);
             doc.setDataEnvio(LocalDateTime.now());
             doc.setStatus(com.validacao.model.StatusDocumento.PENDENTE);
