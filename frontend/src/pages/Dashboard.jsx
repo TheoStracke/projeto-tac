@@ -68,8 +68,7 @@ export default function Dashboard() {
   });
   console.log('Dashboard: empresaData', empresaData);
   console.log('Dashboard: token', localStorage.getItem('token'));
-  const [documentos, setDocumentos] = useState([]); // para despachante
-  const [pedidos, setPedidos] = useState([]); // para admin
+  const [pedidos, setPedidos] = useState([]); // para ambos
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
@@ -105,11 +104,7 @@ export default function Dashboard() {
         return; 
       }
     }
-    if (empresaData?.tipo === 'ESTRADA_FACIL') {
-      carregarPedidos();
-    } else {
-      carregarDocumentos();
-    }
+    carregarPedidos();
   }, [empresaData, navigate]);
   const carregarPedidos = async () => {
     try {
@@ -117,7 +112,12 @@ export default function Dashboard() {
       setError('');
       const result = await buscarPedidos();
       if (result.success) {
-        setPedidos(result.data);
+        // Se for despachante, filtra só os pedidos da empresa dele
+        if (empresaData?.tipo !== 'ESTRADA_FACIL') {
+          setPedidos(result.data.filter(p => p.empresaRemetente?.id === empresaData.empresaId));
+        } else {
+          setPedidos(result.data);
+        }
       } else {
         setError(result.error);
         setPedidos([]);
@@ -377,8 +377,8 @@ export default function Dashboard() {
       )}
 
       {loading ? (
-        <Alert severity="info">🔄 Carregando documentos...</Alert>
-      ) : isAdmin ? (
+        <Alert severity="info">🔄 Carregando pedidos...</Alert>
+      ) : (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -396,7 +396,7 @@ export default function Dashboard() {
                 <TableRow>
                   <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 4 }}>
-                      📝 Nenhum pedido pendente de aprovação
+                      📝 Nenhum pedido encontrado
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -430,12 +430,13 @@ export default function Dashboard() {
                             <strong>Título:</strong> {pedido.titulo} <br />
                             <strong>Descrição:</strong> {pedido.descricao}
                           </Box>
-                          <Box sx={{ mb: 2 }}>
+                          <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
                             <Typography variant="subtitle1">Documentos deste pedido:</Typography>
                             {pedido.documentos && pedido.documentos.length > 0 ? (
                               pedido.documentos.map((doc, idx) => (
-                                <Box key={doc.id} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                  <Typography sx={{ mr: 2 }}>{doc.nomeArquivoOriginal}</Typography>
+                                <Box key={doc.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1, border: '1px solid #eee', borderRadius: 2, p: 1, minWidth: 180 }}>
+                                  <Typography sx={{ mb: 1 }}>Documento {idx + 1}</Typography>
+                                  <Typography sx={{ mb: 1 }}>{doc.nomeArquivoOriginal}</Typography>
                                   <Button
                                     size="small"
                                     variant="outlined"
@@ -447,7 +448,7 @@ export default function Dashboard() {
                                     label={doc.status}
                                     color={getStatusColor(doc.status)}
                                     size="small"
-                                    sx={{ ml: 2 }}
+                                    sx={{ mt: 1 }}
                                   />
                                 </Box>
                               ))
@@ -466,23 +467,6 @@ export default function Dashboard() {
                   </React.Fragment>
                 ))
               )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        // ...código antigo para despachante permanece...
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell></TableCell>
-                <TableCell><strong>Status</strong></TableCell>
-                <TableCell><strong>Data Envio</strong></TableCell>
-                {/* ...demais colunas... */}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {/* ...documentos.map... */}
             </TableBody>
           </Table>
         </TableContainer>
