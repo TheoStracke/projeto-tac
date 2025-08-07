@@ -88,8 +88,7 @@ export default function Dashboard() {
     orgaoEmissor: '',
     ufEmissor: '',
     telefone: '',
-    cursoTAC: false,
-    cursoRT: false
+    curso: '' // 'TAC' | 'RT' | ''
   });
 
 
@@ -235,10 +234,11 @@ export default function Dashboard() {
   }, []);
 
   const handleInputChange = useCallback((field, value, type) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: type === 'checkbox' ? value : value
-    }));
+    if (field === 'curso') {
+      setFormData(prev => ({ ...prev, curso: value }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   }, []);
 
   const visualizarArquivo = async (documentoId) => {
@@ -370,16 +370,16 @@ export default function Dashboard() {
       ) : (
         <TableContainer component={Paper}>
           <Table>
-      <TableHead>
-        <TableRow>
-          <TableCell></TableCell>
-          <TableCell><strong>Status</strong></TableCell>
-          <TableCell><strong>Data Envio</strong></TableCell>
-          {isAdmin && <TableCell><strong>Empresa</strong></TableCell>}
-          {isAdmin && <TableCell><strong>Visualizar</strong></TableCell>}
-          {isAdmin && <TableCell><strong>Ações</strong></TableCell>}
-        </TableRow>
-      </TableHead>
+            <TableHead>
+              <TableRow>
+                <TableCell></TableCell>
+                <TableCell><strong>Status</strong></TableCell>
+                <TableCell><strong>Data Envio</strong></TableCell>
+                {isAdmin && <TableCell><strong>Empresa</strong></TableCell>}
+                {isAdmin && <TableCell><strong>Visualizar</strong></TableCell>}
+                {isAdmin && <TableCell><strong>Ações</strong></TableCell>}
+              </TableRow>
+            </TableHead>
             <TableBody>
               {documentos.length === 0 ? (
                 <TableRow>
@@ -390,120 +390,126 @@ export default function Dashboard() {
                   </TableCell>
                 </TableRow>
               ) : (
-                documentos.map((documento, index) => [
-                  <TableRow key={documento.id || index}>
-                    <TableCell>
-                      <Button size="small" onClick={() => handleExpandRow(documento.id)}>
-                        {expandedRows.includes(documento.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                      </Button>
-                    </TableCell>
-                    {/* Tipo removido */}
-                    <TableCell>
-                      <Chip 
-                        label={documento.status || 'PENDENTE'} 
-                        color={getStatusColor(documento.status)} 
-                        size="small" 
-                      />
-                    </TableCell>
-                    <TableCell>{formatarData(documento.dataEnvio)}</TableCell>
-                    {isAdmin && (
-                      <TableCell>{documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
-                    )}
-                    {isAdmin && (
+                documentos.map((documento, index) => (
+                  <React.Fragment key={documento.id || index}>
+                    <TableRow>
                       <TableCell>
-                        <Button
-                          size="small"
-                          variant="text"
-                          color="primary"
-                          onClick={() => visualizarArquivo(documento.id)}
-                        >
-                          📎 Ver Arquivo
+                        <Button size="small" onClick={() => handleExpandRow(documento.id)}>
+                          {expandedRows.includes(documento.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </Button>
                       </TableCell>
-                    )}
-                    {isAdmin && (
+                      {/* Tipo removido */}
                       <TableCell>
-                        {documento.status === 'PENDENTE' ? (
-                          <Box>
-                            <Button 
-                              size="small" 
-                              color="success" 
-                              sx={{ mr: 1 }}
-                              onClick={() => handleAprovarDocumento(documento.id)}
-                            >
-                              ✅ Aprovar
-                            </Button>
-                            <Button 
-                              size="small" 
-                              color="error"
-                              onClick={() => handleRejeitarDocumento(documento.id)}
-                            >
-                              ❌ Rejeitar
-                            </Button>
-                          </Box>
-                        ) : null}
+                        <Chip 
+                          label={documento.status || 'PENDENTE'} 
+                          color={getStatusColor(documento.status)} 
+                          size="small" 
+                        />
                       </TableCell>
-                    )}
-                  </TableRow>,
-                  expandedRows.includes(documento.id) && (
-                    <TableRow key={documento.id + '-details'}>
-                      <TableCell colSpan={isAdmin ? 8 : 6} sx={{ background: '#f9f9f9', p: 2 }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 2 }}>
-                          <div><strong>Título:</strong> {documento.titulo}</div>
-                          {/* Tipo removido */}
-                          <div><strong>Status:</strong> {documento.status}</div>
-                          <div><strong>Motorista:</strong> {documento.nomeMotorista || 'Não informado'}</div>
-                          <div><strong>CPF:</strong> {documento.cpf || 'Não informado'}</div>
-                          <div><strong>Data de Nascimento:</strong> {documento.dataNascimento || 'Não informado'}</div>
-                          <div><strong>Sexo:</strong> {documento.sexo || 'Não informado'}</div>
-                          <div><strong>E-mail:</strong> {documento.email || 'Não informado'}</div>
-                          <div><strong>Identidade:</strong> {documento.identidade || 'Não informado'}</div>
-                          <div><strong>Orgão Emissor:</strong> {documento.orgaoEmissor || 'Não informado'}</div>
-                          <div><strong>UF Emissor:</strong> {documento.ufEmissor || 'Não informado'}</div>
-                          <div><strong>Telefone:</strong> {documento.telefone || 'Não informado'}</div>
-                          <div><strong>Curso TAC Completo:</strong> {documento.cursoTAC ? 'Sim' : 'Não'}</div>
-                          <div><strong>Curso RT Completo:</strong> {documento.cursoRT ? 'Sim' : 'Não'}</div>
-                          <div><strong>Empresa:</strong> {documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</div>
-                          <div><strong>Data de Envio:</strong> {formatarData(documento.dataEnvio)}</div>
-                          <div><strong>Arquivo:</strong> {documento.nomeArquivoOriginal || 'N/A'} <Button size="small" onClick={() => visualizarArquivo(documento.id)}>Abrir</Button></div>
-                        </Box>
-                        {documento.descricao && (
-                          <Box sx={{ mt: 2 }}>
-                            <strong>Descrição:</strong> {documento.descricao}
-                          </Box>
-                        )}
-                        {documento.comentarios && (
-                          <Box sx={{ mt: 2 }}>
-                            <strong>Comentários da Aprovação:</strong> {documento.comentarios}
-                          </Box>
-                        )}
-                      </TableCell>
+                      <TableCell>{formatarData(documento.dataEnvio)}</TableCell>
+                      {isAdmin && (
+                        <TableCell>{documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
+                      )}
+                      {isAdmin && (
+                        <TableCell>
+                          {documento.nomeArquivoOriginal ? (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              onClick={() => visualizarArquivo(documento.id)}
+                            >
+                              📎 {documento.nomeArquivoOriginal}
+                            </Button>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">N/A</Typography>
+                          )}
+                        </TableCell>
+                      )}
+                      {isAdmin && (
+                        <TableCell>
+                          {documento.status === 'PENDENTE' ? (
+                            <Box>
+                              <Button 
+                                size="small" 
+                                color="success" 
+                                sx={{ mr: 1 }}
+                                onClick={() => handleAprovarDocumento(documento.id)}
+                              >
+                                ✅ Aprovar
+                              </Button>
+                              <Button 
+                                size="small" 
+                                color="error"
+                                onClick={() => handleRejeitarDocumento(documento.id)}
+                              >
+                                ❌ Rejeitar
+                              </Button>
+                            </Box>
+                          ) : null}
+                        </TableCell>
+                      )}
                     </TableRow>
-                  )
-                ])
+                    {expandedRows.includes(documento.id) && (
+                      <TableRow>
+                        <TableCell colSpan={isAdmin ? 8 : 6} sx={{ background: '#f9f9f9', p: 2 }}>
+                          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 2 }}>
+                            <div><strong>Título:</strong> {documento.titulo}</div>
+                            {/* Tipo removido */}
+                            <div><strong>Status:</strong> {documento.status}</div>
+                            <div><strong>Motorista:</strong> {documento.nomeMotorista || 'Não informado'}</div>
+                            <div><strong>CPF:</strong> {documento.cpf || 'Não informado'}</div>
+                            <div><strong>Data de Nascimento:</strong> {documento.dataNascimento || 'Não informado'}</div>
+                            <div><strong>Sexo:</strong> {documento.sexo || 'Não informado'}</div>
+                            <div><strong>E-mail:</strong> {documento.email || 'Não informado'}</div>
+                            <div><strong>Identidade:</strong> {documento.identidade || 'Não informado'}</div>
+                            <div><strong>Orgão Emissor:</strong> {documento.orgaoEmissor || 'Não informado'}</div>
+                            <div><strong>UF Emissor:</strong> {documento.ufEmissor || 'Não informado'}</div>
+                            <div><strong>Telefone:</strong> {documento.telefone || 'Não informado'}</div>
+                            <div><strong>Curso:</strong> {documento.curso === 'TAC' ? 'TAC Completo' : documento.curso === 'RT' ? 'RT Completo' : 'Não informado'}</div>
+                            <div><strong>Arquivo:</strong> {documento.nomeArquivoOriginal ? (
+                              <Button size="small" onClick={() => visualizarArquivo(documento.id)}>
+                                📎 {documento.nomeArquivoOriginal}
+                              </Button>
+                            ) : 'N/A'}</div>
+                          </Box>
+                          {documento.descricao && (
+                            <Box sx={{ mt: 2 }}>
+                              <strong>Descrição:</strong> {documento.descricao}
+                            </Box>
+                          )}
+                          {documento.comentarios && (
+                            <Box sx={{ mt: 2 }}>
+                              <strong>Comentários da Aprovação:</strong> {documento.comentarios}
+                            </Box>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                ))
               )}
             </TableBody>
           </Table>
         </TableContainer>
       )}
-      
-      <Dialog open={modalAberto} onClose={() => setModalAberto(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>📤 Enviar Novo Documento</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <TextField
-              id="titulo-documento"
-              name="titulo"
-              label="Título do Documento"
-              value={formData.titulo}
-              onChange={(e) => handleInputChange('titulo', e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              id="descricao-documento"
-              name="descricao"
-              label="Descrição"
+     <Dialog open={modalAberto} onClose={() => setModalAberto(false)} maxWidth="sm" fullWidth>
+       <DialogTitle>📤 Enviar Novo Documento</DialogTitle>
+       <DialogContent>
+         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+           <TextField
+             id="titulo-documento"
+             name="titulo"
+             label="Título do Documento"
+             value={formData.titulo}
+             onChange={(e) => handleInputChange('titulo', e.target.value)}
+             required
+             fullWidth
+           />
+           <TextField
+             id="descricao-documento"
+             name="descricao"
+             label="Descrição"
               value={formData.descricao}
               onChange={(e) => handleInputChange('descricao', e.target.value)}
               multiline
@@ -637,18 +643,20 @@ export default function Dashboard() {
               <Typography variant="subtitle1" gutterBottom>Curso</Typography>
               <label>
                 <input
-                  type="checkbox"
-                  name="cursoTAC"
-                  checked={formData.cursoTAC}
-                  onChange={e => handleInputChange('cursoTAC', e.target.checked, 'checkbox')}
+                  type="radio"
+                  name="curso"
+                  value="TAC"
+                  checked={formData.curso === 'TAC'}
+                  onChange={e => handleInputChange('curso', e.target.value)}
                 /> TAC Completo
               </label>
               <label style={{ marginLeft: 16 }}>
                 <input
-                  type="checkbox"
-                  name="cursoRT"
-                  checked={formData.cursoRT}
-                  onChange={e => handleInputChange('cursoRT', e.target.checked, 'checkbox')}
+                  type="radio"
+                  name="curso"
+                  value="RT"
+                  checked={formData.curso === 'RT'}
+                  onChange={e => handleInputChange('curso', e.target.value)}
                 /> RT Completo
               </label>
             </Box>
@@ -742,12 +750,10 @@ export default function Dashboard() {
                   <Typography variant="body1">{documentoSelecionado.telefone || 'Não informado'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" color="text.secondary">Curso TAC Completo</Typography>
-                  <Typography variant="body1">{documentoSelecionado.cursoTAC ? 'Sim' : 'Não'}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">Curso RT Completo</Typography>
-                  <Typography variant="body1">{documentoSelecionado.cursoRT ? 'Sim' : 'Não'}</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">Curso</Typography>
+                  <Typography variant="body1">
+                    {documentoSelecionado.curso === 'TAC' ? 'TAC Completo' : documentoSelecionado.curso === 'RT' ? 'RT Completo' : 'Não informado'}
+                  </Typography>
                 </Box>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Data de Envio</Typography>
