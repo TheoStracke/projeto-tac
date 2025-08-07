@@ -44,11 +44,8 @@ api.interceptors.response.use(
 
 export const loginUser = async (credentials) => {
   try {
-    const response = await api.post('/auth/login', credentials);
-    
-    // The server returns an ApiResponse object which has a 'data' property
-    // containing the actual login information (token, company details, etc.).
-    // We should return that nested 'data' object directly.
+    const response = await api.post('/api/auth/login', credentials);
+  
     if (response.data && response.data.data) {
       return {
         success: true,
