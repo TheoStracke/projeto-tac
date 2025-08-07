@@ -41,10 +41,7 @@ public class DocumentoService {
     private String UPLOAD_DIR;
 
     public Documento enviarDocumento(MultipartFile arquivo, String titulo, String descricao, 
-                                   String nomeMotorista,
-                                   String cpf, String dataNascimento, String sexo, String email, String identidade, String orgaoEmissor, String ufEmissor, String telefone,
-                                   Boolean cursoTAC, Boolean cursoRT,
-                                   Long empresaRemetenteId) {
+                                   String nomeMotorista, Long empresaRemetenteId) {
         
         // Buscar empresa remetente
         logger.info("[DOC] Iniciando envio de documento: empresaId={}, titulo={}, nomeMotorista={}", empresaRemetenteId, titulo, nomeMotorista);
@@ -66,16 +63,6 @@ public class DocumentoService {
         documento.setTitulo(titulo);
         documento.setDescricao(descricao);
         documento.setNomeMotorista(nomeMotorista);
-        documento.setCpf(cpf);
-        documento.setDataNascimento(dataNascimento);
-        documento.setSexo(sexo);
-        documento.setEmail(email);
-        documento.setIdentidade(identidade);
-        documento.setOrgaoEmissor(orgaoEmissor);
-        documento.setUfEmissor(ufEmissor);
-        documento.setTelefone(telefone);
-        documento.setCursoTACCompleto(cursoTAC);
-        documento.setCursoRTCompleto(cursoRT);
         documento.setArquivoPath(UPLOAD_DIR + nomeArquivo);
         documento.setNomeArquivoOriginal(arquivo.getOriginalFilename());
         documento.setDataEnvio(LocalDateTime.now());

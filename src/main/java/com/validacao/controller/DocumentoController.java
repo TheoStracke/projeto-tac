@@ -33,16 +33,6 @@ public class DocumentoController {
             @RequestParam("titulo") String titulo,
             @RequestParam("descricao") String descricao,
             @RequestParam("nomeMotorista") String nomeMotorista,
-            @RequestParam("cpf") String cpf,
-            @RequestParam("dataNascimento") String dataNascimento,
-            @RequestParam("sexo") String sexo,
-            @RequestParam("email") String email,
-            @RequestParam("identidade") String identidade,
-            @RequestParam("orgaoEmissor") String orgaoEmissor,
-            @RequestParam("ufEmissor") String ufEmissor,
-            @RequestParam("telefone") String telefone,
-            @RequestParam("cursoTAC") Boolean cursoTAC,
-            @RequestParam("cursoRT") Boolean cursoRT,
             @RequestParam("empresaId") Long empresaId) {
         logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null");
         try {
@@ -52,9 +42,7 @@ public class DocumentoController {
             }
 
             Documento documento = documentoService.enviarDocumento(
-                arquivo, titulo, descricao, nomeMotorista,
-                cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
-                cursoTAC, cursoRT, empresaId
+                arquivo, titulo, descricao, nomeMotorista, empresaId
             );
 
             logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
