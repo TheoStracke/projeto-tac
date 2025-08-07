@@ -112,12 +112,7 @@ export default function Dashboard() {
       setError('');
       const result = await buscarPedidos();
       if (result.success) {
-        // Se for despachante, filtra só os pedidos da empresa dele
-        if (empresaData?.tipo !== 'ESTRADA_FACIL') {
-          setPedidos(result.data.filter(p => p.empresaRemetente?.id === empresaData.empresaId));
-        } else {
-          setPedidos(result.data);
-        }
+        setPedidos(result.data);
       } else {
         setError(result.error);
         setPedidos([]);
