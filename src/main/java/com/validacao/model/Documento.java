@@ -41,8 +41,7 @@ public class Documento {
     private LocalDateTime dataAprovacao;
 
     // Novos campos para painel de despachante
-    private Boolean cursoTACCompleto;
-    private Boolean cursoRTCompleto;
+    private String curso; // "TAC" ou "RT"
     private String cpf;
     private String dataNascimento;
     private String sexo;
@@ -89,10 +88,8 @@ public class Documento {
     public LocalDateTime getDataAprovacao() { return dataAprovacao; }
     public void setDataAprovacao(LocalDateTime dataAprovacao) { this.dataAprovacao = dataAprovacao; }
     // Getters e Setters para novos campos
-    public Boolean getCursoTACCompleto() { return cursoTACCompleto; }
-    public void setCursoTACCompleto(Boolean cursoTACCompleto) { this.cursoTACCompleto = cursoTACCompleto; }
-    public Boolean getCursoRTCompleto() { return cursoRTCompleto; }
-    public void setCursoRTCompleto(Boolean cursoRTCompleto) { this.cursoRTCompleto = cursoRTCompleto; }
+    public String getCurso() { return curso; }
+    public void setCurso(String curso) { this.curso = curso; }
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
     public String getDataNascimento() { return dataNascimento; }

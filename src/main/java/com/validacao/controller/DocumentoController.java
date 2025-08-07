@@ -41,20 +41,25 @@ public class DocumentoController {
             @RequestParam("orgaoEmissor") String orgaoEmissor,
             @RequestParam("ufEmissor") String ufEmissor,
             @RequestParam("telefone") String telefone,
-            @RequestParam("cursoTAC") Boolean cursoTAC,
-            @RequestParam("cursoRT") Boolean cursoRT,
+            @RequestParam("curso") String curso,
             @RequestParam("empresaId") Long empresaId) {
-        logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null");
+        logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}, curso={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null", curso);
         try {
             if (arquivo == null || arquivo.isEmpty()) {
                 logger.warn("[UPLOAD] Arquivo não enviado ou vazio");
                 return ResponseEntity.badRequest().body("Arquivo é obrigatório");
             }
 
+            // Validação do campo curso
+            if (!"TAC".equalsIgnoreCase(curso) && !"RT".equalsIgnoreCase(curso)) {
+                logger.warn("[UPLOAD] Curso inválido: {}", curso);
+                return ResponseEntity.badRequest().body("Curso deve ser 'TAC' ou 'RT'");
+            }
+
             Documento documento = documentoService.enviarDocumento(
                 arquivo, titulo, descricao, nomeMotorista,
                 cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
-                cursoTAC, cursoRT, empresaId
+                curso, empresaId
             );
 
             logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());

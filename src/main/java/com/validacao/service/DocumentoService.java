@@ -43,7 +43,7 @@ public class DocumentoService {
     public Documento enviarDocumento(MultipartFile arquivo, String titulo, String descricao, 
                                    String nomeMotorista,
                                    String cpf, String dataNascimento, String sexo, String email, String identidade, String orgaoEmissor, String ufEmissor, String telefone,
-                                   Boolean cursoTAC, Boolean cursoRT,
+                                   String curso,
                                    Long empresaRemetenteId) {
         
         // Buscar empresa remetente
@@ -74,8 +74,7 @@ public class DocumentoService {
         documento.setOrgaoEmissor(orgaoEmissor);
         documento.setUfEmissor(ufEmissor);
         documento.setTelefone(telefone);
-        documento.setCursoTACCompleto(cursoTAC);
-        documento.setCursoRTCompleto(cursoRT);
+        documento.setCurso(curso);
         documento.setArquivoPath(UPLOAD_DIR + nomeArquivo);
         documento.setNomeArquivoOriginal(arquivo.getOriginalFilename());
         documento.setDataEnvio(LocalDateTime.now());
