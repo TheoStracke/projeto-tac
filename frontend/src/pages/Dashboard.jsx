@@ -76,7 +76,17 @@ export default function Dashboard() {
     titulo: '',
     descricao: '',
     nomeMotorista: '',
-    arquivo: null
+    arquivo: null,
+    cpf: '',
+    dataNascimento: '',
+    sexo: '',
+    email: '',
+    identidade: '',
+    orgaoEmissor: '',
+    ufEmissor: '',
+    telefone: '',
+    cursoTAC: false,
+    cursoRT: false
   });
 
 
@@ -164,13 +174,38 @@ export default function Dashboard() {
       formDataToSend.append('titulo', formData.titulo);
       formDataToSend.append('descricao', formData.descricao || '');
       formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
+      formDataToSend.append('cpf', formData.cpf);
+      formDataToSend.append('dataNascimento', formData.dataNascimento);
+      formDataToSend.append('sexo', formData.sexo);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('identidade', formData.identidade);
+      formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
+      formDataToSend.append('ufEmissor', formData.ufEmissor);
+      formDataToSend.append('telefone', formData.telefone);
+      formDataToSend.append('cursoTAC', formData.cursoTAC);
+      formDataToSend.append('cursoRT', formData.cursoRT);
       formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
       const result = await enviarDocumento(formDataToSend);
       
       if (result.success) {
         setModalAberto(false);
-        setFormData({ titulo: '', descricao: '', nomeMotorista: '', arquivo: null });
+        setFormData({
+          titulo: '',
+          descricao: '',
+          nomeMotorista: '',
+          arquivo: null,
+          cpf: '',
+          dataNascimento: '',
+          sexo: '',
+          email: '',
+          identidade: '',
+          orgaoEmissor: '',
+          ufEmissor: '',
+          telefone: '',
+          cursoTAC: false,
+          cursoRT: false
+        });
         carregarDocumentos();
       } else {
         setError(result.error);
@@ -188,8 +223,11 @@ export default function Dashboard() {
     setFormData(prev => ({ ...prev, arquivo: file }));
   }, []);
 
-  const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = useCallback((field, value, type) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: type === 'checkbox' ? value : value
+    }));
   }, []);
 
   const visualizarArquivo = async (documentoId) => {
@@ -431,6 +469,140 @@ export default function Dashboard() {
               onChange={(e) => handleInputChange('nomeMotorista', e.target.value)}
               fullWidth
             />
+            <TextField
+              id="cpf"
+              name="cpf"
+              label="CPF"
+              value={formData.cpf}
+              onChange={(e) => handleInputChange('cpf', e.target.value)}
+              required
+              fullWidth
+              placeholder="000.000.000-00"
+            />
+            <TextField
+              id="data-nascimento"
+              name="dataNascimento"
+              label="Data de Nascimento"
+              type="date"
+              value={formData.dataNascimento}
+              onChange={(e) => handleInputChange('dataNascimento', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              required
+              fullWidth
+            />
+            <TextField
+              id="sexo"
+              name="sexo"
+              label="Sexo"
+              select
+              SelectProps={{ native: true }}
+              value={formData.sexo}
+              onChange={(e) => handleInputChange('sexo', e.target.value)}
+              required
+              fullWidth
+            >
+              <option value="">Selecione</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Outro">Outro</option>
+            </TextField>
+            <TextField
+              id="email"
+              name="email"
+              label="E-mail"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              required
+              type="email"
+              fullWidth
+            />
+            <TextField
+              id="identidade"
+              name="identidade"
+              label="Identidade"
+              value={formData.identidade}
+              onChange={(e) => handleInputChange('identidade', e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              id="orgao-emissor"
+              name="orgaoEmissor"
+              label="Orgão Emissor"
+              value={formData.orgaoEmissor}
+              onChange={(e) => handleInputChange('orgaoEmissor', e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              id="uf-emissor"
+              name="ufEmissor"
+              label="UF Emissor"
+              select
+              SelectProps={{ native: true }}
+              value={formData.ufEmissor}
+              onChange={(e) => handleInputChange('ufEmissor', e.target.value)}
+              required
+              fullWidth
+            >
+              <option value="">Selecione</option>
+              <option value="AC">AC</option>
+              <option value="AL">AL</option>
+              <option value="AP">AP</option>
+              <option value="AM">AM</option>
+              <option value="BA">BA</option>
+              <option value="CE">CE</option>
+              <option value="DF">DF</option>
+              <option value="ES">ES</option>
+              <option value="GO">GO</option>
+              <option value="MA">MA</option>
+              <option value="MT">MT</option>
+              <option value="MS">MS</option>
+              <option value="MG">MG</option>
+              <option value="PA">PA</option>
+              <option value="PB">PB</option>
+              <option value="PR">PR</option>
+              <option value="PE">PE</option>
+              <option value="PI">PI</option>
+              <option value="RJ">RJ</option>
+              <option value="RN">RN</option>
+              <option value="RS">RS</option>
+              <option value="RO">RO</option>
+              <option value="RR">RR</option>
+              <option value="SC">SC</option>
+              <option value="SP">SP</option>
+              <option value="SE">SE</option>
+              <option value="TO">TO</option>
+            </TextField>
+            <TextField
+              id="telefone"
+              name="telefone"
+              label="Telefone com DDD"
+              value={formData.telefone}
+              onChange={(e) => handleInputChange('telefone', e.target.value)}
+              required
+              fullWidth
+              placeholder="(00) 00000-0000"
+            />
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>Curso</Typography>
+              <label>
+                <input
+                  type="checkbox"
+                  name="cursoTAC"
+                  checked={formData.cursoTAC}
+                  onChange={e => handleInputChange('cursoTAC', e.target.checked, 'checkbox')}
+                /> TAC Completo
+              </label>
+              <label style={{ marginLeft: 16 }}>
+                <input
+                  type="checkbox"
+                  name="cursoRT"
+                  checked={formData.cursoRT}
+                  onChange={e => handleInputChange('cursoRT', e.target.checked, 'checkbox')}
+                /> RT Completo
+              </label>
+            </Box>
             <Box>
               <Typography variant="body2" sx={{ mb: 1 }} component="label" htmlFor="arquivo-upload">
                 Selecione o arquivo:
