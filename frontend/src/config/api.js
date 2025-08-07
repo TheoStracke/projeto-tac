@@ -1,3 +1,18 @@
+// === FUNÇÃO PARA BUSCAR TODOS OS PEDIDOS (ADMIN) ===
+export const buscarPedidos = async () => {
+  try {
+    const response = await api.get('/api/pedidos');
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar pedidos'
+    };
+  }
+};
 // === FUNÇÃO PARA ENVIAR PEDIDO DE DOCUMENTOS (MÚLTIPLOS) ===
 export const enviarPedidoDocumentos = async (formData) => {
   try {

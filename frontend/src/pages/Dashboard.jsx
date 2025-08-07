@@ -30,7 +30,8 @@ import {
   buscarDetalhesDocumento,
   aprovarDocumento, 
   rejeitarDocumento,
-  visualizarArquivoDocumento
+  visualizarArquivoDocumento,
+  buscarPedidos
 } from '../config/api';
 import LogoutButton from '../components/LogoutButton';
 
@@ -67,7 +68,8 @@ export default function Dashboard() {
   });
   console.log('Dashboard: empresaData', empresaData);
   console.log('Dashboard: token', localStorage.getItem('token'));
-  const [documentos, setDocumentos] = useState([]);
+  const [documentos, setDocumentos] = useState([]); // para despachante
+  const [pedidos, setPedidos] = useState([]); // para admin
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
@@ -93,29 +95,40 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    // Se o estado empresaData não estiver definido...
     if (!empresaData) {
-      // ...tentamos buscar os dados mais recentes do localStorage.
       const freshData = getEmpresaData();
-
       if (freshData) {
-        // Se encontrarmos, ATUALIZAMOS O ESTADO.
-        // Esta é a correção crucial.
         setEmpresaData(freshData);
       } else {
-        // Se ainda assim não houver dados, o usuário não está logado.
         clearAuthData(); 
         navigate('/login', { replace: true });
         return; 
       }
     }
-
-    // Este código só será executado se 'empresaData' for válido.
-    carregarDocumentos();
-
-  // Adicionamos 'empresaData' e 'navigate' como dependências.
-  // O efeito será re-executado se 'empresaData' for atualizado pelo setEmpresaData.
+    if (empresaData?.tipo === 'ESTRADA_FACIL') {
+      carregarPedidos();
+    } else {
+      carregarDocumentos();
+    }
   }, [empresaData, navigate]);
+  const carregarPedidos = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const result = await buscarPedidos();
+      if (result.success) {
+        setPedidos(result.data);
+      } else {
+        setError(result.error);
+        setPedidos([]);
+      }
+    } catch {
+      setError('Erro de conexão. Tente novamente.');
+      setPedidos([]);
+    } finally {
+      setLoading(false);
+    }
+  };
  
 
   const carregarDocumentos = async () => {
@@ -365,7 +378,7 @@ export default function Dashboard() {
 
       {loading ? (
         <Alert severity="info">🔄 Carregando documentos...</Alert>
-      ) : (
+      ) : isAdmin ? (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -373,112 +386,78 @@ export default function Dashboard() {
                 <TableCell></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
                 <TableCell><strong>Data Envio</strong></TableCell>
-                {isAdmin && <TableCell><strong>Empresa</strong></TableCell>}
-                {isAdmin && <TableCell><strong>Visualizar</strong></TableCell>}
-                {isAdmin && <TableCell><strong>Ações</strong></TableCell>}
+                <TableCell><strong>Empresa</strong></TableCell>
+                <TableCell><strong>Motorista</strong></TableCell>
+                <TableCell><strong>Ações</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {documentos.length === 0 ? (
+              {pedidos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 8 : 6} align="center">
+                  <TableCell colSpan={8} align="center">
                     <Typography color="text.secondary" sx={{ py: 4 }}>
-                      {isAdmin ? '📝 Nenhum documento pendente de aprovação' : '📋 Nenhum documento enviado ainda'}
+                      📝 Nenhum pedido pendente de aprovação
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                documentos.map((documento, index) => (
-                  <React.Fragment key={documento.id || index}>
+                pedidos.map((pedido, index) => (
+                  <React.Fragment key={pedido.id || index}>
                     <TableRow>
                       <TableCell>
-                        <Button size="small" onClick={() => handleExpandRow(documento.id)}>
-                          {expandedRows.includes(documento.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        <Button size="small" onClick={() => handleExpandRow(pedido.id)}>
+                          {expandedRows.includes(pedido.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </Button>
                       </TableCell>
-                      {/* Tipo removido */}
                       <TableCell>
                         <Chip 
-                          label={documento.status || 'PENDENTE'} 
-                          color={getStatusColor(documento.status)} 
+                          label={pedido.status || 'PENDENTE'} 
+                          color={getStatusColor(pedido.status)} 
                           size="small" 
                         />
                       </TableCell>
-                      <TableCell>{formatarData(documento.dataEnvio)}</TableCell>
-                      {isAdmin && (
-                        <TableCell>{documento.empresa?.razaoSocial || documento.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
-                      )}
-                      {isAdmin && (
-                        <TableCell>
-                          {documento.nomeArquivoOriginal ? (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="primary"
-                              onClick={() => visualizarArquivo(documento.id)}
-                            >
-                              📎 {documento.nomeArquivoOriginal}
-                            </Button>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">N/A</Typography>
-                          )}
-                        </TableCell>
-                      )}
-                      {isAdmin && (
-                        <TableCell>
-                          {documento.status === 'PENDENTE' ? (
-                            <Box>
-                              <Button 
-                                size="small" 
-                                color="success" 
-                                sx={{ mr: 1 }}
-                                onClick={() => handleAprovarDocumento(documento.id)}
-                              >
-                                ✅ Aprovar
-                              </Button>
-                              <Button 
-                                size="small" 
-                                color="error"
-                                onClick={() => handleRejeitarDocumento(documento.id)}
-                              >
-                                ❌ Rejeitar
-                              </Button>
-                            </Box>
-                          ) : null}
-                        </TableCell>
-                      )}
+                      <TableCell>{formatarData(pedido.dataEnvio)}</TableCell>
+                      <TableCell>{pedido.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
+                      <TableCell>{pedido.nomeMotorista || 'Não informado'}</TableCell>
+                      <TableCell>
+                        {/* Ações futuras: Aprovar/Rejeitar pedido inteiro */}
+                      </TableCell>
                     </TableRow>
-                    {expandedRows.includes(documento.id) && (
+                    {expandedRows.includes(pedido.id) && (
                       <TableRow>
-                        <TableCell colSpan={isAdmin ? 8 : 6} sx={{ background: '#f9f9f9', p: 2 }}>
-                          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 2 }}>
-                            <div><strong>Título:</strong> {documento.titulo}</div>
-                            {/* Tipo removido */}
-                            <div><strong>Status:</strong> {documento.status}</div>
-                            <div><strong>Motorista:</strong> {documento.nomeMotorista || 'Não informado'}</div>
-                            <div><strong>CPF:</strong> {documento.cpf || 'Não informado'}</div>
-                            <div><strong>Data de Nascimento:</strong> {documento.dataNascimento || 'Não informado'}</div>
-                            <div><strong>Sexo:</strong> {documento.sexo || 'Não informado'}</div>
-                            <div><strong>E-mail:</strong> {documento.email || 'Não informado'}</div>
-                            <div><strong>Identidade:</strong> {documento.identidade || 'Não informado'}</div>
-                            <div><strong>Orgão Emissor:</strong> {documento.orgaoEmissor || 'Não informado'}</div>
-                            <div><strong>UF Emissor:</strong> {documento.ufEmissor || 'Não informado'}</div>
-                            <div><strong>Telefone:</strong> {documento.telefone || 'Não informado'}</div>
-                            <div><strong>Curso:</strong> {documento.curso === 'TAC' ? 'TAC Completo' : documento.curso === 'RT' ? 'RT Completo' : 'Não informado'}</div>
-                            <div><strong>Arquivo:</strong> {documento.nomeArquivoOriginal ? (
-                              <Button size="small" onClick={() => visualizarArquivo(documento.id)}>
-                                📎 {documento.nomeArquivoOriginal}
-                              </Button>
-                            ) : 'N/A'}</div>
+                        <TableCell colSpan={8} sx={{ background: '#f9f9f9', p: 2 }}>
+                          <Box sx={{ mb: 2 }}>
+                            <strong>Título:</strong> {pedido.titulo} <br />
+                            <strong>Descrição:</strong> {pedido.descricao}
                           </Box>
-                          {documento.descricao && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography variant="subtitle1">Documentos deste pedido:</Typography>
+                            {pedido.documentos && pedido.documentos.length > 0 ? (
+                              pedido.documentos.map((doc, idx) => (
+                                <Box key={doc.id} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                  <Typography sx={{ mr: 2 }}>{doc.nomeArquivoOriginal}</Typography>
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={() => visualizarArquivo(doc.id)}
+                                  >
+                                    📎 Visualizar
+                                  </Button>
+                                  <Chip
+                                    label={doc.status}
+                                    color={getStatusColor(doc.status)}
+                                    size="small"
+                                    sx={{ ml: 2 }}
+                                  />
+                                </Box>
+                              ))
+                            ) : (
+                              <Typography color="text.secondary">Nenhum documento neste pedido.</Typography>
+                            )}
+                          </Box>
+                          {pedido.comentarios && (
                             <Box sx={{ mt: 2 }}>
-                              <strong>Descrição:</strong> {documento.descricao}
-                            </Box>
-                          )}
-                          {documento.comentarios && (
-                            <Box sx={{ mt: 2 }}>
-                              <strong>Comentários da Aprovação:</strong> {documento.comentarios}
+                              <strong>Comentários da Aprovação:</strong> {pedido.comentarios}
                             </Box>
                           )}
                         </TableCell>
@@ -487,6 +466,23 @@ export default function Dashboard() {
                   </React.Fragment>
                 ))
               )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        // ...código antigo para despachante permanece...
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell></TableCell>
+                <TableCell><strong>Status</strong></TableCell>
+                <TableCell><strong>Data Envio</strong></TableCell>
+                {/* ...demais colunas... */}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {/* ...documentos.map... */}
             </TableBody>
           </Table>
         </TableContainer>

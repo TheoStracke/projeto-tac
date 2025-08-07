@@ -19,7 +19,7 @@ export default function EnviarDocumento() {
     titulo: '',
     descricao: '',
     nomeMotorista: '',
-    arquivos: [],
+    arquivos: [null, null, null], // até 3 arquivos
     cpf: '',
     dataNascimento: '',
     sexo: '',
@@ -31,6 +31,7 @@ export default function EnviarDocumento() {
     cursoTAC: false,
     cursoRT: false
   });
+  const [arquivosEnviados, setArquivosEnviados] = useState([null, null, null]);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,12 +57,30 @@ export default function EnviarDocumento() {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData(prev => ({
-      ...prev,
-      arquivos: files
-    }));
+  const handleFileChange = (idx, e) => {
+    const file = e.target.files[0] || null;
+    setFormData(prev => {
+      const novos = [...prev.arquivos];
+      novos[idx] = file;
+      return { ...prev, arquivos: novos };
+    });
+  };
+
+  const handleEnviarArquivo = (idx) => async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    const file = formData.arquivos[idx];
+    if (!file) {
+      setError(`Selecione um arquivo para o campo ${idx + 1}.`);
+      return;
+    }
+    setArquivosEnviados(prev => {
+      const novos = [...prev];
+      novos[idx] = file;
+      return novos;
+    });
+    setSuccess(`Arquivo ${file.name} pronto para envio.`);
   };
 
   const handleSubmit = async (e) => {
@@ -70,9 +89,10 @@ export default function EnviarDocumento() {
     setError('');
     setSuccess('');
 
-    // Validação: 2 ou 3 arquivos obrigatórios
-    if (!formData.arquivos || formData.arquivos.length < 2 || formData.arquivos.length > 3) {
-      setError('Selecione no mínimo 2 e no máximo 3 arquivos para enviar.');
+    // Validação: pelo menos 2 arquivos enviados
+    const arquivosParaEnviar = arquivosEnviados.filter(Boolean);
+    if (arquivosParaEnviar.length < 2) {
+      setError('Envie pelo menos 2 arquivos antes de enviar o pedido.');
       setLoading(false);
       return;
     }
@@ -92,7 +112,7 @@ export default function EnviarDocumento() {
       data.append('telefone', formData.telefone);
       data.append('curso', formData.cursoTAC ? 'TAC' : (formData.cursoRT ? 'RT' : ''));
       data.append('empresaId', empresaData.id);
-      formData.arquivos.forEach((file) => {
+      arquivosParaEnviar.forEach((file) => {
         data.append('arquivos', file);
       });
 
@@ -100,12 +120,11 @@ export default function EnviarDocumento() {
 
       if (result.success) {
         setSuccess('Pedido de aprovação enviado com sucesso! A Estrada Fácil foi notificada por email.');
-        // Limpar formulário
         setFormData({
           titulo: '',
           descricao: '',
           nomeMotorista: '',
-          arquivos: [],
+          arquivos: [null, null, null],
           cpf: '',
           dataNascimento: '',
           sexo: '',
@@ -117,7 +136,7 @@ export default function EnviarDocumento() {
           cursoTAC: false,
           cursoRT: false
         });
-        document.getElementById('arquivos-input').value = '';
+        setArquivosEnviados([null, null, null]);
       } else {
         setError(result.error);
       }
@@ -339,27 +358,32 @@ export default function EnviarDocumento() {
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Arquivos do Pedido (2 a 3 arquivos)
+                    Envie até 3 arquivos (mínimo 2)
                   </Typography>
-                  <input
-                    id="arquivos-input"
-                    type="file"
-                    onChange={handleFileChange}
-                    required
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    style={{ marginBottom: '10px' }}
-                    multiple
-                  />
+                  {[0,1,2].map(idx => (
+                    <Box key={idx} sx={{ mb: 2 }}>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        onChange={e => handleFileChange(idx, e)}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={handleEnviarArquivo(idx)}
+                        disabled={!formData.arquivos[idx] || arquivosEnviados[idx]}
+                      >
+                        {arquivosEnviados[idx] ? 'Arquivo pronto' : 'Enviar arquivo'}
+                      </Button>
+                      {formData.arquivos[idx] && (
+                        <span style={{ marginLeft: 8 }}>{formData.arquivos[idx].name}</span>
+                      )}
+                    </Box>
+                  ))}
                   <Typography variant="caption" display="block" color="text.secondary">
-                    Selecione de 2 a 3 arquivos. Formatos aceitos: PDF, JPG, PNG, DOC, DOCX (máx. 10MB cada)
+                    Só será possível enviar o pedido após pelo menos 2 arquivos enviados.
                   </Typography>
-                  {formData.arquivos && formData.arquivos.length > 0 && (
-                    <ul style={{ margin: 0, paddingLeft: 16 }}>
-                      {formData.arquivos.map((file, idx) => (
-                        <li key={idx}>{file.name}</li>
-                      ))}
-                    </ul>
-                  )}
                 </CardContent>
               </Card>
             </Grid>
@@ -370,11 +394,11 @@ export default function EnviarDocumento() {
                 fullWidth
                 variant="contained"
                 size="large"
-                disabled={loading}
+                disabled={loading || arquivosEnviados.filter(Boolean).length < 2}
                 startIcon={<CloudUpload />}
                 sx={{ py: 2 }}
               >
-                {loading ? 'Enviando...' : 'Enviar Documento'}
+                {loading ? 'Enviando...' : 'Enviar Pedido'}
               </Button>
             </Grid>
           </Grid>

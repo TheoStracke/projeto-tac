@@ -97,4 +97,12 @@ public class PedidoDocumentosController {
         // Os arquivos ainda precisam ser salvos fisicamente!
         return ResponseEntity.ok(pedido);
     }
+    /**
+     * Endpoint para listar todos os pedidos com seus documentos (admin)
+     */
+    @GetMapping
+    public ResponseEntity<List<PedidoDocumentos>> listarPedidos() {
+        List<PedidoDocumentos> pedidos = pedidoRepository.findAll();
+        return ResponseEntity.ok(pedidos);
+    }
 }
