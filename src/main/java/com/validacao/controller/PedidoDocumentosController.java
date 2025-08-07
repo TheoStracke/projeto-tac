@@ -69,7 +69,7 @@ public class PedidoDocumentosController {
         pedido.setDataEnvio(LocalDateTime.now());
         pedido.setStatus("PENDENTE");
         List<Documento> docs = new ArrayList<>();
-        for (MultipartFile unused : arquivos) { // variável não utilizada
+        for (int i = 0; i < arquivos.size(); i++) {
             Documento doc = new Documento();
             doc.setTitulo(titulo);
             doc.setDescricao(descricao);
@@ -113,13 +113,7 @@ public class PedidoDocumentosController {
      */
     @GetMapping("/empresa/{empresaId}")
     public ResponseEntity<List<PedidoDocumentos>> listarPedidosPorEmpresa(@PathVariable Long empresaId) {
-        List<PedidoDocumentos> pedidos = pedidoRepository.findAll();
-        List<PedidoDocumentos> pedidosEmpresa = new ArrayList<>();
-        for (PedidoDocumentos pedido : pedidos) {
-            if (pedido.getEmpresaRemetente() != null && pedido.getEmpresaRemetente().getId().equals(empresaId)) {
-                pedidosEmpresa.add(pedido);
-            }
-        }
+        List<PedidoDocumentos> pedidosEmpresa = pedidoRepository.findByEmpresaRemetenteId(empresaId);
         return ResponseEntity.ok(pedidosEmpresa);
     }
 }
