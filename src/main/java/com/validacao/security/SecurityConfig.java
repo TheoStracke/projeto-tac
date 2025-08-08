@@ -29,9 +29,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Permite domínios explícitos e padrões profissionais (wildcard) para produção
-        // Exemplo: https://*.vercel.app, https://projeto-tac.vercel.app, etc
         String[] originPatterns = allowedOrigins.split(",");
         for (int i = 0; i < originPatterns.length; i++) {
             originPatterns[i] = originPatterns[i].trim();
@@ -41,7 +38,6 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
