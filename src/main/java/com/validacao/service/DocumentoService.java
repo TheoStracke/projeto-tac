@@ -37,7 +37,7 @@ public class DocumentoService {
     @Autowired
     private EmailService emailService;
     
-    @Value("${app.upload.dir:/tmp/uploads/}")
+    @Value("${app.upload.dir:uploads/}")
     private String UPLOAD_DIR;
 
     public Documento enviarDocumento(MultipartFile arquivo, String titulo, String descricao, 
@@ -76,6 +76,7 @@ public class DocumentoService {
         documento.setTelefone(telefone);
         documento.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
         documento.setCursoRTCompleto("RT".equalsIgnoreCase(curso));
+        // Sempre salvar caminho relativo ao diretório do projeto
         documento.setArquivoPath(UPLOAD_DIR + nomeArquivo);
         documento.setNomeArquivoOriginal(arquivo.getOriginalFilename());
         documento.setDataEnvio(LocalDateTime.now());
@@ -180,7 +181,8 @@ public class DocumentoService {
         try {
             logger.info("[DOC] Salvando arquivo: {}", arquivo.getOriginalFilename());
             // Criar diretório se não existir
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            // Garante que o caminho é relativo ao diretório do projeto
+            Path uploadPath = Paths.get(UPLOAD_DIR).toAbsolutePath();
             if (!Files.exists(uploadPath)) {
                 logger.info("[DOC] Diretório de upload não existe. Criando: {}", uploadPath);
                 Files.createDirectories(uploadPath);
