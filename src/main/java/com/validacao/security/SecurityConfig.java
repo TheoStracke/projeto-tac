@@ -1,4 +1,3 @@
-
 package com.validacao.security;
 
 import org.springframework.context.annotation.Bean;
@@ -13,7 +12,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -47,11 +45,19 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Defina aqui a URL exata do seu frontend
-        configuration.setAllowedOrigins(List.of("https://projeto-tac-ja9q.vercel.app"));
+        // Origens permitidas (inclui Vercel e localhost para desenvolvimento)
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "https://projeto-tac-ja9q.vercel.app",
+            "https://*.vercel.app",
+            "http://localhost:5173"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        // Permite quaisquer cabeçalhos solicitados no preflight (ex.: Authorization, Content-Type, X-Requested-With, etc.)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // Expõe cabeçalhos úteis ao browser
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
