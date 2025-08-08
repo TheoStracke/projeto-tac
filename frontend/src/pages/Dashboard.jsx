@@ -118,10 +118,7 @@ export default function Dashboard() {
       }
       result = await buscarDocumentos(empresaId);
       console.log('Resultado buscarDocumentos:', result);
-      console.log('empresaData:', empresaData);
-      console.log('isAdmin calculado:', empresaData?.tipo === 'ESTRADA_FACIL');
       if (result.success) {
-        console.log('Dados dos pedidos:', result.data);
         setPedidos(result.data);
       } else {
         setError(result.error);
@@ -232,13 +229,11 @@ export default function Dashboard() {
     console.log('Visualizar arquivo documentoId:', documentoId);
     try {
       const result = await visualizarArquivoDocumento(documentoId);
-      console.log('Resultado visualizarArquivoDocumento:', result);
       if (result.success) {
-        // O backend agora retorna uma URL temporária do S3
-        const url = result.data;
+        const url = URL.createObjectURL(result.data);
         window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
       } else {
-        console.error('Erro na visualização:', result.error);
         if (result.error && result.error.toLowerCase().includes('404')) {
           setError('Arquivo não encontrado para este documento.');
         } else {
@@ -246,7 +241,6 @@ export default function Dashboard() {
         }
       }
     } catch (err) {
-      console.error('Erro catch na visualização:', err);
       if (err?.response?.status === 404) {
         setError('Arquivo não encontrado para este documento.');
       } else {
@@ -298,7 +292,7 @@ export default function Dashboard() {
   const getStatusColor = useCallback((status) => {
     switch (status) {
       case 'PENDENTE': return 'warning';
-      case 'APROVADO': return 'success';
+        formDataToSend.append('arquivo', arquivo);
       case 'REJEITADO': return 'error';
       default: return 'default';
     }
@@ -408,40 +402,7 @@ export default function Dashboard() {
                       <TableCell>{pedido.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
                       <TableCell>{pedido.nomeMotorista || 'Não informado'}</TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                          {isAdmin && pedido.status === 'PENDENTE' && (
-                            <>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                onClick={() => handleAprovarDocumento(pedido.id)}
-                                sx={{ minWidth: '80px' }}
-                              >
-                                Aprovar
-                              </Button>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="error"
-                                onClick={() => handleRejeitarDocumento(pedido.id)}
-                                sx={{ minWidth: '80px' }}
-                              >
-                                Rejeitar
-                              </Button>
-                            </>
-                          )}
-                          {!isAdmin && (
-                            <Typography variant="caption" color="text.secondary">
-                              -
-                            </Typography>
-                          )}
-                          {isAdmin && pedido.status !== 'PENDENTE' && (
-                            <Typography variant="caption" color="text.secondary">
-                              {pedido.status === 'APROVADO' ? '✅ Aprovado' : '❌ Rejeitado'}
-                            </Typography>
-                          )}
-                        </Box>
+                        {/* Ações futuras: Aprovar/Rejeitar pedido inteiro */}
                       </TableCell>
                     </TableRow>
                     {expandedRows.includes(pedido.id) && (
@@ -477,6 +438,29 @@ export default function Dashboard() {
                               <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
                                 Nenhum arquivo enviado para este documento.
                               </Typography>
+                            )}
+                            {/* Aprovar/Rejeitar para admin e status PENDENTE */}
+                            {isAdmin && pedido.status === 'PENDENTE' && (
+                              <>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="success"
+                                  onClick={() => handleAprovarDocumento(pedido.id)}
+                                  sx={{ ml: 2 }}
+                                >
+                                  Aprovar
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="error"
+                                  onClick={() => handleRejeitarDocumento(pedido.id)}
+                                  sx={{ ml: 1 }}
+                                >
+                                  Rejeitar
+                                </Button>
+                              </>
                             )}
                           </Box>
                         </TableCell>

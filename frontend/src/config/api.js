@@ -325,17 +325,14 @@ export const buscarDetalhesDocumento = async (documentoId) => {
 
 export const visualizarArquivoDocumento = async (documentoId) => {
   try {
-    console.log('Chamando API para visualizar arquivo, documentoId:', documentoId);
     const response = await api.get(`/api/documentos/${documentoId}/arquivo`, {
       responseType: 'blob',
     });
-    console.log('Resposta da API para visualizar arquivo:', response);
     return {
       success: true,
       data: response.data
     };
   } catch (error) {
-    console.error('Erro na API visualizarArquivoDocumento:', error);
     return {
       success: false,
       error: error.response?.data?.message || 'Erro ao visualizar arquivo'

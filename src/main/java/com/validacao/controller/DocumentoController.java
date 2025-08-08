@@ -2,14 +2,20 @@ package com.validacao.controller;
 
 import com.validacao.model.Documento;
 import com.validacao.service.DocumentoService;
-import com.validacao.service.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,11 +24,8 @@ import java.util.Optional;
 public class DocumentoController {
     private static final Logger logger = LoggerFactory.getLogger(DocumentoController.class);
     
-
     @Autowired
     private DocumentoService documentoService;
-    @Autowired
-    private S3Service s3Service;
     
     @PostMapping("/enviar")
     public ResponseEntity<?> enviarDocumento(
@@ -38,7 +41,8 @@ public class DocumentoController {
             @RequestParam("orgaoEmissor") String orgaoEmissor,
             @RequestParam("ufEmissor") String ufEmissor,
             @RequestParam("telefone") String telefone,
-            @RequestParam("curso") String curso,
+            @RequestParam("cursoTAC") Boolean cursoTAC,
+            @RequestParam("cursoRT") Boolean cursoRT,
             @RequestParam("empresaId") Long empresaId) {
         logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null");
         try {
@@ -50,7 +54,7 @@ public class DocumentoController {
             Documento documento = documentoService.enviarDocumento(
                 arquivo, titulo, descricao, nomeMotorista,
                 cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
-                curso, empresaId
+                cursoTAC, cursoRT, empresaId
             );
 
             logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
@@ -106,18 +110,13 @@ public class DocumentoController {
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarDocumento(@PathVariable Long id) {
         try {
-            logger.info("[BUSCAR DOC] Buscando documento ID: {}", id);
             Optional<Documento> documento = documentoService.buscarPorId(id);
             if (documento.isPresent()) {
-                logger.info("[BUSCAR DOC] Documento encontrado: {}, arquivo: {}", 
-                    documento.get().getId(), documento.get().getArquivoPath());
                 return ResponseEntity.ok(documento.get());
             } else {
-                logger.warn("[BUSCAR DOC] Documento não encontrado: {}", id);
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            logger.error("[BUSCAR DOC] Erro ao buscar documento: {}", id, e);
             return ResponseEntity.badRequest().body("Erro ao buscar documento: " + e.getMessage());
         }
     }
@@ -126,29 +125,50 @@ public class DocumentoController {
      * Endpoint para download/visualização de arquivos
      */
     @GetMapping("/{id}/arquivo")
-    public ResponseEntity<?> visualizarArquivo(@PathVariable Long id) {
+    public ResponseEntity<Resource> visualizarArquivo(@PathVariable Long id) {
         try {
-            logger.info("[ARQUIVO] Tentando buscar arquivo para documento ID: {}", id);
             Optional<Documento> documentoOpt = documentoService.buscarPorId(id);
             if (!documentoOpt.isPresent()) {
-                logger.warn("[ARQUIVO] Documento não encontrado: {}", id);
                 return ResponseEntity.notFound().build();
             }
+            
             Documento documento = documentoOpt.get();
-            if (documento.getArquivoPath() == null || documento.getArquivoPath().isEmpty()) {
-                logger.warn("[ARQUIVO] Documento não possui arquivo associado: {}", id);
+            Path arquivoPath = Paths.get(documento.getArquivoPath());
+            Resource resource = new UrlResource(arquivoPath.toUri());
+            
+            if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.notFound().build();
             }
-            String s3Key = documento.getArquivoPath();
+            
+            // Determinar o tipo de mídia baseado na extensão
             String nomeArquivo = documento.getNomeArquivoOriginal();
-            // Gerar URL temporária do S3
-            java.net.URL presignedUrl = s3Service.generatePresignedUrl(s3Key);
-            logger.info("[ARQUIVO] URL temporária gerada para arquivo: {} -> {}", nomeArquivo, presignedUrl);
-            return ResponseEntity.ok().body(presignedUrl.toString());
+            String contentType = determinarTipoMidia(nomeArquivo);
+            
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + nomeArquivo + "\"")
+                    .body(resource);
+                    
+        } catch (MalformedURLException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            logger.error("[ARQUIVO] Erro ao gerar URL temporária para arquivo", e);
-            return ResponseEntity.internalServerError().body("Erro ao gerar URL temporária para arquivo: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
     
+    /**
+     * Determina o tipo de mídia com base na extensão do arquivo
+     */
+    private String determinarTipoMidia(String nomeArquivo) {
+        if (nomeArquivo == null) return "application/octet-stream";
+        
+        String extensao = nomeArquivo.toLowerCase();
+        if (extensao.endsWith(".pdf")) return "application/pdf";
+        if (extensao.endsWith(".jpg") || extensao.endsWith(".jpeg")) return "image/jpeg";
+        if (extensao.endsWith(".png")) return "image/png";
+        if (extensao.endsWith(".doc")) return "application/msword";
+        if (extensao.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        
+        return "application/octet-stream";
+    }
 }
