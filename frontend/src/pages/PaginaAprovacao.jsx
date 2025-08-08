@@ -16,6 +16,9 @@ import {
 import { CheckCircle, Cancel } from '@mui/icons-material';
 import { buscarAprovacao, processarAprovacao } from '../config/api';
 
+// Importar a URL base da API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://projeto-tac-production-8a69.up.railway.app/api';
+
 export default function PaginaAprovacao() {
   const { token } = useParams();
   const [documento, setDocumento] = useState(null);
@@ -139,7 +142,31 @@ export default function PaginaAprovacao() {
                     <Chip
                       label={documento.status}
                       color={getStatusColor(documento.status)}
-                      size="small"
+                      size="medium"
+                      sx={{
+                        fontWeight: 'bold',
+                        ...(documento.status === 'APROVADO' && {
+                          backgroundColor: '#4caf50',
+                          color: 'white',
+                          '& .MuiChip-label': {
+                            color: 'white'
+                          }
+                        }),
+                        ...(documento.status === 'REJEITADO' && {
+                          backgroundColor: '#f44336',
+                          color: 'white',
+                          '& .MuiChip-label': {
+                            color: 'white'
+                          }
+                        }),
+                        ...(documento.status === 'PENDENTE' && {
+                          backgroundColor: '#ff9800',
+                          color: 'white',
+                          '& .MuiChip-label': {
+                            color: 'white'
+                          }
+                        })
+                      }}
                     />
                   </Grid>
 
@@ -246,21 +273,43 @@ export default function PaginaAprovacao() {
                 </Box>
               </Box>
             ) : (
-              <Box sx={{ textAlign: 'center', p: 3, bgcolor: 'grey.50', borderRadius: 1 }}>
+              <Box sx={{ textAlign: 'center', p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Este documento já foi processado
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  Status: <strong>{documento.status}</strong>
-                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body1" sx={{ mb: 1 }}>Status:</Typography>
+                  <Chip
+                    label={documento.status}
+                    size="large"
+                    sx={{
+                      fontWeight: 'bold',
+                      fontSize: '1rem',
+                      ...(documento.status === 'APROVADO' && {
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        '& .MuiChip-label': {
+                          color: 'white'
+                        }
+                      }),
+                      ...(documento.status === 'REJEITADO' && {
+                        backgroundColor: '#f44336',
+                        color: 'white',
+                        '& .MuiChip-label': {
+                          color: 'white'
+                        }
+                      })
+                    }}
+                  />
+                </Box>
                 {documento.comentarios && (
-                  <Typography variant="body2" color="text.secondary">
-                    Comentários: {documento.comentarios}
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    <strong>Comentários:</strong> {documento.comentarios}
                   </Typography>
                 )}
                 {documento.dataAprovacao && (
                   <Typography variant="body2" color="text.secondary">
-                    Processado em: {formatarData(documento.dataAprovacao)}
+                    <strong>Processado em:</strong> {formatarData(documento.dataAprovacao)}
                   </Typography>
                 )}
               </Box>
