@@ -73,6 +73,8 @@ public class DocumentoService {
         documento.setIdentidade(identidade);
         documento.setOrgaoEmissor(orgaoEmissor);
         documento.setUfEmissor(ufEmissor);
+        documento.setCurso(curso);
+        logger.info("[SALVANDO DOCUMENTO] curso={}, ufEmissor={}", documento.getCurso(), documento.getUfEmissor());
         documento.setTelefone(telefone);
         documento.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
         documento.setCursoRTCompleto("RT".equalsIgnoreCase(curso));

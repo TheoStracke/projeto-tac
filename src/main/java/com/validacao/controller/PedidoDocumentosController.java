@@ -55,6 +55,7 @@ public class PedidoDocumentosController {
             @RequestParam("curso") String curso,
             @RequestParam("empresaId") Long empresaId
     ) {
+        addDebugLog("[RECEBIDO] curso=" + curso + ", ufEmissor=" + ufEmissor);
         if (arquivos == null || arquivos.size() < 2 || arquivos.size() > 3) {
             return ResponseEntity.badRequest().body("É obrigatório enviar entre 2 e 3 arquivos.");
         }
@@ -79,6 +80,7 @@ public class PedidoDocumentosController {
         pedido.setUfEmissor(ufEmissor);
         pedido.setTelefone(telefone);
         pedido.setCurso(curso);
+        addDebugLog("[SALVANDO PEDIDO] curso=" + pedido.getCurso() + ", ufEmissor=" + pedido.getUfEmissor());
         pedido.setDataEnvio(LocalDateTime.now());
         pedido.setStatus("PENDENTE");
         List<Documento> docs = new ArrayList<>();
@@ -94,6 +96,8 @@ public class PedidoDocumentosController {
             doc.setIdentidade(identidade);
             doc.setOrgaoEmissor(orgaoEmissor);
             doc.setUfEmissor(ufEmissor);
+            doc.setCurso(curso);
+            addDebugLog("[SALVANDO DOCUMENTO] curso=" + doc.getCurso() + ", ufEmissor=" + doc.getUfEmissor());
             doc.setTelefone(telefone);
             // Define o curso correto
             doc.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
