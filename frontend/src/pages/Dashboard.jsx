@@ -111,15 +111,13 @@ export default function Dashboard() {
       setLoading(true);
       setError('');
       let result;
-      if (empresaData?.tipo === 'ESTRADA_FACIL') {
-        // Admin: busca pedidos
-        result = await buscarPedidos();
-        console.log('Resultado buscarPedidos:', result);
-      } else {
-        // Despachante: busca documentos enviados
-        result = await buscarDocumentos(empresaData?.empresaId);
-        console.log('Resultado buscarDocumentos:', result);
+      // Agora tanto admin quanto despachante veem documentos
+      let empresaId = null;
+      if (empresaData?.tipo !== 'ESTRADA_FACIL') {
+        empresaId = empresaData?.empresaId;
       }
+      result = await buscarDocumentos(empresaId);
+      console.log('Resultado buscarDocumentos:', result);
       if (result.success) {
         setPedidos(result.data);
       } else {
