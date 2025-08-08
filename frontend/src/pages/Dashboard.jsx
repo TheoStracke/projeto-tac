@@ -425,7 +425,7 @@ export default function Dashboard() {
                             <div><strong>Status:</strong> <Chip label={pedido.status || 'PENDENTE'} color={getStatusColor(pedido.status)} size="small" /></div>
                             <div><strong>Nome do Arquivo:</strong> {pedido.nomeArquivoOriginal || 'Não informado'}</div>
                           </Box>
-                          <Box sx={{ mt: 2 }}>
+                          <Box sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
                             <Button
                               size="small"
                               variant="outlined"
@@ -438,6 +438,29 @@ export default function Dashboard() {
                               <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
                                 Nenhum arquivo enviado para este documento.
                               </Typography>
+                            )}
+                            {/* Aprovar/Rejeitar para admin e status PENDENTE */}
+                            {isAdmin && pedido.status === 'PENDENTE' && (
+                              <>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="success"
+                                  onClick={() => handleAprovarDocumento(pedido.id)}
+                                  sx={{ ml: 2 }}
+                                >
+                                  Aprovar
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="error"
+                                  onClick={() => handleRejeitarDocumento(pedido.id)}
+                                  sx={{ ml: 1 }}
+                                >
+                                  Rejeitar
+                                </Button>
+                              </>
                             )}
                           </Box>
                         </TableCell>
