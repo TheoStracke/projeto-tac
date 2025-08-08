@@ -239,7 +239,7 @@ export default function EnviarDocumento() {
                 onChange={handleInputChange}
                 required
               >
-                <option value="">Selecione</option>
+                <option value=""></option>
                 <option value="Masculino">Masculino</option>
                 <option value="Feminino">Feminino</option>
                 <option value="Outro">Outro</option>

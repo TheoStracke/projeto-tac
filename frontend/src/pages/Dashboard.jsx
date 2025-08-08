@@ -34,6 +34,7 @@ import {
   buscarPedidos
 } from '../config/api';
 import LogoutButton from '../components/LogoutButton';
+import { formatCpf, validateCpf } from '../utils/cpfValidator';
 
 const clearAuthData = () => {
   localStorage.removeItem('token');
@@ -234,10 +235,29 @@ export default function Dashboard() {
     setFormData(prev => ({ ...prev, arquivos: files }));
   }, []);
 
+  // Função para aplicar máscara de CPF
+  const formatarCpfLocal = (cpf) => {
+    return formatCpf(cpf);
+  };
+
   const handleInputChange = useCallback((field, value, type) => {
     if (field === 'curso') {
       console.log('[CURSO] Opção selecionada:', value);
       setFormData(prev => ({ ...prev, curso: value }));
+    } else if (field === 'cpf') {
+      // Aplica máscara de CPF e valida
+      const cpfFormatado = formatarCpfLocal(value);
+      setFormData(prev => ({ ...prev, cpf: cpfFormatado }));
+      
+      // Valida CPF apenas se estiver completo
+      if (cpfFormatado.length === 14) {
+        const isValid = validateCpf(cpfFormatado);
+        if (!isValid) {
+          setError('CPF inválido');
+        } else {
+          setError(''); // Limpa erro se CPF for válido
+        }
+      }
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
@@ -543,6 +563,18 @@ export default function Dashboard() {
               required
               fullWidth
               placeholder="000.000.000-00"
+              inputProps={{ 
+                maxLength: 14, // Máximo de caracteres com máscara
+                style: { fontFamily: 'monospace' } // Fonte monospace para melhor alinhamento
+              }}
+              helperText={
+                formData.cpf.length === 14 
+                  ? validateCpf(formData.cpf) 
+                    ? "✅ CPF válido" 
+                    : "❌ CPF inválido"
+                  : "Digite os 11 números do CPF"
+              }
+              error={formData.cpf.length === 14 && !validateCpf(formData.cpf)}
             />
             <TextField
               id="data-nascimento"
