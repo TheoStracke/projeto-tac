@@ -228,8 +228,7 @@ export default function Dashboard() {
   }, []);
 
   const visualizarArquivo = async (documentoId) => {
-      console.log('Visualizar arquivo documentoId:', documentoId);
-
+    console.log('Visualizar arquivo documentoId:', documentoId);
     try {
       const result = await visualizarArquivoDocumento(documentoId);
       if (result.success) {
@@ -237,10 +236,18 @@ export default function Dashboard() {
         window.open(url, '_blank');
         setTimeout(() => URL.revokeObjectURL(url), 5000);
       } else {
-        setError(result.error);
+        if (result.error && result.error.toLowerCase().includes('404')) {
+          setError('Arquivo não encontrado para este documento.');
+        } else {
+          setError(result.error || 'Erro ao visualizar arquivo');
+        }
       }
-    } catch {
-      setError('Erro ao visualizar arquivo');
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        setError('Arquivo não encontrado para este documento.');
+      } else {
+        setError('Erro ao visualizar arquivo');
+      }
     }
   };
 
@@ -425,9 +432,15 @@ export default function Dashboard() {
                               size="small"
                               variant="outlined"
                               onClick={() => visualizarArquivo(pedido.id)}
+                              disabled={!pedido.nomeArquivoOriginal}
                             >
                               📎 Visualizar Arquivo
                             </Button>
+                            {!pedido.nomeArquivoOriginal && (
+                              <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                                Nenhum arquivo enviado para este documento.
+                              </Typography>
+                            )}
                           </Box>
                         </TableCell>
                       </TableRow>
