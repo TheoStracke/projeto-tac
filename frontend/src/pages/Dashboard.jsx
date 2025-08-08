@@ -566,7 +566,7 @@ export default function Dashboard() {
               required
               fullWidth
             >
-              <option value="">Selecione</option>
+              <option value=""></option>
               <option value="Masculino">Masculino</option>
               <option value="Feminino">Feminino</option>
               <option value="Outro">Outro</option>
