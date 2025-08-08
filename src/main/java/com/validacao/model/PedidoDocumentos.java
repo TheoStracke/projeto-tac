@@ -23,6 +23,7 @@ public class PedidoDocumentos {
     private String orgaoEmissor;
     private String ufEmissor;
     private String telefone;
+    @com.fasterxml.jackson.annotation.JsonProperty("curso")
     private String curso;
     private String titulo;
     private String descricao;
@@ -57,8 +58,14 @@ public class PedidoDocumentos {
     public void setUfEmissor(String ufEmissor) { this.ufEmissor = ufEmissor; }
     public String getTelefone() { return telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
-    public String getCurso() { return curso; }
-    public void setCurso(String curso) { this.curso = curso; }
+    @com.fasterxml.jackson.annotation.JsonProperty("curso")
+    public String getCurso() {
+        return (curso == null || curso.isEmpty()) ? "Não informado" : curso;
+    }
+    @com.fasterxml.jackson.annotation.JsonProperty("curso")
+    public void setCurso(String curso) {
+        this.curso = (curso == null || curso.isEmpty()) ? "Não informado" : curso;
+    }
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
     public String getDescricao() { return descricao; }
