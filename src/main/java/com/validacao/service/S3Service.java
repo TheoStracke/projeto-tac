@@ -15,7 +15,6 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.UUID;
 

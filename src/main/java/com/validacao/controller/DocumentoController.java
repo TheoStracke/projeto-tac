@@ -7,15 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import com.validacao.service.S3Service;
-    @Autowired
-    private S3Service s3Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +21,6 @@ public class DocumentoController {
 
     @Autowired
     private DocumentoService documentoService;
-
     @Autowired
     private S3Service s3Service;
     
@@ -158,19 +151,4 @@ public class DocumentoController {
         }
     }
     
-    /**
-     * Determina o tipo de mídia com base na extensão do arquivo
-     */
-    private String determinarTipoMidia(String nomeArquivo) {
-        if (nomeArquivo == null) return "application/octet-stream";
-        
-        String extensao = nomeArquivo.toLowerCase();
-        if (extensao.endsWith(".pdf")) return "application/pdf";
-        if (extensao.endsWith(".jpg") || extensao.endsWith(".jpeg")) return "image/jpeg";
-        if (extensao.endsWith(".png")) return "image/png";
-        if (extensao.endsWith(".doc")) return "application/msword";
-        if (extensao.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        
-        return "application/octet-stream";
-    }
 }
