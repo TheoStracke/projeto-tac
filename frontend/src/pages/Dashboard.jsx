@@ -344,15 +344,9 @@ export default function Dashboard() {
           <Typography variant="h4" gutterBottom>
             {isAdmin ? '🔧 Painel do Administrador' : `📋 Dashboard - ${empresaData?.razaoSocial || 'Despachante'}`}
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-      // Log dos dados inseridos antes do envio
-      console.log('[ENVIAR DOCUMENTO] Dados do formulário:', {
-        ...formData,
-        curso: cursoValue,
-        empresaId: currentEmpresaData.empresaId
-      });
-            {isAdmin ? 'Documentos Pendentes de Aprovação' : 'Seus Documentos Enviados'}
-          </Typography>
+      <Typography variant="subtitle1" color="text.secondary">
+        {isAdmin ? 'Documentos Pendentes de Aprovação' : 'Seus Documentos Enviados'}
+      </Typography>
           <Typography variant="caption" display="block" sx={{ mt: 1, fontFamily: 'monospace' }}>
             🏢 Tipo: <strong>{empresaData?.tipo}</strong> | 📄 CNPJ: <strong>{empresaData?.cnpj}</strong> | 🆔 ID: <strong>{empresaData?.empresaId}</strong>
           </Typography>
