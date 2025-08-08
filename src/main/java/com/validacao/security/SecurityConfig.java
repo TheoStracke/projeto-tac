@@ -10,6 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +26,21 @@ public class SecurityConfig {
 
     // Logger for debugging CORS setup
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
+    private CorsConfiguration buildCorsConfiguration() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("https://projeto-tac-ja9q.vercel.app"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        log.info("[CORS] allowedOrigins: {}", configuration.getAllowedOrigins());
+        log.info("[CORS] allowedMethods: {}", configuration.getAllowedMethods());
+        log.info("[CORS] allowedHeaders: {}", configuration.getAllowedHeaders());
+        log.info("[CORS] allowCredentials: {}", configuration.getAllowCredentials());
+        return configuration;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,21 +69,17 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // Defina aqui a URL exata do seu frontend
-        configuration.setAllowedOrigins(List.of("https://projeto-tac-ja9q.vercel.app"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
-        configuration.setAllowCredentials(true);
-
-        // Log da configuração efetiva de CORS
-        log.info("[CORS] allowedOrigins: {}", configuration.getAllowedOrigins());
-        log.info("[CORS] allowedMethods: {}", configuration.getAllowedMethods());
-        log.info("[CORS] allowedHeaders: {}", configuration.getAllowedHeaders());
-        log.info("[CORS] allowCredentials: {}", configuration.getAllowCredentials());
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", buildCorsConfiguration());
         return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", buildCorsConfiguration());
+        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>(new CorsFilter(source));
+        registrationBean.setOrder(0); // máxima prioridade
+        return registrationBean;
     }
 }
