@@ -118,7 +118,10 @@ export default function Dashboard() {
       }
       result = await buscarDocumentos(empresaId);
       console.log('Resultado buscarDocumentos:', result);
+      console.log('empresaData:', empresaData);
+      console.log('isAdmin calculado:', empresaData?.tipo === 'ESTRADA_FACIL');
       if (result.success) {
+        console.log('Dados dos pedidos:', result.data);
         setPedidos(result.data);
       } else {
         setError(result.error);
@@ -292,7 +295,7 @@ export default function Dashboard() {
   const getStatusColor = useCallback((status) => {
     switch (status) {
       case 'PENDENTE': return 'warning';
-        formDataToSend.append('arquivo', arquivo);
+      case 'APROVADO': return 'success';
       case 'REJEITADO': return 'error';
       default: return 'default';
     }
@@ -440,7 +443,11 @@ export default function Dashboard() {
                               </Typography>
                             )}
                             {/* Aprovar/Rejeitar para admin e status PENDENTE */}
-                            {isAdmin && pedido.status === 'PENDENTE' && (
+                            {(() => {
+                              const shouldShowButtons = isAdmin && pedido.status === 'PENDENTE';
+                              console.log(`Pedido ${pedido.id}: isAdmin=${isAdmin}, status=${pedido.status}, shouldShow=${shouldShowButtons}`);
+                              return shouldShowButtons;
+                            })() && (
                               <>
                                 <Button
                                   size="small"
