@@ -9,15 +9,10 @@ import com.validacao.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +32,9 @@ public class DocumentoService {
     @Autowired
     private EmailService emailService;
     
-    @Value("${app.upload.dir:/tmp/uploads/}")
-    private String UPLOAD_DIR;
+
+    @Autowired
+    private S3Service s3Service;
 
     public Documento enviarDocumento(MultipartFile arquivo, String titulo, String descricao, 
                                    String nomeMotorista,
@@ -57,9 +53,10 @@ public class DocumentoService {
             throw new RuntimeException("Apenas despachantes podem enviar documentos");
         }
         
-        // Salvar arquivo
-        String nomeArquivo = salvarArquivo(arquivo);
-        logger.info("[DOC] Arquivo salvo: {}", nomeArquivo);
+
+        // Salvar arquivo no S3
+        String s3Key = s3Service.uploadFile(arquivo);
+        logger.info("[DOC] Arquivo salvo no S3: {}", s3Key);
         
         // Criar documento
         Documento documento = new Documento();
@@ -76,7 +73,7 @@ public class DocumentoService {
         documento.setTelefone(telefone);
         documento.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
         documento.setCursoRTCompleto("RT".equalsIgnoreCase(curso));
-        documento.setArquivoPath(UPLOAD_DIR + nomeArquivo);
+        documento.setArquivoPath(s3Key); // salva a key do S3
         documento.setNomeArquivoOriginal(arquivo.getOriginalFilename());
         documento.setDataEnvio(LocalDateTime.now());
         documento.setStatus(StatusDocumento.PENDENTE);
@@ -176,31 +173,5 @@ public class DocumentoService {
         return documentoRepository.findById(id);
     }
     
-    private String salvarArquivo(MultipartFile arquivo) {
-        try {
-            logger.info("[DOC] Salvando arquivo: {}", arquivo.getOriginalFilename());
-            // Criar diretório se não existir
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                logger.info("[DOC] Diretório de upload não existe. Criando: {}", uploadPath);
-                Files.createDirectories(uploadPath);
-            }
-            // Gerar nome único para o arquivo
-            String nomeOriginal = arquivo.getOriginalFilename();
-            if (nomeOriginal == null || nomeOriginal.isEmpty()) {
-                nomeOriginal = "documento.pdf";
-            }
-            String extensao = nomeOriginal.contains(".") ? 
-                nomeOriginal.substring(nomeOriginal.lastIndexOf(".")) : ".pdf";
-            String nomeUnico = UUID.randomUUID().toString() + extensao;
-            // Salvar arquivo
-            Path arquivoPath = uploadPath.resolve(nomeUnico);
-            Files.copy(arquivo.getInputStream(), arquivoPath);
-            logger.info("[DOC] Arquivo salvo em: {}", arquivoPath);
-            return nomeUnico;
-        } catch (IOException e) {
-            logger.error("[DOC] Erro ao salvar arquivo", e);
-            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
-        }
-    }
+    // Removido salvarArquivo, agora tudo é feito via S3Service
 }

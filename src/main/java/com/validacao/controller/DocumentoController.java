@@ -2,14 +2,14 @@ package com.validacao.controller;
 
 import com.validacao.model.Documento;
 import com.validacao.service.DocumentoService;
+import com.validacao.service.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import com.validacao.service.S3Service;
+    @Autowired
+    private S3Service s3Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,8 +24,12 @@ import java.util.Optional;
 public class DocumentoController {
     private static final Logger logger = LoggerFactory.getLogger(DocumentoController.class);
     
+
     @Autowired
     private DocumentoService documentoService;
+
+    @Autowired
+    private S3Service s3Service;
     
     @PostMapping("/enviar")
     public ResponseEntity<?> enviarDocumento(
@@ -109,13 +113,18 @@ public class DocumentoController {
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarDocumento(@PathVariable Long id) {
         try {
+            logger.info("[BUSCAR DOC] Buscando documento ID: {}", id);
             Optional<Documento> documento = documentoService.buscarPorId(id);
             if (documento.isPresent()) {
+                logger.info("[BUSCAR DOC] Documento encontrado: {}, arquivo: {}", 
+                    documento.get().getId(), documento.get().getArquivoPath());
                 return ResponseEntity.ok(documento.get());
             } else {
+                logger.warn("[BUSCAR DOC] Documento não encontrado: {}", id);
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
+            logger.error("[BUSCAR DOC] Erro ao buscar documento: {}", id, e);
             return ResponseEntity.badRequest().body("Erro ao buscar documento: " + e.getMessage());
         }
     }
@@ -124,34 +133,28 @@ public class DocumentoController {
      * Endpoint para download/visualização de arquivos
      */
     @GetMapping("/{id}/arquivo")
-    public ResponseEntity<Resource> visualizarArquivo(@PathVariable Long id) {
+    public ResponseEntity<?> visualizarArquivo(@PathVariable Long id) {
         try {
+            logger.info("[ARQUIVO] Tentando buscar arquivo para documento ID: {}", id);
             Optional<Documento> documentoOpt = documentoService.buscarPorId(id);
             if (!documentoOpt.isPresent()) {
+                logger.warn("[ARQUIVO] Documento não encontrado: {}", id);
                 return ResponseEntity.notFound().build();
             }
-            
             Documento documento = documentoOpt.get();
-            Path arquivoPath = Paths.get(documento.getArquivoPath());
-            Resource resource = new UrlResource(arquivoPath.toUri());
-            
-            if (!resource.exists() || !resource.isReadable()) {
+            if (documento.getArquivoPath() == null || documento.getArquivoPath().isEmpty()) {
+                logger.warn("[ARQUIVO] Documento não possui arquivo associado: {}", id);
                 return ResponseEntity.notFound().build();
             }
-            
-            // Determinar o tipo de mídia baseado na extensão
+            String s3Key = documento.getArquivoPath();
             String nomeArquivo = documento.getNomeArquivoOriginal();
-            String contentType = determinarTipoMidia(nomeArquivo);
-            
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + nomeArquivo + "\"")
-                    .body(resource);
-                    
-        } catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
+            // Gerar URL temporária do S3
+            java.net.URL presignedUrl = s3Service.generatePresignedUrl(s3Key);
+            logger.info("[ARQUIVO] URL temporária gerada para arquivo: {} -> {}", nomeArquivo, presignedUrl);
+            return ResponseEntity.ok().body(presignedUrl.toString());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            logger.error("[ARQUIVO] Erro ao gerar URL temporária para arquivo", e);
+            return ResponseEntity.internalServerError().body("Erro ao gerar URL temporária para arquivo: " + e.getMessage());
         }
     }
     

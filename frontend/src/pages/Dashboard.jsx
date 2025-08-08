@@ -234,10 +234,9 @@ export default function Dashboard() {
       const result = await visualizarArquivoDocumento(documentoId);
       console.log('Resultado visualizarArquivoDocumento:', result);
       if (result.success) {
-        const url = URL.createObjectURL(result.data);
-        console.log('URL criada:', url);
+        // O backend agora retorna uma URL temporária do S3
+        const url = result.data;
         window.open(url, '_blank');
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
       } else {
         console.error('Erro na visualização:', result.error);
         if (result.error && result.error.toLowerCase().includes('404')) {

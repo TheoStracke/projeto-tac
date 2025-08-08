@@ -3,10 +3,13 @@ com\validacao\service\EmpresaService.class
 com\validacao\security\TokenService.class
 com\validacao\repository\EmpresaRepository.class
 com\validacao\service\DocumentoService.class
+com\validacao\model\PedidoDocumentos.class
+com\validacao\repository\PedidoDocumentosRepository.class
 META-INF\spring-configuration-metadata.json
 com\validacao\config\AppProperties$Cors.class
 com\validacao\controller\DocumentoController.class
 com\validacao\controller\AuthController.class
+com\validacao\controller\PedidoDocumentosController.class
 com\validacao\controller\GlobalExceptionHandler.class
 com\validacao\config\AppProperties.class
 com\validacao\dto\LoginResponse.class
@@ -15,6 +18,7 @@ com\validacao\model\Documento.class
 com\validacao\model\TipoEmpresa.class
 com\validacao\security\JwtAuthenticationFilter.class
 com\validacao\controller\AprovacaoController.class
+com\validacao\service\S3Service.class
 com\validacao\ValidacaoDocumentosApplication.class
 com\validacao\dto\ApiResponse.class
 com\validacao\controller\HealthController.class
@@ -27,3 +31,4 @@ com\validacao\config\SpaController.class
 com\validacao\model\StatusDocumento.class
 com\validacao\config\AppProperties$Upload.class
 com\validacao\service\JwtService.class
+com\validacao\controller\TestController.class
