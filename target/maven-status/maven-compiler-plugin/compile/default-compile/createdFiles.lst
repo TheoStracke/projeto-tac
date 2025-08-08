@@ -18,7 +18,6 @@ com\validacao\model\Documento.class
 com\validacao\model\TipoEmpresa.class
 com\validacao\security\JwtAuthenticationFilter.class
 com\validacao\controller\AprovacaoController.class
-com\validacao\service\S3Service.class
 com\validacao\ValidacaoDocumentosApplication.class
 com\validacao\dto\ApiResponse.class
 com\validacao\controller\HealthController.class
