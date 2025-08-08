@@ -401,41 +401,32 @@ export default function Dashboard() {
                     {expandedRows.includes(pedido.id) && (
                       <TableRow>
                         <TableCell colSpan={8} sx={{ background: '#f9f9f9', p: 2 }}>
-                          <Box sx={{ mb: 2 }}>
-                            <strong>Título:</strong> {pedido.titulo} <br />
-                            <strong>Descrição:</strong> {pedido.descricao}
+                          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                            <div><strong>Título:</strong> {pedido.titulo}</div>
+                            <div><strong>Descrição:</strong> {pedido.descricao}</div>
+                            <div><strong>Nome do Motorista:</strong> {pedido.nomeMotorista || 'Não informado'}</div>
+                            <div><strong>CPF:</strong> {pedido.cpf || 'Não informado'}</div>
+                            <div><strong>Data de Nascimento:</strong> {pedido.dataNascimento || 'Não informado'}</div>
+                            <div><strong>Sexo:</strong> {pedido.sexo || 'Não informado'}</div>
+                            <div><strong>E-mail:</strong> {pedido.email || 'Não informado'}</div>
+                            <div><strong>Identidade:</strong> {pedido.identidade || 'Não informado'}</div>
+                            <div><strong>Orgão Emissor:</strong> {pedido.orgaoEmissor || 'Não informado'}</div>
+                            <div><strong>UF Emissor:</strong> {pedido.ufEmissor || 'Não informado'}</div>
+                            <div><strong>Telefone:</strong> {pedido.telefone || 'Não informado'}</div>
+                            <div><strong>Curso:</strong> {pedido.curso === 'TAC' ? 'TAC Completo' : pedido.curso === 'RT' ? 'RT Completo' : 'Não informado'}</div>
+                            <div><strong>Data de Envio:</strong> {formatarData(pedido.dataEnvio)}</div>
+                            <div><strong>Status:</strong> <Chip label={pedido.status || 'PENDENTE'} color={getStatusColor(pedido.status)} size="small" /></div>
+                            <div><strong>Nome do Arquivo:</strong> {pedido.nomeArquivoOriginal || 'Não informado'}</div>
                           </Box>
-                          <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
-                            <Typography variant="subtitle1">Documentos deste pedido:</Typography>
-                            {pedido.documentos && pedido.documentos.length > 0 ? (
-                              pedido.documentos.map((doc, idx) => (
-                                <Box key={doc.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1, border: '1px solid #eee', borderRadius: 2, p: 1, minWidth: 180 }}>
-                                  <Typography sx={{ mb: 1 }}>Documento {idx + 1}</Typography>
-                                  <Typography sx={{ mb: 1 }}>{doc.nomeArquivoOriginal}</Typography>
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    onClick={() => visualizarArquivo(doc.id)}
-                                  >
-                                    📎 Visualizar
-                                  </Button>
-                                  <Chip
-                                    label={doc.status}
-                                    color={getStatusColor(doc.status)}
-                                    size="small"
-                                    sx={{ mt: 1 }}
-                                  />
-                                </Box>
-                              ))
-                            ) : (
-                              <Typography color="text.secondary">Nenhum documento neste pedido.</Typography>
-                            )}
+                          <Box sx={{ mt: 2 }}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => visualizarArquivo(pedido.id)}
+                            >
+                              📎 Visualizar Arquivo
+                            </Button>
                           </Box>
-                          {pedido.comentarios && (
-                            <Box sx={{ mt: 2 }}>
-                              <strong>Comentários da Aprovação:</strong> {pedido.comentarios}
-                            </Box>
-                          )}
                         </TableCell>
                       </TableRow>
                     )}
