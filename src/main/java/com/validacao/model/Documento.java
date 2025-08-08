@@ -117,4 +117,11 @@ public class Documento {
     public void setUfEmissor(String ufEmissor) { this.ufEmissor = ufEmissor; }
     public String getTelefone() { return telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
+    
+    // Método helper para retornar o curso no formato esperado pelo frontend
+    public String getCurso() {
+        if (cursoTACCompleto != null && cursoTACCompleto) return "TAC";
+        if (cursoRTCompleto != null && cursoRTCompleto) return "RT";
+        return "";
+    }
 }

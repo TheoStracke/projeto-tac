@@ -232,11 +232,14 @@ export default function Dashboard() {
     console.log('Visualizar arquivo documentoId:', documentoId);
     try {
       const result = await visualizarArquivoDocumento(documentoId);
+      console.log('Resultado visualizarArquivoDocumento:', result);
       if (result.success) {
         const url = URL.createObjectURL(result.data);
+        console.log('URL criada:', url);
         window.open(url, '_blank');
         setTimeout(() => URL.revokeObjectURL(url), 5000);
       } else {
+        console.error('Erro na visualização:', result.error);
         if (result.error && result.error.toLowerCase().includes('404')) {
           setError('Arquivo não encontrado para este documento.');
         } else {
@@ -244,6 +247,7 @@ export default function Dashboard() {
         }
       }
     } catch (err) {
+      console.error('Erro catch na visualização:', err);
       if (err?.response?.status === 404) {
         setError('Arquivo não encontrado para este documento.');
       } else {
@@ -405,7 +409,40 @@ export default function Dashboard() {
                       <TableCell>{pedido.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
                       <TableCell>{pedido.nomeMotorista || 'Não informado'}</TableCell>
                       <TableCell>
-                        {/* Ações futuras: Aprovar/Rejeitar pedido inteiro */}
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                          {isAdmin && pedido.status === 'PENDENTE' && (
+                            <>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                onClick={() => handleAprovarDocumento(pedido.id)}
+                                sx={{ minWidth: '80px' }}
+                              >
+                                Aprovar
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="error"
+                                onClick={() => handleRejeitarDocumento(pedido.id)}
+                                sx={{ minWidth: '80px' }}
+                              >
+                                Rejeitar
+                              </Button>
+                            </>
+                          )}
+                          {!isAdmin && (
+                            <Typography variant="caption" color="text.secondary">
+                              -
+                            </Typography>
+                          )}
+                          {isAdmin && pedido.status !== 'PENDENTE' && (
+                            <Typography variant="caption" color="text.secondary">
+                              {pedido.status === 'APROVADO' ? '✅ Aprovado' : '❌ Rejeitado'}
+                            </Typography>
+                          )}
+                        </Box>
                       </TableCell>
                     </TableRow>
                     {expandedRows.includes(pedido.id) && (
@@ -441,33 +478,6 @@ export default function Dashboard() {
                               <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
                                 Nenhum arquivo enviado para este documento.
                               </Typography>
-                            )}
-                            {/* Aprovar/Rejeitar para admin e status PENDENTE */}
-                            {(() => {
-                              const shouldShowButtons = isAdmin && pedido.status === 'PENDENTE';
-                              console.log(`Pedido ${pedido.id}: isAdmin=${isAdmin}, status=${pedido.status}, shouldShow=${shouldShowButtons}`);
-                              return shouldShowButtons;
-                            })() && (
-                              <>
-                                <Button
-                                  size="small"
-                                  variant="contained"
-                                  color="success"
-                                  onClick={() => handleAprovarDocumento(pedido.id)}
-                                  sx={{ ml: 2 }}
-                                >
-                                  Aprovar
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant="contained"
-                                  color="error"
-                                  onClick={() => handleRejeitarDocumento(pedido.id)}
-                                  sx={{ ml: 1 }}
-                                >
-                                  Rejeitar
-                                </Button>
-                              </>
                             )}
                           </Box>
                         </TableCell>
