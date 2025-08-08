@@ -425,7 +425,14 @@ export default function Dashboard() {
                             <div><strong>Orgão Emissor:</strong> {pedido.orgaoEmissor || 'Não informado'}</div>
                             <div><strong>UF Emissor:</strong> {pedido.ufEmissor || 'Não informado'}</div>
                             <div><strong>Telefone:</strong> {pedido.telefone || 'Não informado'}</div>
-                      <div><strong>Curso:</strong> {pedido.curso === 'TAC' ? 'TAC Completo' : pedido.curso === 'RT' ? 'RT Completo' : (!pedido.curso ? 'Não informado' : pedido.curso)}</div>
+                      <div><strong>Curso:</strong> {
+                        pedido.curso === 'TAC' ? 'TAC Completo'
+                        : pedido.curso === 'RT' ? 'RT Completo'
+                        : pedido.curso === 'Não informado' && pedido.cursoTACCompleto ? 'TAC Completo'
+                        : pedido.curso === 'Não informado' && pedido.cursoRTCompleto ? 'RT Completo'
+                        : (!pedido.curso || pedido.curso === 'Não informado') ? 'Não informado'
+                        : pedido.curso
+                      }</div>
                             <div><strong>Data de Envio:</strong> {formatarData(pedido.dataEnvio)}</div>
                             <div><strong>Status:</strong> <Chip label={pedido.status || 'PENDENTE'} color={getStatusColor(pedido.status)} size="small" /></div>
                             <div><strong>Nome do Arquivo:</strong> {pedido.nomeArquivoOriginal || 'Não informado'}</div>
@@ -737,7 +744,14 @@ export default function Dashboard() {
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Curso</Typography>
                   <Typography variant="body1">
-                    {documentoSelecionado.curso === 'TAC' ? 'TAC Completo' : documentoSelecionado.curso === 'RT' ? 'RT Completo' : (!documentoSelecionado.curso ? 'Não informado' : documentoSelecionado.curso)}
+                    {
+                      documentoSelecionado.curso === 'TAC' ? 'TAC Completo'
+                      : documentoSelecionado.curso === 'RT' ? 'RT Completo'
+                      : documentoSelecionado.curso === 'Não informado' && documentoSelecionado.cursoTACCompleto ? 'TAC Completo'
+                      : documentoSelecionado.curso === 'Não informado' && documentoSelecionado.cursoRTCompleto ? 'RT Completo'
+                      : (!documentoSelecionado.curso || documentoSelecionado.curso === 'Não informado') ? 'Não informado'
+                      : documentoSelecionado.curso
+                    }
                   </Typography>
                 </Box>
                 <Box>
