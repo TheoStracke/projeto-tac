@@ -48,6 +48,18 @@ export const enviarPedidoDocumentos = async (formData) => {
 import axios from 'axios';
 import API_BASE_URL from '../apiConfig';
 
+// Debug info about environment and API target
+try {
+  // These logs appear in the browser console
+  // Useful to verify front/back origins and axios settings
+  // eslint-disable-next-line no-console
+  console.info('[API][DEBUG] window.origin:', window.location.origin);
+  // eslint-disable-next-line no-console
+  console.info('[API][DEBUG] API_BASE_URL:', API_BASE_URL);
+} catch (e) {
+  // ignore
+}
+
 // Configuração do axios com interceptor para token
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -59,6 +71,16 @@ const api = axios.create({
   }
 });
 
+// Log axios base config
+try {
+  // eslint-disable-next-line no-console
+  console.info('[API][DEBUG] axios base config:', {
+    baseURL: api.defaults.baseURL,
+    withCredentials: api.defaults.withCredentials,
+    headers: api.defaults.headers
+  });
+} catch {}
+
 // Interceptor para adicionar token automaticamente
 api.interceptors.request.use(
   (config) => {
@@ -66,22 +88,69 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Detailed request log
+    try {
+      const fullUrl = (() => {
+        try { return new URL(config.url, config.baseURL).toString(); } catch { return `${config.baseURL || ''}${config.url || ''}`; }
+      })();
+      // eslint-disable-next-line no-console
+      console.info('[API][REQUEST]', {
+        method: (config.method || 'GET').toUpperCase(),
+        url: fullUrl,
+        withCredentials: config.withCredentials,
+        headers: config.headers,
+      });
+    } catch {}
+
     return config;
   },
   (error) => {
+    // eslint-disable-next-line no-console
+    console.error('[API][REQUEST][ERROR]', error);
     return Promise.reject(error);
   }
 );
 
 // Interceptor para tratamento de respostas
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    try {
+      // eslint-disable-next-line no-console
+      console.info('[API][RESPONSE]', {
+        status: response.status,
+        url: response.config && (new URL(response.config.url, response.config.baseURL).toString()),
+        headers: response.headers,
+      });
+    } catch {}
+    return response;
+  },
   (error) => {
-    // Se token expirado, redirecionar para login
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('empresaData');
-      window.location.href = '/login';
+    try {
+      if (error.response) {
+        // eslint-disable-next-line no-console
+        console.error('[API][RESPONSE][ERROR]', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          url: error.config && (new URL(error.config.url, error.config.baseURL).toString()),
+          headers: error.response.headers,
+          data: error.response.data,
+        });
+      } else if (error.request) {
+        // eslint-disable-next-line no-console
+        console.error('[API][NETWORK][NO_RESPONSE]', {
+          url: error.config && (new URL(error.config.url, error.config.baseURL).toString()),
+          withCredentials: error.config?.withCredentials,
+          message: error.message,
+          code: error.code,
+        });
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('[API][GENERAL][ERROR]', error.message || error);
+      }
+    } catch (logErr) {
+      // eslint-disable-next-line no-console
+      console.error('[API][ERROR][LOGGING_FAILURE]', logErr);
     }
     return Promise.reject(error);
   }
