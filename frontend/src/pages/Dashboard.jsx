@@ -228,6 +228,8 @@ export default function Dashboard() {
   }, []);
 
   const visualizarArquivo = async (documentoId) => {
+      console.log('Visualizar arquivo documentoId:', documentoId);
+
     try {
       const result = await visualizarArquivoDocumento(documentoId);
       if (result.success) {
