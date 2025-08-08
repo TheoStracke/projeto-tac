@@ -160,6 +160,13 @@ export default function Dashboard() {
       // Garante que curso seja 'TAC' ou 'RT', nunca string vazia
       const cursoValue = formData.curso === 'TAC' || formData.curso === 'RT' ? formData.curso : null;
 
+      // Log dos dados inseridos antes do envio
+      console.log('[ENVIAR DOCUMENTO] Dados do formulário:', {
+        ...formData,
+        curso: cursoValue,
+        empresaId: currentEmpresaData.empresaId
+      });
+
       let allSuccess = true;
       let lastError = '';
       for (const arquivo of formData.arquivos) {
@@ -181,10 +188,14 @@ export default function Dashboard() {
         }
         formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
+        // Log do envio de cada arquivo
+        console.log('[ENVIAR DOCUMENTO] Enviando arquivo:', arquivo.name, 'com dados:', Object.fromEntries(formDataToSend.entries()));
+
         const result = await enviarDocumento(formDataToSend);
         if (!result.success) {
           allSuccess = false;
           lastError = result.error;
+          console.error('[ENVIAR DOCUMENTO] Erro:', result.error);
         }
       }
 
@@ -210,8 +221,9 @@ export default function Dashboard() {
         setError(lastError || 'Erro ao enviar um ou mais arquivos.');
       }
 
-    } catch {
+    } catch (e) {
       setError('Erro de conexão. Tente novamente.');
+      console.error('[ENVIAR DOCUMENTO] Erro:', e);
     } finally {
       setEnviandoDoc(false);
     }
@@ -224,6 +236,7 @@ export default function Dashboard() {
 
   const handleInputChange = useCallback((field, value, type) => {
     if (field === 'curso') {
+      console.log('[CURSO] Opção selecionada:', value);
       setFormData(prev => ({ ...prev, curso: value }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
@@ -314,9 +327,14 @@ export default function Dashboard() {
   }, [empresaData?.tipo]);
 
   const handleExpandRow = (id) => {
-    setExpandedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    );
+    setExpandedRows((prev) => {
+      const isExpanding = !prev.includes(id);
+      if (isExpanding) {
+        const pedido = pedidos.find(p => p.id === id);
+        console.log('[EXPANDIR DETALHES] Pedido:', pedido);
+      }
+      return prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id];
+    });
   };
 
   return (
@@ -327,6 +345,12 @@ export default function Dashboard() {
             {isAdmin ? '🔧 Painel do Administrador' : `📋 Dashboard - ${empresaData?.razaoSocial || 'Despachante'}`}
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
+      // Log dos dados inseridos antes do envio
+      console.log('[ENVIAR DOCUMENTO] Dados do formulário:', {
+        ...formData,
+        curso: cursoValue,
+        empresaId: currentEmpresaData.empresaId
+      });
             {isAdmin ? 'Documentos Pendentes de Aprovação' : 'Seus Documentos Enviados'}
           </Typography>
           <Typography variant="caption" display="block" sx={{ mt: 1, fontFamily: 'monospace' }}>
@@ -425,14 +449,14 @@ export default function Dashboard() {
                             <div><strong>Orgão Emissor:</strong> {pedido.orgaoEmissor || 'Não informado'}</div>
                             <div><strong>UF Emissor:</strong> {pedido.ufEmissor || 'Não informado'}</div>
                             <div><strong>Telefone:</strong> {pedido.telefone || 'Não informado'}</div>
-                      <div><strong>Curso:</strong> {
-                        pedido.curso === 'TAC' ? 'TAC Completo'
-                        : pedido.curso === 'RT' ? 'RT Completo'
-                        : pedido.curso === 'Não informado' && pedido.cursoTACCompleto ? 'TAC Completo'
-                        : pedido.curso === 'Não informado' && pedido.cursoRTCompleto ? 'RT Completo'
-                        : (!pedido.curso || pedido.curso === 'Não informado') ? 'Não informado'
-                        : pedido.curso
-                      }</div>
+                            <div><strong>Curso:</strong> {
+                              pedido.curso === 'TAC' ? 'TAC Completo'
+                              : pedido.curso === 'RT' ? 'RT Completo'
+                              : pedido.curso === 'Não informado' && pedido.cursoTACCompleto ? 'TAC Completo'
+                              : pedido.curso === 'Não informado' && pedido.cursoRTCompleto ? 'RT Completo'
+                              : (!pedido.curso || pedido.curso === 'Não informado') ? 'Não informado'
+                              : pedido.curso
+                            }</div>
                             <div><strong>Data de Envio:</strong> {formatarData(pedido.dataEnvio)}</div>
                             <div><strong>Status:</strong> <Chip label={pedido.status || 'PENDENTE'} color={getStatusColor(pedido.status)} size="small" /></div>
                             <div><strong>Nome do Arquivo:</strong> {pedido.nomeArquivoOriginal || 'Não informado'}</div>
