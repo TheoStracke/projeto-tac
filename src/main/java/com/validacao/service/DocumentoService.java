@@ -76,10 +76,11 @@ public class DocumentoService {
         documento.setTelefone(telefone);
         documento.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
         documento.setCursoRTCompleto("RT".equalsIgnoreCase(curso));
+        documento.setCurso(curso);
         // Sempre salvar caminho relativo ao diretório do projeto
         documento.setArquivoPath(UPLOAD_DIR + nomeArquivo);
         documento.setNomeArquivoOriginal(arquivo.getOriginalFilename());
-        documento.setDataEnvio(LocalDateTime.now());
+        documento.setDataEnvio(LocalDateTime.now(java.time.ZoneId.of("America/Sao_Paulo")));
         documento.setStatus(StatusDocumento.PENDENTE);
         documento.setEmpresaRemetente(empresaRemetente);
         documento.setTokenAprovacao(UUID.randomUUID().toString());
@@ -110,7 +111,7 @@ public class DocumentoService {
         
         documento.setStatus(aprovado ? StatusDocumento.APROVADO : StatusDocumento.REJEITADO);
         documento.setComentarios(comentarios);
-        documento.setDataAprovacao(LocalDateTime.now());
+        documento.setDataAprovacao(LocalDateTime.now(java.time.ZoneId.of("America/Sao_Paulo")));
         
         Documento savedDoc = documentoRepository.save(documento);
         
@@ -150,7 +151,7 @@ public class DocumentoService {
         
         documento.setStatus(aprovado ? StatusDocumento.APROVADO : StatusDocumento.REJEITADO);
         documento.setComentarios(comentarios);
-        documento.setDataAprovacao(LocalDateTime.now());
+        documento.setDataAprovacao(LocalDateTime.now(java.time.ZoneId.of("America/Sao_Paulo")));
         
         Documento savedDoc = documentoRepository.save(documento);
         

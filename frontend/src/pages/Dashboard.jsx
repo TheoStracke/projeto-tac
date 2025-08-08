@@ -157,6 +157,9 @@ export default function Dashboard() {
         return;
       }
 
+      // Garante que curso seja 'TAC' ou 'RT', nunca string vazia
+      const cursoValue = formData.curso === 'TAC' || formData.curso === 'RT' ? formData.curso : null;
+
       let allSuccess = true;
       let lastError = '';
       for (const arquivo of formData.arquivos) {
@@ -173,7 +176,9 @@ export default function Dashboard() {
         formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
         formDataToSend.append('ufEmissor', formData.ufEmissor);
         formDataToSend.append('telefone', formData.telefone);
-        formDataToSend.append('curso', formData.curso);
+        if (cursoValue) {
+          formDataToSend.append('curso', cursoValue);
+        }
         formDataToSend.append('empresaId', currentEmpresaData.empresaId);
 
         const result = await enviarDocumento(formDataToSend);
@@ -370,7 +375,7 @@ export default function Dashboard() {
                 <TableCell><strong>Data Envio</strong></TableCell>
                 <TableCell><strong>Empresa</strong></TableCell>
                 <TableCell><strong>Motorista</strong></TableCell>
-                <TableCell><strong>Ações</strong></TableCell>
+                {/* <TableCell><strong>Ações</strong></TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -401,9 +406,9 @@ export default function Dashboard() {
                       <TableCell>{formatarData(pedido.dataEnvio)}</TableCell>
                       <TableCell>{pedido.empresaRemetente?.razaoSocial || 'N/A'}</TableCell>
                       <TableCell>{pedido.nomeMotorista || 'Não informado'}</TableCell>
-                      <TableCell>
-                        {/* Ações futuras: Aprovar/Rejeitar pedido inteiro */}
-                      </TableCell>
+                      {/* <TableCell>
+                        Ações futuras: Aprovar/Rejeitar pedido inteiro
+                      </TableCell> */}
                     </TableRow>
                     {expandedRows.includes(pedido.id) && (
                       <TableRow>
@@ -420,7 +425,7 @@ export default function Dashboard() {
                             <div><strong>Orgão Emissor:</strong> {pedido.orgaoEmissor || 'Não informado'}</div>
                             <div><strong>UF Emissor:</strong> {pedido.ufEmissor || 'Não informado'}</div>
                             <div><strong>Telefone:</strong> {pedido.telefone || 'Não informado'}</div>
-                            <div><strong>Curso:</strong> {pedido.curso === 'TAC' ? 'TAC Completo' : pedido.curso === 'RT' ? 'RT Completo' : 'Não informado'}</div>
+                      <div><strong>Curso:</strong> {pedido.curso === 'TAC' ? 'TAC Completo' : pedido.curso === 'RT' ? 'RT Completo' : (!pedido.curso ? 'Não informado' : pedido.curso)}</div>
                             <div><strong>Data de Envio:</strong> {formatarData(pedido.dataEnvio)}</div>
                             <div><strong>Status:</strong> <Chip label={pedido.status || 'PENDENTE'} color={getStatusColor(pedido.status)} size="small" /></div>
                             <div><strong>Nome do Arquivo:</strong> {pedido.nomeArquivoOriginal || 'Não informado'}</div>
@@ -732,7 +737,7 @@ export default function Dashboard() {
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">Curso</Typography>
                   <Typography variant="body1">
-                    {documentoSelecionado.curso === 'TAC' ? 'TAC Completo' : documentoSelecionado.curso === 'RT' ? 'RT Completo' : 'Não informado'}
+                    {documentoSelecionado.curso === 'TAC' ? 'TAC Completo' : documentoSelecionado.curso === 'RT' ? 'RT Completo' : (!documentoSelecionado.curso ? 'Não informado' : documentoSelecionado.curso)}
                   </Typography>
                 </Box>
                 <Box>

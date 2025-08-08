@@ -98,6 +98,7 @@ public class PedidoDocumentosController {
             // Define o curso correto
             doc.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
             doc.setCursoRTCompleto("RT".equalsIgnoreCase(curso));
+            doc.setCurso(curso);
             doc.setEmpresaRemetente(empresa);
             doc.setDataEnvio(LocalDateTime.now());
             doc.setStatus(com.validacao.model.StatusDocumento.PENDENTE);
