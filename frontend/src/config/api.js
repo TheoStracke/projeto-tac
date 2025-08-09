@@ -52,7 +52,7 @@ import API_BASE_URL from '../apiConfig';
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
-  withCredentials: true, // Necessário para CORS com credenciais
+  withCredentials: false, // Simplifica o CORS, já que usamos token Bearer
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
