@@ -175,6 +175,17 @@ const Cadastro = () => {
         <h1 className="text-2xl font-bold text-center mb-2 text-[#28a745]">📋 Cadastro de Empresa</h1>
         <p className="text-center text-gray-500 mb-4">Registre sua empresa para usar o sistema de validação de documentos</p>
 
+        {/* Alerta de Manutenção */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-center">
+          <div className="text-yellow-800 font-bold text-sm mb-2">
+            📅 AVISO IMPORTANTE
+          </div>
+          <div className="text-yellow-700 text-xs leading-relaxed">
+            O sistema estará disponível a partir de<br/>
+            <strong>Segunda-feira, 11/08 às 09:00h</strong>
+          </div>
+        </div>
+
         {/* Nome da empresa */}
         <div>
           <label htmlFor="razaoSocial" className="block mb-1 font-medium text-gray-700">Nome da empresa</label>

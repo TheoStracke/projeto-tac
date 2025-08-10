@@ -1,0 +1,56 @@
+🧹 LIMPEZA COMPLETA DO CACHE - PROJETO TAC
+===========================================
+
+PASSOS PARA LIMPAR TODO O CACHE:
+
+1. FECHE COMPLETAMENTE O NAVEGADOR
+   - Feche todas as abas
+   - Feche todas as janelas
+   - Aguarde 10 segundos
+
+2. LIMPE O CACHE DO NAVEGADOR
+   No Chrome/Edge:
+   - Ctrl + Shift + Delete
+   - Selecione "Todo o período"
+   - Marque TUDO:
+     ✅ Histórico de navegação
+     ✅ Histórico de download
+     ✅ Cookies e outros dados do site
+     ✅ Imagens e arquivos armazenados em cache
+   - Clique em "Limpar dados"
+
+3. LIMPE O CACHE DO VITE (FRONTEND)
+   Execute no terminal:
+   cd "c:\Users\theoc\Documents\GitHub\projeto-tac\frontend"
+   rm -rf node_modules/.vite
+   rm -rf dist
+   npm run build
+
+4. TESTE EM MODO INCÓGNITO PRIMEIRO
+   - Abra o navegador em modo privado/incógnito
+   - Teste o site do Vercel
+   - Se funcionar = era cache mesmo
+
+5. SE AINDA NÃO FUNCIONAR
+   - Teste em outro navegador (Firefox, Edge, etc.)
+   - Verifique se o deploy foi feito corretamente
+
+COMANDOS PARA EXECUTAR:
+======================
+cd "c:\Users\theoc\Documents\GitHub\projeto-tac\frontend"
+Remove-Item -Recurse -Force .\node_modules\.vite -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force .\dist -ErrorAction SilentlyContinue
+npm run build
+
+VERIFICAÇÕES:
+============
+1. URL do frontend Vercel: https://SEU-PROJETO.vercel.app
+2. URL da API: https://projeto-tac-ja9q.up.railway.app/api
+3. Teste de CORS: https://projeto-tac-ja9q.up.railway.app/api/health
+
+SE AINDA TIVER PROBLEMA:
+=======================
+O problema pode estar:
+- No deploy do Vercel (precisar fazer novo deploy)
+- No deploy do Railway (backend não atualizado)
+- Cache de CDN do Vercel

@@ -90,9 +90,32 @@ const Login = () => {
                 width: '100%',
                 maxWidth: '400px'
             }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
+                
+                {/* Alerta de Manutenção */}
+                <div style={{
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffeaa7',
+                    borderRadius: '6px',
+                    padding: '1rem',
+                    marginBottom: '1.5rem',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ 
+                        color: '#856404', 
+                        fontWeight: 'bold', 
+                        marginBottom: '0.5rem',
+                        fontSize: '14px'
+                    }}>
+                        📅 AVISO IMPORTANTE
+                    </div>
+                    <div style={{ color: '#856404', fontSize: '13px', lineHeight: '1.4' }}>
+                        O sistema estará disponível a partir de<br/>
+                        <strong>Segunda-feira, 11/08 às 09:00h</strong>
+                    </div>
+                </div>
                 <form autoComplete="on" onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
