@@ -12,7 +12,7 @@ import {
   CardContent
 } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import { enviarPedidoDocumentos } from '../config/api';
+import { enviarPedidoDocumentos } from '../services/api';
 
 export default function EnviarDocumento() {
   const [formData, setFormData] = useState({

@@ -14,10 +14,7 @@ import {
   Chip
 } from '@mui/material';
 import { CheckCircle, Cancel } from '@mui/icons-material';
-import { buscarAprovacao, processarAprovacao } from '../config/api';
-
-// Importar a URL base da API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://projeto-tac-production-8a69.up.railway.app/api';
+import { buscarAprovacao, processarAprovacao, getArquivoUrl } from '../services/api';
 
 export default function PaginaAprovacao() {
   const { token } = useParams();
@@ -219,10 +216,7 @@ export default function PaginaAprovacao() {
                       variant="outlined"
                       color="primary"
                       onClick={() => {
-                        window.open(
-                          `${API_BASE_URL}/aprovacao/${token}/arquivo`,
-                          '_blank'
-                        );
+                        window.open(getArquivoUrl(token), '_blank');
                       }}
                       size="small"
                     >

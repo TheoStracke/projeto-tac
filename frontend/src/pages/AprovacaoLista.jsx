@@ -15,7 +15,7 @@ import {
   Box,
   Alert
 } from '@mui/material';
-import { buscarListaAprovacoes, downloadArquivo } from '../config/api';
+import { buscarListaAprovacoes, downloadArquivo } from '../services/api';
 
 export default function AprovacaoLista() {
   const [documentos, setDocumentos] = useState([]);

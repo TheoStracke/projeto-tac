@@ -32,7 +32,7 @@ import {
   rejeitarDocumento,
   visualizarArquivoDocumento,
   buscarPedidos
-} from '../config/api';
+} from '../services/api';
 import LogoutButton from '../components/LogoutButton';
 
 const clearAuthData = () => {

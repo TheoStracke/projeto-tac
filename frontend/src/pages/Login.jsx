@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser as loginUserApi } from '../config/api';
+import { loginUser as loginUserApi } from '../services/api';
 import CnpjInput from '../components/CnpjInput';
 import { cleanCnpj } from '../utils/cnpjValidator';
 
