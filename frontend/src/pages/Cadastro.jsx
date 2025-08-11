@@ -181,28 +181,7 @@ const Cadastro = () => {
         <div style={{ textAlign: 'center', color: '#666', fontSize: '0.95rem', marginBottom: '1.2rem' }}>
           Registre sua empresa para usar o sistema de validação de documentos
         </div>
-        {/* Alerta de Manutenção */}
-        <div style={{
-          backgroundColor: '#fff3cd',
-          border: '1px solid #ffeaa7',
-          borderRadius: '6px',
-          padding: '1rem',
-          marginBottom: '1.5rem',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            color: '#856404',
-            fontWeight: 'bold',
-            marginBottom: '0.5rem',
-            fontSize: '14px'
-          }}>
-            📅 AVISO IMPORTANTE
-          </div>
-          <div style={{ color: '#856404', fontSize: '13px', lineHeight: '1.4' }}>
-            O sistema estará disponível a partir de<br />
-            <strong>Segunda-feira, 11/08 às 09:00h</strong>
-          </div>
-        </div>
+  {/* Alerta de Manutenção removido */}
         <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="razaoSocial" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#333' }}>
