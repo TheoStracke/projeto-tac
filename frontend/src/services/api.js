@@ -322,6 +322,67 @@ export const buscarListaAprovacoes = async () => {
   return buscarDocumentos();
 };
 
+// ==========================================
+// FUNÇÕES PARA ENVIO DE CERTIFICADO
+// ==========================================
+
+// Buscar empresas/despachantes por CNPJ
+export const buscarEmpresasPorCnpj = async (cnpj) => {
+  try {
+    console.log('🔍 Buscando empresas por CNPJ:', cnpj);
+    const response = await apiClient.get(`/empresas/buscar`, {
+      params: { cnpj: cnpj }
+    });
+    console.log('✅ Empresas encontradas:', response.data);
+    return response;
+  } catch (error) {
+    console.error('❌ Erro ao buscar empresas:', error);
+    throw error;
+  }
+};
+
+// Buscar motoristas por CPF ou nome
+export const buscarMotoristasPorCpfOuNome = async (termo) => {
+  try {
+    console.log('🔍 Buscando motoristas por termo:', termo);
+    const response = await apiClient.get(`/motoristas/buscar`, {
+      params: { termo: termo }
+    });
+    console.log('✅ Motoristas encontrados:', response.data);
+    return response;
+  } catch (error) {
+    console.error('❌ Erro ao buscar motoristas:', error);
+    throw error;
+  }
+};
+
+// Enviar certificado para despachante
+export const enviarCertificado = async (dados) => {
+  try {
+    console.log('📤 Enviando certificado:', dados);
+    
+    // Criar FormData para upload de arquivo
+    const formData = new FormData();
+    formData.append('despachanteId', dados.despachanteId);
+    formData.append('motoristaId', dados.motoristaId);
+    formData.append('arquivo', dados.arquivo);
+    formData.append('observacoes', dados.observacoes || '');
+
+    const response = await apiClient.post('/certificados/enviar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 30000, // 30 segundos para upload
+    });
+    
+    console.log('✅ Certificado enviado com sucesso:', response.data);
+    return response;
+  } catch (error) {
+    console.error('❌ Erro ao enviar certificado:', error);
+    throw error;
+  }
+};
+
 // Função para gerar URL completa de arquivos (para links diretos)
 export const getArquivoUrl = (token) => {
   return `${API_BASE_URL}/aprovacao/${token}/arquivo`;

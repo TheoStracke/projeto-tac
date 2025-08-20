@@ -1,4 +1,11 @@
+
 package com.validacao.service;
+
+import com.validacao.model.Empresa;
+import com.validacao.model.Motorista;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -8,6 +15,42 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class EmailService {
+    /**
+     * Envia um certificado em anexo para o despachante selecionado
+     */
+    public void enviarCertificado(Empresa despachante, Motorista motorista, MultipartFile arquivo, String observacoes) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(despachante.getEmail());
+            helper.setSubject("Certificado - " + motorista.getNome());
+
+            String corpo = String.format("""
+                <html>
+                <body>
+                    <h2>Certificado de Motorista</h2>
+                    <p>Prezado(a) %s,</p>
+                    <p>Segue em anexo o certificado do motorista <strong>%s</strong> (CPF: %s).</p>
+                    %s
+                    <hr>
+                    <p><small>Sistema de Validação de Documentos - Estrada Fácil</small></p>
+                </body>
+                </html>
+                """,
+                despachante.getRazaoSocial(),
+                motorista.getNome(),
+                motorista.getCpf(),
+                observacoes != null && !observacoes.isBlank() ? "<p><strong>Observações:</strong> " + observacoes + "</p>" : ""
+            );
+            helper.setText(corpo, true);
+            // Anexar certificado
+            helper.addAttachment(arquivo.getOriginalFilename(), arquivo);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao enviar e-mail de certificado", e);
+        }
+    }
     
     
     @Autowired

@@ -34,6 +34,7 @@ import {
   buscarPedidos
 } from '../services/api';
 import LogoutButton from '../components/LogoutButton';
+import EnviarCertificadoModal from '../components/EnviarCertificadoModal';
 
 const clearAuthData = () => {
   localStorage.removeItem('token');
@@ -73,6 +74,7 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
   const [modalDetalhes, setModalDetalhes] = useState(false);
+  const [modalCertificadoAberto, setModalCertificadoAberto] = useState(false);
   const [documentoSelecionado, setDocumentoSelecionado] = useState(null);
   const [expandedRows, setExpandedRows] = useState([]); // Para controlar linhas expandidas
   const [enviandoDoc, setEnviandoDoc] = useState(false);
@@ -369,6 +371,17 @@ export default function Dashboard() {
               onClick={() => setModalAberto(true)}
             >
               Enviar Documento
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              variant="contained"
+              startIcon={<CloudUpload />}
+              color="secondary"
+              onClick={() => setModalCertificadoAberto(true)}
+              sx={{ mr: 1 }}
+            >
+              Enviar Certificado
             </Button>
           )}
           <LogoutButton />
@@ -824,6 +837,17 @@ export default function Dashboard() {
           <Button onClick={() => setModalDetalhes(false)}>Fechar</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal para Enviar Certificado (Admin) */}
+      <EnviarCertificadoModal
+        open={modalCertificadoAberto}
+        onClose={() => setModalCertificadoAberto(false)}
+        onSuccess={() => {
+          setError('');
+          // Você pode adicionar uma notificação de sucesso aqui
+          console.log('Certificado enviado com sucesso!');
+        }}
+      />
     </Container>
   );
 }
