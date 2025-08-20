@@ -4,14 +4,26 @@ import { loginUser as loginUserApi } from '../services/api';
 import CnpjInput from '../components/CnpjInput';
 import { cleanCnpj } from '../utils/cnpjValidator';
 
+
 const Login = () => {
     const [cnpj, setCnpj] = useState('');
     const [senha, setSenha] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [manutencao, setManutencao] = useState(true);
     const navigate = useNavigate();
 
     const login = async (e) => {
+        if (manutencao) return;
+    // Desbloqueio rápido: se digitar 'desbloquear' no CNPJ e pressionar Enter, libera o login
+    const handleCnpjChange = (e) => {
+        setCnpj(e.target.value);
+        if (e.target.value.toLowerCase() === 'desbloquear') {
+            setManutencao(false);
+            setCnpj('');
+            setError('');
+        }
+    };
         // PATCH DE DEBUG COMPLETO
         console.log('---[DEBUG LOGIN]---');
         if (e) {
@@ -93,6 +105,14 @@ const Login = () => {
                 <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
                     Sistema de Validação de Documentos
                 </h2>
+                {manutencao ? (
+                    <div style={{ textAlign: 'center', color: '#b71c1c', marginBottom: '2rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        O sistema está em manutenção e estará disponível para uso às 15h.<br/>
+                        <span style={{ fontSize: '0.95rem', color: '#444' }}>
+                            (Para testes: digite <b>desbloquear</b> no campo CNPJ e pressione Enter)
+                        </span>
+                    </div>
+                ) : null}
                 <form autoComplete="on" onSubmit={login}>
                     <div style={{ marginBottom: '1rem' }}>
                         <label htmlFor="cnpj-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -101,10 +121,11 @@ const Login = () => {
                                 id="cnpj-input"
                                 name="cnpj"
                                 value={cnpj}
-                                onChange={(e) => setCnpj(e.target.value)}
+                                onChange={handleCnpjChange}
                                 variant="outlined"
                                 size="medium"
                                 required
+                                disabled={manutencao}
                             />
                         </label>
                     </div>
@@ -126,6 +147,7 @@ const Login = () => {
                                     borderRadius: '4px',
                                     fontSize: '1rem'
                                 }}
+                                disabled={manutencao}
                             />
                         </label>
                     </div>
@@ -142,7 +164,7 @@ const Login = () => {
                         id="login-submit"
                         name="login-submit"
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || manutencao}
                         style={{
                             width: '100%',
                             padding: '0.75rem',
@@ -151,12 +173,12 @@ const Login = () => {
                             border: 'none',
                             borderRadius: '4px',
                             fontSize: '1rem',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.6 : 1
+                            cursor: loading || manutencao ? 'not-allowed' : 'pointer',
+                            opacity: loading || manutencao ? 0.6 : 1
                         }}
-        >
-            {loading ? 'Entrando...' : 'Entrar'}
-        </button>
+                    >
+                        {loading ? 'Entrando...' : 'Entrar'}
+                    </button>
                 </form>
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', marginBottom: '1rem' }}>
                     <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>

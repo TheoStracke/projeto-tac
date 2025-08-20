@@ -12,6 +12,12 @@ import java.util.List;
 
 @Service
 public class EmpresaService {
+    // Busca despachantes por CNPJ parcial (para autocomplete, consulta otimizada no banco)
+    public List<Empresa> buscarDespachantesPorCnpjParcial(String cnpjParcial) {
+        // Remove caracteres não numéricos
+        String cnpjLimpo = cnpjParcial.replaceAll("[^0-9]", "");
+        return empresaRepository.buscarDespachantesPorCnpjParcial(cnpjLimpo);
+    }
     @Autowired
     private EmpresaRepository empresaRepository;
     

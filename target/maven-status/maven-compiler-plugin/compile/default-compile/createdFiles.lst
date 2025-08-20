@@ -25,6 +25,7 @@ com\validacao\model\Documento.class
 com\validacao\model\TipoEmpresa.class
 com\validacao\security\JwtAuthenticationFilter.class
 com\validacao\controller\AprovacaoController.class
+com\validacao\controller\EmpresaController.class
 com\validacao\ValidacaoDocumentosApplication.class
 com\validacao\dto\ApiResponse.class
 com\validacao\controller\HealthController.class
