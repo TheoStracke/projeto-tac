@@ -59,11 +59,8 @@ const Login = () => {
                                     variant="outlined"
                                     size="medium"
                                     required
-                                    disabled={manutencao}
                                 />
                             </label>
-                        </div>
-                        <div style={{ marginBottom: '1.5rem' }}>
                             <label htmlFor="senha-input" style={{ display: 'block', marginBottom: '0.5rem' }}>
                                 Senha:
                                 <input
@@ -131,8 +128,8 @@ const Login = () => {
                         </Link>
                     </div>
                 </div>
-            </div>
+                    </div>
                 );
-        };
+            };
         
         export default Login;
