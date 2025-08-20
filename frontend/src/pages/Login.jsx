@@ -13,18 +13,22 @@ const Login = () => {
     const [manutencao, setManutencao] = useState(true);
     const navigate = useNavigate();
 
-    // Desbloqueio rápido: se digitar 'desbloquear' no CNPJ, libera o login
+    // Permitir apenas números no campo CNPJ
     const handleCnpjChange = (e) => {
-            setCnpj(e.target.value);
-            if (e.target.value.toLowerCase() === 'desbloquear') {
-                setManutencao(false);
-                setCnpj('');
-                setError('');
-            }
-        };
+        const onlyNumbers = e.target.value.replace(/\D/g, '');
+        setCnpj(onlyNumbers);
+    };
     
         const login = async (e) => {
             e.preventDefault();
+            // Desbloqueio: se CNPJ for '000', libera o formulário
+            if (manutencao && cnpj === '000') {
+                setManutencao(false);
+                setCnpj('');
+                setSenha('');
+                setError('Login liberado para testes!');
+                return;
+            }
             setLoading(true);
             setError('');
             try {
