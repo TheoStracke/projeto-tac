@@ -237,6 +237,8 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
           <Autocomplete
             freeSolo
             options={despachantesSugeridos}
+            value={despachanteSelecionado}
+            inputValue={cnpjBusca}
             getOptionLabel={(option) => 
               typeof option === 'string' 
                 ? option 
@@ -252,14 +254,18 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
                 </Box>
               </Box>
             )}
-            inputValue={cnpjBusca}
             onInputChange={handleCnpjChange}
             onChange={(event, newValue) => {
-              if (typeof newValue === 'object' && newValue !== null) {
-                setDespachanteSelecionado(newValue);
+              setDespachanteSelecionado(typeof newValue === 'object' && newValue !== null ? newValue : null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !despachanteSelecionado && despachantesSugeridos.length === 1) {
+                setDespachanteSelecionado(despachantesSugeridos[0]);
+                event.preventDefault();
               }
             }}
             loading={loadingDespachantes}
+            open={Boolean(cnpjBusca) && despachantesSugeridos.length > 0}
             renderInput={(params) => (
               <TextField
                 {...params}
