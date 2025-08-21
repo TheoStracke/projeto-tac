@@ -25,10 +25,24 @@ const Login = () => {
         try {
             const cleanedCnpj = cleanCnpj(cnpj);
             // Garante que o CNPJ vai como string
-            await loginUserApi({ cnpj: String(cleanedCnpj), senha });
-            navigate('/dashboard');
+            const result = await loginUserApi({ cnpj: String(cleanedCnpj), senha });
+            if (result.success && result.data) {
+                // Salva token e dados da empresa no localStorage
+                localStorage.setItem('token', result.data.token);
+                localStorage.setItem('empresaData', JSON.stringify({
+                    empresaId: result.data.empresaId,
+                    cnpj: result.data.cnpj,
+                    razaoSocial: result.data.razaoSocial,
+                    email: result.data.email,
+                    tipo: result.data.tipo,
+                    token: result.data.token
+                }));
+                navigate('/dashboard');
+            } else {
+                setError(result.error || 'Erro ao fazer login.');
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Erro ao fazer login.');
+            setError(err.response?.data?.message || err.message || 'Erro ao fazer login.');
         } finally {
             setLoading(false);
         }
