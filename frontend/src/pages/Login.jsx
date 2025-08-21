@@ -24,7 +24,8 @@ const Login = () => {
         setError('');
         try {
             const cleanedCnpj = cleanCnpj(cnpj);
-            await loginUserApi(cleanedCnpj, senha);
+            // Garante que o CNPJ vai como string
+            await loginUserApi({ cnpj: String(cleanedCnpj), senha });
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Erro ao fazer login.');

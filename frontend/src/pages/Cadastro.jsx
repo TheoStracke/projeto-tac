@@ -114,6 +114,7 @@ const Cadastro = () => {
         senha: data.senha,
         tipo: 'DESPACHANTE'
       });
+      console.log('Resultado do cadastro:', result);
       if (result.success) {
         toast.success('✅ Cadastro realizado com sucesso! Redirecionando para login...', {
           position: 'top-center',
@@ -131,7 +132,9 @@ const Cadastro = () => {
         }, 2000);
         reset();
       } else {
-        toast.error(result.error || 'Erro ao cadastrar', {
+        // Garante que a mensagem de erro seja exibida corretamente
+        const errorMsg = result.error || result.message || 'Erro ao cadastrar';
+        toast.error(errorMsg, {
           position: 'top-center',
           autoClose: 3000,
           theme: 'colored',
