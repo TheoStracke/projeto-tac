@@ -159,6 +159,18 @@ export default function Dashboard() {
         return;
       }
 
+      // Validação extra: CPF obrigatório
+      if (!formData.cpf || !/^\d{11}$/.test(formData.cpf)) {
+        setError('Informe um CPF válido (apenas números, 11 dígitos) do motorista.');
+        return;
+      }
+
+      // Validação extra: dataNascimento formato YYYY-MM-DD
+      if (!formData.dataNascimento || !/^\d{4}-\d{2}-\d{2}$/.test(formData.dataNascimento)) {
+        setError('Informe a data de nascimento no formato AAAA-MM-DD.');
+        return;
+      }
+
       // Garante que curso seja 'TAC' ou 'RT', nunca string vazia
       const cursoValue = formData.curso === 'TAC' || formData.curso === 'RT' ? formData.curso : null;
 
@@ -172,6 +184,7 @@ export default function Dashboard() {
       let allSuccess = true;
       let lastError = '';
       for (const arquivo of formData.arquivos) {
+        if (!arquivo) continue;
         const formDataToSend = new FormData();
         formDataToSend.append('arquivo', arquivo);
         formDataToSend.append('titulo', formData.titulo);

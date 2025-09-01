@@ -68,25 +68,32 @@ public class DocumentoService {
 
         // Cadastro automático do motorista
         Motorista motorista = null;
-        if (cpf != null && !cpf.isBlank()) {
-            motorista = motoristaRepository.findByCpf(cpf).orElse(null);
-            if (motorista == null) {
-                motorista = new Motorista();
-                motorista.setCpf(cpf);
-                motorista.setNome(nomeMotorista);
-                motorista.setEmail(email);
-                motorista.setTelefone(telefone);
-                // Tenta converter dataNascimento para LocalDate
-                try {
-                    if (dataNascimento != null && !dataNascimento.isBlank()) {
-                        motorista.setDataNascimento(java.time.LocalDate.parse(dataNascimento));
-                    }
-                } catch (Exception e) {
-                    logger.warn("[MOTORISTA] Data de nascimento inválida: {}", dataNascimento);
+        if (cpf == null || cpf.isBlank()) {
+            throw new RuntimeException("CPF do motorista é obrigatório para cadastro automático.");
+        }
+        motorista = motoristaRepository.findByCpf(cpf).orElse(null);
+        if (motorista == null) {
+            motorista = new Motorista();
+            motorista.setCpf(cpf);
+            motorista.setNome(nomeMotorista);
+            motorista.setEmail(email);
+            motorista.setTelefone(telefone);
+            // Tenta converter dataNascimento para LocalDate
+            try {
+                if (dataNascimento != null && !dataNascimento.isBlank()) {
+                    motorista.setDataNascimento(java.time.LocalDate.parse(dataNascimento));
                 }
-                motoristaRepository.save(motorista);
-                logger.info("[MOTORISTA] Motorista cadastrado automaticamente: {} - {}", nomeMotorista, cpf);
+            } catch (Exception e) {
+                logger.warn("[MOTORISTA] Data de nascimento inválida: {}", dataNascimento);
+                throw new RuntimeException("Data de nascimento do motorista inválida. Use o formato AAAA-MM-DD.");
             }
+            try {
+                motoristaRepository.save(motorista);
+            } catch (Exception e) {
+                logger.error("[MOTORISTA] Erro ao salvar motorista: {}", e.getMessage());
+                throw new RuntimeException("Erro ao cadastrar motorista: " + e.getMessage());
+            }
+            logger.info("[MOTORISTA] Motorista cadastrado automaticamente: {} - {}", nomeMotorista, cpf);
         }
 
         // Criar documento
