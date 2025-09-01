@@ -1,3 +1,12 @@
+// Cadastro manual de motorista
+export const cadastrarMotorista = async (motorista) => {
+  try {
+    const response = await apiClient.post('/motoristas/cadastrar', motorista);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, error: error.response?.data?.message || 'Erro ao cadastrar motorista' };
+  }
+};
 import axios from 'axios';
 
 // Configuração centralizada da API
