@@ -169,7 +169,8 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
 
       await enviarCertificado({
         despachanteId: despachanteSelecionado.id,
-        motoristaId: motoristaSelecionado.id,
+        motoristaId: motoristaSelecionado.id || null,
+        motorista: motoristaSelecionado, // envia objeto completo
         arquivo: arquivo,
         observacoes: observacoes
       });

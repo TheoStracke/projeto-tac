@@ -33,8 +33,21 @@ public class CertificadoService {
     public EnvioCertificado enviarCertificado(EnviarCertificadoRequest request, MultipartFile arquivo, String enviadoPor) {
         Empresa despachante = empresaRepository.findById(request.getDespachanteId())
                 .orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
-        Motorista motorista = motoristaRepository.findById(request.getMotoristaId())
-                .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+        Motorista motorista = null;
+        if (request.getMotoristaId() != null) {
+            motorista = motoristaRepository.findById(request.getMotoristaId())
+                .orElse(null);
+        }
+        // Se não existe, tenta cadastrar pelo CPF
+        if (motorista == null && request.getMotorista() != null && request.getMotorista().getCpf() != null) {
+            motorista = motoristaRepository.findByCpf(request.getMotorista().getCpf()).orElse(null);
+            if (motorista == null) {
+                motorista = motoristaRepository.save(request.getMotorista());
+            }
+        }
+        if (motorista == null) {
+            throw new RuntimeException("Motorista não encontrado ou dados insuficientes para cadastro");
+        }
         String caminhoArquivo = fileStorageService.salvarArquivo(arquivo, "certificados");
         EnvioCertificado envio = new EnvioCertificado();
         envio.setDespachante(despachante);

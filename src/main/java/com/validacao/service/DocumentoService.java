@@ -6,6 +6,8 @@ import com.validacao.model.Empresa;
 import com.validacao.model.TipoEmpresa;
 import com.validacao.repository.DocumentoRepository;
 import com.validacao.repository.EmpresaRepository;
+import com.validacao.repository.MotoristaRepository;
+import com.validacao.model.Motorista;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +27,9 @@ import java.util.UUID;
 
 @Service
 public class DocumentoService {
+
+    @Autowired
+    private MotoristaRepository motoristaRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentoService.class);
     
@@ -60,7 +65,30 @@ public class DocumentoService {
         // Salvar arquivo
         String nomeArquivo = salvarArquivo(arquivo);
         logger.info("[DOC] Arquivo salvo: {}", nomeArquivo);
-        
+
+        // Cadastro automático do motorista
+        Motorista motorista = null;
+        if (cpf != null && !cpf.isBlank()) {
+            motorista = motoristaRepository.findByCpf(cpf).orElse(null);
+            if (motorista == null) {
+                motorista = new Motorista();
+                motorista.setCpf(cpf);
+                motorista.setNome(nomeMotorista);
+                motorista.setEmail(email);
+                motorista.setTelefone(telefone);
+                // Tenta converter dataNascimento para LocalDate
+                try {
+                    if (dataNascimento != null && !dataNascimento.isBlank()) {
+                        motorista.setDataNascimento(java.time.LocalDate.parse(dataNascimento));
+                    }
+                } catch (Exception e) {
+                    logger.warn("[MOTORISTA] Data de nascimento inválida: {}", dataNascimento);
+                }
+                motoristaRepository.save(motorista);
+                logger.info("[MOTORISTA] Motorista cadastrado automaticamente: {} - {}", nomeMotorista, cpf);
+            }
+        }
+
         // Criar documento
         Documento documento = new Documento();
         documento.setTitulo(titulo);
@@ -86,7 +114,7 @@ public class DocumentoService {
         documento.setStatus(StatusDocumento.PENDENTE);
         documento.setEmpresaRemetente(empresaRemetente);
         documento.setTokenAprovacao(UUID.randomUUID().toString());
-        
+
         Documento savedDoc = documentoRepository.save(documento);
         logger.info("[DOC] Documento salvo no banco: id={}", savedDoc.getId());
         
