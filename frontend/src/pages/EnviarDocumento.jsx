@@ -157,6 +157,18 @@ export default function EnviarDocumento() {
         )}
 
 
+        {/* Botão fixo para cadastro de motorista */}
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="contained" color="primary" onClick={() => setModalCadastroOpen(true)}>
+            Cadastrar novo motorista
+          </Button>
+        </Box>
+        <CadastroMotoristaModal open={modalCadastroOpen} onClose={() => setModalCadastroOpen(false)} onSuccess={() => setModalCadastroOpen(false)} />
+        <Box sx={{ mb: 2 }}>
+          <Alert severity="info">
+            Para enviar um documento, primeiro cadastre o motorista (caso ainda não exista) usando o botão acima. Depois, busque e selecione o motorista já cadastrado.
+          </Alert>
+        </Box>
         <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -180,7 +192,7 @@ export default function EnviarDocumento() {
                 rows={3}
               />
             </Grid>
-            <Grid item xs={12} sm={8}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Buscar Motorista (nome ou CPF)"
@@ -188,11 +200,6 @@ export default function EnviarDocumento() {
                 onChange={e => setMotoristaBusca(e.target.value)}
                 placeholder="Digite ao menos 3 letras ou números"
               />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button variant="outlined" fullWidth sx={{ height: '100%' }} onClick={() => setModalCadastroOpen(true)}>
-                Cadastrar novo motorista
-              </Button>
             </Grid>
             <Grid item xs={12}>
               <TextField
