@@ -79,20 +79,14 @@ export default function Dashboard() {
   const [expandedRows, setExpandedRows] = useState([]); // Para controlar linhas expandidas
   const [enviandoDoc, setEnviandoDoc] = useState(false);
   const [formData, setFormData] = useState({
-    titulo: '',
-    descricao: '',
-    nomeMotorista: '',
-    arquivos: [],
-    cpf: '',
-    dataNascimento: '',
-    sexo: '',
-    email: '',
-    identidade: '',
-    orgaoEmissor: '',
-    ufEmissor: '',
-    telefone: '',
-    curso: '' // 'TAC' | 'RT' | ''
-  });
+      titulo: '',
+      descricao: '',
+      arquivos: [],
+    });
+  const [motoristaBusca, setMotoristaBusca] = useState('');
+  const [motoristasSugeridos, setMotoristasSugeridos] = useState([]);
+  const [motoristaSelecionado, setMotoristaSelecionado] = useState(null);
+  const [loadingMotoristas, setLoadingMotoristas] = useState(false);
 
 
   useEffect(() => {
@@ -138,6 +132,23 @@ export default function Dashboard() {
   // função carregarDocumentos removida
 
 
+    // Busca motoristas cadastrados por CPF ou nome
+    const buscarMotoristas = async (termo) => {
+      if (!termo || termo.length < 3) {
+        setMotoristasSugeridos([]);
+        return;
+      }
+      setLoadingMotoristas(true);
+      try {
+        const resposta = await buscarMotoristasPorCpfOuNome(termo);
+        setMotoristasSugeridos(resposta.data || []);
+      } catch (error) {
+        setMotoristasSugeridos([]);
+      } finally {
+        setLoadingMotoristas(false);
+      }
+    };
+
   const handleEnviarDocumento = async () => {
     try {
       setEnviandoDoc(true);
@@ -159,25 +170,15 @@ export default function Dashboard() {
         return;
       }
 
-      // Validação extra: CPF obrigatório
-      if (!formData.cpf || !/^\d{11}$/.test(formData.cpf)) {
-        setError('Informe um CPF válido (apenas números, 11 dígitos) do motorista.');
+      // Motorista obrigatório
+      if (!motoristaSelecionado || !motoristaSelecionado.id) {
+        setError('Selecione um motorista cadastrado.');
         return;
       }
-
-      // Validação extra: dataNascimento formato YYYY-MM-DD
-      if (!formData.dataNascimento || !/^\d{4}-\d{2}-\d{2}$/.test(formData.dataNascimento)) {
-        setError('Informe a data de nascimento no formato AAAA-MM-DD.');
-        return;
-      }
-
-      // Garante que curso seja 'TAC' ou 'RT', nunca string vazia
-      const cursoValue = formData.curso === 'TAC' || formData.curso === 'RT' ? formData.curso : null;
-
       // Log dos dados inseridos antes do envio
       console.log('[ENVIAR DOCUMENTO] Dados do formulário:', {
         ...formData,
-        curso: cursoValue,
+        motoristaId: motoristaSelecionado.id,
         empresaId: currentEmpresaData.empresaId
       });
 
@@ -189,23 +190,10 @@ export default function Dashboard() {
         formDataToSend.append('arquivo', arquivo);
         formDataToSend.append('titulo', formData.titulo);
         formDataToSend.append('descricao', formData.descricao || '');
-        formDataToSend.append('nomeMotorista', formData.nomeMotorista || '');
-        formDataToSend.append('cpf', formData.cpf);
-        formDataToSend.append('dataNascimento', formData.dataNascimento);
-        formDataToSend.append('sexo', formData.sexo);
-        formDataToSend.append('email', formData.email);
-        formDataToSend.append('identidade', formData.identidade);
-        formDataToSend.append('orgaoEmissor', formData.orgaoEmissor);
-        formDataToSend.append('ufEmissor', formData.ufEmissor);
-        formDataToSend.append('telefone', formData.telefone);
-        if (cursoValue) {
-          formDataToSend.append('curso', cursoValue);
-        }
+        formDataToSend.append('motoristaId', motoristaSelecionado.id);
         formDataToSend.append('empresaId', currentEmpresaData.empresaId);
-
         // Log do envio de cada arquivo
         console.log('[ENVIAR DOCUMENTO] Enviando arquivo:', arquivo.name, 'com dados:', Object.fromEntries(formDataToSend.entries()));
-
         const result = await enviarDocumento(formDataToSend);
         if (!result.success) {
           allSuccess = false;
@@ -213,24 +201,15 @@ export default function Dashboard() {
           console.error('[ENVIAR DOCUMENTO] Erro:', result.error);
         }
       }
-
       if (allSuccess) {
         setModalAberto(false);
         setFormData({
           titulo: '',
           descricao: '',
-          nomeMotorista: '',
           arquivos: [],
-          cpf: '',
-          dataNascimento: '',
-          sexo: '',
-          email: '',
-          identidade: '',
-          orgaoEmissor: '',
-          ufEmissor: '',
-          telefone: '',
-          curso: ''
         });
+        setMotoristaSelecionado(null);
+        setMotoristaBusca('');
         carregarPedidos();
       } else {
         setError(lastError || 'Erro ao enviar um ou mais arquivos.');
@@ -529,173 +508,92 @@ export default function Dashboard() {
           </Table>
         </TableContainer>
       )}
-     <Dialog open={modalAberto} onClose={() => setModalAberto(false)} maxWidth="sm" fullWidth>
-       <DialogTitle>📤 Enviar Novo Documento</DialogTitle>
-       <DialogContent>
-         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-           <TextField
-             id="titulo-documento"
-             name="titulo"
-             label="Título do Documento"
-             value={formData.titulo}
-             onChange={(e) => handleInputChange('titulo', e.target.value)}
-             required
-             fullWidth
-           />
-           <TextField
-             id="descricao-documento"
-             name="descricao"
-             label="Descrição"
+      {/* Botões principais */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => setModalAberto(true)}>
+          Enviar Documento
+        </Button>
+        <Button variant="outlined" color="secondary" onClick={() => setModalCadastroMotorista(true)}>
+          Cadastro de Motorista
+        </Button>
+      </Box>
+
+      {/* Modal de Enviar Documento */}
+      <Dialog open={modalAberto} onClose={() => setModalAberto(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>📤 Enviar Novo Documento</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              id="titulo-documento"
+              name="titulo"
+              label="Título do Documento"
+              value={formData.titulo}
+              onChange={(e) => handleInputChange('titulo', e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              id="descricao-documento"
+              name="descricao"
+              label="Descrição"
               value={formData.descricao}
               onChange={(e) => handleInputChange('descricao', e.target.value)}
               multiline
               rows={3}
               fullWidth
             />
-            <TextField
-              id="nome-motorista"
-              name="nomeMotorista"
-              label="Nome do Motorista"
-              value={formData.nomeMotorista}
-              onChange={(e) => handleInputChange('nomeMotorista', e.target.value)}
-              fullWidth
+            {/* Busca e seleção de motorista */}
+            <Autocomplete
+              freeSolo
+              options={motoristasSugeridos}
+              getOptionLabel={(option) => typeof option === 'string' ? option : `${option.nome} - CPF: ${option.cpf}`}
+              renderOption={(props, option) => (
+                <Box component="li" {...props}>
+                  <Box>
+                    <Typography variant="body1">{option.nome}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      CPF: {option.cpf} | CNH: {option.cnh || 'N/A'}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+              inputValue={motoristaBusca}
+              onInputChange={(e, newValue) => {
+                setMotoristaBusca(newValue);
+                buscarMotoristas(newValue);
+              }}
+              onChange={(event, newValue) => {
+                if (typeof newValue === 'object' && newValue !== null) {
+                  setMotoristaSelecionado(newValue);
+                }
+              }}
+              loading={loadingMotoristas}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Buscar Motorista"
+                  placeholder="Digite o CPF ou nome do motorista..."
+                  InputProps={{
+                    ...params.InputProps,
+                  }}
+                  fullWidth
+                />
+              )}
             />
-            <TextField
-              id="cpf"
-              name="cpf"
-              label="CPF"
-              value={formData.cpf}
-              onChange={(e) => handleInputChange('cpf', e.target.value)}
-              required
-              fullWidth
-              placeholder="000.000.000-00"
-            />
-            <TextField
-              id="data-nascimento"
-              name="dataNascimento"
-              label="Data de Nascimento"
-              type="date"
-              value={formData.dataNascimento}
-              onChange={(e) => handleInputChange('dataNascimento', e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              required
-              fullWidth
-            />
-            <TextField
-              id="sexo"
-              name="sexo"
-              label="Sexo"
-              select
-              SelectProps={{ native: true }}
-              value={formData.sexo}
-              onChange={(e) => handleInputChange('sexo', e.target.value)}
-              required
-              fullWidth
-            >
-              <option value=""></option>
-              <option value="Masculino">Masculino</option>
-              <option value="Feminino">Feminino</option>
-              <option value="Outro">Outro</option>
-            </TextField>
-            <TextField
-              id="email"
-              name="email"
-              label="E-mail"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              required
-              type="email"
-              fullWidth
-            />
-            <TextField
-              id="identidade"
-              name="identidade"
-              label="Identidade"
-              value={formData.identidade}
-              onChange={(e) => handleInputChange('identidade', e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              id="orgao-emissor"
-              name="orgaoEmissor"
-              label="Orgão Emissor"
-              value={formData.orgaoEmissor}
-              onChange={(e) => handleInputChange('orgaoEmissor', e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              id="uf-emissor"
-              name="ufEmissor"
-              label=""
-              select
-              SelectProps={{ native: true }}
-              value={formData.ufEmissor}
-              onChange={(e) => handleInputChange('ufEmissor', e.target.value)}
-              required
-              fullWidth
-            >
-              <option value="">UF Emissor</option>
-              <option value="AC">AC</option>
-              <option value="AL">AL</option>
-              <option value="AP">AP</option>
-              <option value="AM">AM</option>
-              <option value="BA">BA</option>
-              <option value="CE">CE</option>
-              <option value="DF">DF</option>
-              <option value="ES">ES</option>
-              <option value="GO">GO</option>
-              <option value="MA">MA</option>
-              <option value="MT">MT</option>
-              <option value="MS">MS</option>
-              <option value="MG">MG</option>
-              <option value="PA">PA</option>
-              <option value="PB">PB</option>
-              <option value="PR">PR</option>
-              <option value="PE">PE</option>
-              <option value="PI">PI</option>
-              <option value="RJ">RJ</option>
-              <option value="RN">RN</option>
-              <option value="RS">RS</option>
-              <option value="RO">RO</option>
-              <option value="RR">RR</option>
-              <option value="SC">SC</option>
-              <option value="SP">SP</option>
-              <option value="SE">SE</option>
-              <option value="TO">TO</option>
-            </TextField>
-            <TextField
-              id="telefone"
-              name="telefone"
-              label="Telefone com DDD"
-              value={formData.telefone}
-              onChange={(e) => handleInputChange('telefone', e.target.value)}
-              required
-              fullWidth
-              placeholder="(00) 00000-0000"
-            />
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>Curso</Typography>
-              <label>
-                <input
-                  type="radio"
-                  name="curso"
-                  value="TAC"
-                  checked={formData.curso === 'TAC'}
-                  onChange={e => handleInputChange('curso', e.target.value)}
-                /> TAC Completo
-              </label>
-              <label style={{ marginLeft: 16 }}>
-                <input
-                  type="radio"
-                  name="curso"
-                  value="RT"
-                  checked={formData.curso === 'RT'}
-                  onChange={e => handleInputChange('curso', e.target.value)}
-                /> RT Completo
-              </label>
-            </Box>
+            {motoristaSelecionado && (
+              <Box sx={{ mt: 1 }}>
+                <Chip
+                  label={`✓ ${motoristaSelecionado.nome} - ${motoristaSelecionado.cpf}`}
+                  color="success"
+                  variant="outlined"
+                  onDelete={() => {
+                    setMotoristaSelecionado(null);
+                    setMotoristaBusca('');
+                  }}
+                />
+              </Box>
+            )}
+            {/* Upload de arquivos */}
             <Box>
               <Typography variant="body2" sx={{ mb: 1 }} component="label" htmlFor="arquivo-upload">
                 Selecione o arquivo:
@@ -720,9 +618,9 @@ export default function Dashboard() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setModalAberto(false)}>Cancelar</Button>
-          <Button 
-            onClick={handleEnviarDocumento} 
-            variant="contained" 
+          <Button
+            onClick={handleEnviarDocumento}
+            variant="contained"
             disabled={enviandoDoc || !formData.arquivos || formData.arquivos.length === 0 || !formData.titulo.trim()}
             startIcon={<CloudUpload />}
           >
@@ -730,6 +628,15 @@ export default function Dashboard() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de Cadastro de Motorista */}
+      <CadastroMotoristaModal
+        open={modalCadastroMotorista}
+        onClose={() => setModalCadastroMotorista(false)}
+        onSuccess={() => {
+          setModalCadastroMotorista(false);
+        }}
+      />
       
       <Dialog open={modalDetalhes} onClose={() => setModalDetalhes(false)} maxWidth="md" fullWidth>
         <DialogTitle>📄 Detalhes do Documento</DialogTitle>
