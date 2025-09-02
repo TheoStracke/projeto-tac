@@ -44,26 +44,18 @@ public class DocumentoController {
             @RequestParam("curso") String curso,
             @RequestParam("empresaId") Long empresaId) {
         logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null");
-        try {
-            if (arquivo == null || arquivo.isEmpty()) {
-                logger.warn("[UPLOAD] Arquivo não enviado ou vazio");
-                return ResponseEntity.badRequest().body("Arquivo é obrigatório");
-            }
-
-            Documento documento = documentoService.enviarDocumento(
-                arquivo, titulo, descricao, nomeMotorista,
-                cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
-                curso,
-                empresaId
-            );
-
-            logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
-            return ResponseEntity.ok(documento);
-
-        } catch (Exception e) {
-            logger.error("[UPLOAD] Erro ao enviar documento", e);
-            return ResponseEntity.status(500).body("Erro ao enviar documento: " + e.getMessage());
+        if (arquivo == null || arquivo.isEmpty()) {
+            logger.warn("[UPLOAD] Arquivo não enviado ou vazio");
+            throw new RuntimeException("Arquivo é obrigatório");
         }
+        Documento documento = documentoService.enviarDocumento(
+            arquivo, titulo, descricao, nomeMotorista,
+            cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
+            curso,
+            empresaId
+        );
+        logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
+        return ResponseEntity.ok(documento);
     }
     
     @GetMapping("/empresa/{empresaId}")
