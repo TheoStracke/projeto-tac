@@ -40,6 +40,11 @@ const CadastroMotoristaModal = ({ open, onClose, onSuccess }) => {
     if (!dataOk) {
       setError('Data de nascimento deve estar no formato AAAA-MM-DD.'); setLoading(false); return;
     }
+    // Validação profissional: ano realista
+    const anoNascimento = parseInt(form.dataNascimento.substring(0, 4), 10);
+    if (isNaN(anoNascimento) || anoNascimento < 1940 || anoNascimento > 2007) {
+      setError('Ano de nascimento deve ser entre 1940 e 2007.'); setLoading(false); return;
+    }
     if (!emailOk) {
       setError('E-mail inválido.'); setLoading(false); return;
     }

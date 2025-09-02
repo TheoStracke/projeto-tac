@@ -2,6 +2,7 @@ com\validacao\config\AppProperties$Email.class
 com\validacao\service\EmpresaService.class
 com\validacao\model\EnvioCertificado$StatusEnvio.class
 com\validacao\model\EnvioCertificado.class
+com\validacao\exception\GlobalExceptionHandler.class
 com\validacao\security\TokenService.class
 com\validacao\repository\EmpresaRepository.class
 com\validacao\service\DocumentoService.class
@@ -30,6 +31,7 @@ com\validacao\ValidacaoDocumentosApplication.class
 com\validacao\dto\ApiResponse.class
 com\validacao\controller\HealthController.class
 com\validacao\repository\DocumentoRepository.class
+com\validacao\controller\MotoristaController.class
 com\validacao\config\DataInitializer.class
 com\validacao\repository\EnvioCertificadoRepository.class
 com\validacao\security\SecurityConfig.class

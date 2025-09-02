@@ -9,12 +9,14 @@ C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\control
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\controller\EmpresaController.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\controller\GlobalExceptionHandler.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\controller\HealthController.java
+C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\controller\MotoristaController.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\controller\PedidoDocumentosController.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\controller\TestController.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\dto\ApiResponse.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\dto\EnviarCertificadoRequest.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\dto\LoginRequest.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\dto\LoginResponse.java
+C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\exception\GlobalExceptionHandler.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\model\Documento.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\model\Empresa.java
 C:\Users\theoc\Documents\GithubN\projeto-tac\src\main\java\com\validacao\model\EnvioCertificado.java
