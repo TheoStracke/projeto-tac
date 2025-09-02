@@ -188,6 +188,7 @@ export default function Dashboard() {
 
       let allSuccess = true;
       let lastError = '';
+      let lastErrorDetails = null;
       for (const arquivo of formData.arquivos) {
         if (!arquivo) continue;
         const formDataToSend = new FormData();
@@ -202,7 +203,8 @@ export default function Dashboard() {
         if (!result.success) {
           allSuccess = false;
           lastError = result.error;
-          console.error('[ENVIAR DOCUMENTO] Erro:', result.error);
+          lastErrorDetails = result.data;
+          console.error('[ENVIAR DOCUMENTO] Erro:', result.error, result.data);
         }
       }
       if (allSuccess) {
@@ -216,11 +218,18 @@ export default function Dashboard() {
         setMotoristaBusca('');
         carregarPedidos();
       } else {
-        setError(lastError || 'Erro ao enviar um ou mais arquivos.');
+        let errorMsg = lastError || 'Erro ao enviar um ou mais arquivos.';
+        if (lastErrorDetails && typeof lastErrorDetails === 'object') {
+          errorMsg += '\n[Backend] Mensagem: ' + (lastErrorDetails.message || '') +
+            '\n[Backend] Detalhes: ' + (lastErrorDetails.details || '') +
+            '\n[Backend] Erro: ' + (lastErrorDetails.error || '') +
+            '\n[Backend] Timestamp: ' + (lastErrorDetails.timestamp || '');
+        }
+        setError(errorMsg);
       }
 
     } catch (e) {
-      setError('Erro de conexão. Tente novamente.');
+      setError('Erro de conexão. Tente novamente.\n[Frontend] ' + (e?.message || e));
       console.error('[ENVIAR DOCUMENTO] Erro:', e);
     } finally {
       setEnviandoDoc(false);
