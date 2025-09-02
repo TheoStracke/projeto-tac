@@ -4,8 +4,10 @@ package com.validacao.controller;
 import com.validacao.model.PedidoDocumentos;
 import com.validacao.model.Documento;
 import com.validacao.model.Empresa;
+import com.validacao.model.Motorista;
 import com.validacao.repository.EmpresaRepository;
 import com.validacao.repository.PedidoDocumentosRepository;
+import com.validacao.repository.MotoristaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,8 @@ public class PedidoDocumentosController {
     private PedidoDocumentosRepository pedidoRepository;
     @Autowired
     private EmpresaRepository empresaRepository;
+    @Autowired
+    private MotoristaRepository motoristaRepository;
 
     // LOGS DE DEBUG PARA O FRONTEND
     private static final List<String> debugLogs = new CopyOnWriteArrayList<>();
@@ -43,43 +47,35 @@ public class PedidoDocumentosController {
             @RequestParam("arquivos") List<MultipartFile> arquivos,
             @RequestParam("titulo") String titulo,
             @RequestParam("descricao") String descricao,
-            @RequestParam("nomeMotorista") String nomeMotorista,
-            @RequestParam("cpf") String cpf,
-            @RequestParam("dataNascimento") String dataNascimento,
-            @RequestParam("sexo") String sexo,
-            @RequestParam("email") String email,
-            @RequestParam("identidade") String identidade,
-            @RequestParam("orgaoEmissor") String orgaoEmissor,
-            @RequestParam("ufEmissor") String ufEmissor,
-            @RequestParam("telefone") String telefone,
-            @RequestParam("curso") String curso,
+            @RequestParam("motoristaId") Long motoristaId,
             @RequestParam("empresaId") Long empresaId
     ) {
-        addDebugLog("[RECEBIDO] curso=" + curso + ", ufEmissor=" + ufEmissor);
         if (arquivos == null || arquivos.size() < 2 || arquivos.size() > 3) {
             return ResponseEntity.badRequest().body("É obrigatório enviar entre 2 e 3 arquivos.");
-        }
-        if (!"TAC".equalsIgnoreCase(curso) && !"RT".equalsIgnoreCase(curso)) {
-            return ResponseEntity.badRequest().body("Curso deve ser 'TAC' ou 'RT'");
         }
         Empresa empresa = empresaRepository.findById(empresaId).orElse(null);
         if (empresa == null) {
             return ResponseEntity.badRequest().body("Empresa não encontrada");
         }
+        // Busca motorista
+        Motorista motorista = motoristaRepository.findById(motoristaId).orElse(null);
+        if (motorista == null) {
+            return ResponseEntity.badRequest().body("Motorista não encontrado");
+        }
         PedidoDocumentos pedido = new PedidoDocumentos();
         pedido.setEmpresaRemetente(empresa);
         pedido.setTitulo(titulo);
         pedido.setDescricao(descricao);
-        pedido.setNomeMotorista(nomeMotorista);
-        pedido.setCpf(cpf);
-        pedido.setDataNascimento(dataNascimento);
-        pedido.setSexo(sexo);
-        pedido.setEmail(email);
-        pedido.setIdentidade(identidade);
-        pedido.setOrgaoEmissor(orgaoEmissor);
-        pedido.setUfEmissor(ufEmissor);
-        pedido.setTelefone(telefone);
-        pedido.setCurso(curso);
+        pedido.setNomeMotorista(motorista.getNome());
+        pedido.setCpf(motorista.getCpf());
+        pedido.setDataNascimento(motorista.getDataNascimento() != null ? motorista.getDataNascimento().toString() : null);
+        pedido.setSexo(motorista.getSexo());
+        pedido.setEmail(motorista.getEmail());
+        pedido.setIdentidade(null); // Se quiser, adicione campo no Motorista
+        pedido.setOrgaoEmissor(null); // Se quiser, adicione campo no Motorista
+        pedido.setUfEmissor(null); // Se quiser, adicione campo no Motorista
+        pedido.setTelefone(motorista.getTelefone());
+        pedido.setCurso(null); // Se quiser, adicione campo no Motorista
         addDebugLog("[SALVANDO PEDIDO] curso=" + pedido.getCurso() + ", ufEmissor=" + pedido.getUfEmissor());
         pedido.setDataEnvio(LocalDateTime.now());
         pedido.setStatus("PENDENTE");
@@ -88,21 +84,19 @@ public class PedidoDocumentosController {
             Documento doc = new Documento();
             doc.setTitulo(titulo);
             doc.setDescricao(descricao);
-            doc.setNomeMotorista(nomeMotorista);
-            doc.setCpf(cpf);
-            doc.setDataNascimento(dataNascimento);
-            doc.setSexo(sexo);
-            doc.setEmail(email);
-            doc.setIdentidade(identidade);
-            doc.setOrgaoEmissor(orgaoEmissor);
-            doc.setUfEmissor(ufEmissor);
-            doc.setCurso(curso);
+            doc.setNomeMotorista(motorista.getNome());
+            doc.setCpf(motorista.getCpf());
+            doc.setDataNascimento(motorista.getDataNascimento() != null ? motorista.getDataNascimento().toString() : null);
+            doc.setSexo(motorista.getSexo());
+            doc.setEmail(motorista.getEmail());
+            doc.setIdentidade(null); // Se quiser, adicione campo no Motorista
+            doc.setOrgaoEmissor(null); // Se quiser, adicione campo no Motorista
+            doc.setUfEmissor(null); // Se quiser, adicione campo no Motorista
+            doc.setTelefone(motorista.getTelefone());
+            doc.setCurso(null); // Se quiser, adicione campo no Motorista
             addDebugLog("[SALVANDO DOCUMENTO] curso=" + doc.getCurso() + ", ufEmissor=" + doc.getUfEmissor());
-            doc.setTelefone(telefone);
-            // Define o curso correto
-            doc.setCursoTACCompleto("TAC".equalsIgnoreCase(curso));
-            doc.setCursoRTCompleto("RT".equalsIgnoreCase(curso));
-            doc.setCurso(curso);
+            doc.setCursoTACCompleto(false);
+            doc.setCursoRTCompleto(false);
             doc.setEmpresaRemetente(empresa);
             doc.setDataEnvio(LocalDateTime.now());
             doc.setStatus(com.validacao.model.StatusDocumento.PENDENTE);

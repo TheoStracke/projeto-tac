@@ -11,6 +11,7 @@ public class Motorista {
     private Long id;
 
     @Column(nullable = false)
+        private String sexo;
     private String nome;
 
     @Column(unique = true, nullable = false)
@@ -29,6 +30,8 @@ public class Motorista {
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getCpf() { return cpf; }
+        public String getSexo() { return sexo; }
+        public void setSexo(String sexo) { this.sexo = sexo; }
     public void setCpf(String cpf) { this.cpf = cpf; }
     public String getCnh() { return cnh; }
     public void setCnh(String cnh) { this.cnh = cnh; }

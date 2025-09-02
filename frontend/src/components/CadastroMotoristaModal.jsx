@@ -81,7 +81,21 @@ const CadastroMotoristaModal = ({ open, onClose, onSuccess }) => {
               <TextField label="Data de Nascimento" name="dataNascimento" type="date" value={form.dataNascimento} onChange={handleChange} fullWidth required InputLabelProps={{ shrink: true }} />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField label="Sexo" name="sexo" value={form.sexo} onChange={handleChange} fullWidth required />
+              <TextField
+                select
+                label="Sexo"
+                name="sexo"
+                value={form.sexo}
+                onChange={handleChange}
+                fullWidth
+                required
+                SelectProps={{ native: true }}
+              >
+                <option value="">Selecione</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro</option>
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField label="E-mail" name="email" value={form.email} onChange={handleChange} fullWidth required />
@@ -97,9 +111,6 @@ const CadastroMotoristaModal = ({ open, onClose, onSuccess }) => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField label="Telefone" name="telefone" value={form.telefone} onChange={handleChange} fullWidth required />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField label="CNH" name="cnh" value={form.cnh} onChange={handleChange} fullWidth />
             </Grid>
           </Grid>
         </form>

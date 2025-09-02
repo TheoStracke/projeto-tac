@@ -519,6 +519,9 @@ export default function Dashboard() {
         <Button variant="outlined" color="secondary" onClick={() => setModalCadastroMotorista(true)}>
           Cadastro de Motorista
         </Button>
+        <Button variant="outlined" startIcon={<Refresh />} onClick={carregarPedidos} disabled={loading}>
+          Atualizar
+        </Button>
       </Box>
 
       {/* Modal de Enviar Documento */}

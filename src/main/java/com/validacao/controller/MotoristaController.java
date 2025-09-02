@@ -24,6 +24,13 @@ public class MotoristaController {
     // Cadastro de motorista
     @PostMapping("/cadastrar")
     public ResponseEntity<Motorista> cadastrarMotorista(@RequestBody Motorista motorista) {
+            // Validação profissional do campo sexo
+            if (motorista.getSexo() != null) {
+                String sexo = motorista.getSexo().trim().toLowerCase();
+                if (!sexo.equals("masculino") && !sexo.equals("feminino") && !sexo.equals("outro")) {
+                    return ResponseEntity.badRequest().body(null);
+                }
+            }
         Motorista salvo = motoristaRepository.save(motorista);
         return ResponseEntity.ok(salvo);
     }
