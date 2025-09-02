@@ -85,6 +85,7 @@ export default function Dashboard() {
       descricao: '',
       arquivos: [],
     });
+  const [modalCadastroMotorista, setModalCadastroMotorista] = useState(false);
   const [motoristaBusca, setMotoristaBusca] = useState('');
   const [motoristasSugeridos, setMotoristasSugeridos] = useState([]);
   const [motoristaSelecionado, setMotoristaSelecionado] = useState(null);
