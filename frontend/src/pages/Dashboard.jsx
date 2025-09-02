@@ -32,7 +32,8 @@ import {
   aprovarDocumento, 
   rejeitarDocumento,
   visualizarArquivoDocumento,
-  buscarPedidos
+  buscarPedidos,
+  buscarMotoristasPorCpfOuNome,
 } from '../services/api';
 import LogoutButton from '../components/LogoutButton';
 import EnviarCertificadoModal from '../components/EnviarCertificadoModal';
