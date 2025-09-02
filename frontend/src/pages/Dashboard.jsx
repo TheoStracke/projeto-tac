@@ -36,6 +36,7 @@ import {
 } from '../services/api';
 import LogoutButton from '../components/LogoutButton';
 import EnviarCertificadoModal from '../components/EnviarCertificadoModal';
+import CadastroMotoristaModal from '../components/CadastroMotoristaModal';
 
 const clearAuthData = () => {
   localStorage.removeItem('token');
