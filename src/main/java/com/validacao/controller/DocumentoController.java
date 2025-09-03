@@ -44,18 +44,33 @@ public class DocumentoController {
             @RequestParam("curso") String curso,
             @RequestParam("empresaId") Long empresaId) {
         logger.info("[UPLOAD] Recebendo upload: empresaId={}, titulo={}, nomeMotorista={}, nomeArquivo={}", empresaId, titulo, nomeMotorista, arquivo != null ? arquivo.getOriginalFilename() : "null");
-        if (arquivo == null || arquivo.isEmpty()) {
-            logger.warn("[UPLOAD] Arquivo não enviado ou vazio");
-            throw new RuntimeException("Arquivo é obrigatório");
+        try {
+            if (arquivo == null || arquivo.isEmpty()) {
+                logger.warn("[UPLOAD] Arquivo não enviado ou vazio");
+                return ResponseEntity.status(400).body(new java.util.HashMap<String, Object>() {{
+                    put("error", "Arquivo é obrigatório");
+                    put("log", "[UPLOAD] Arquivo não enviado ou vazio");
+                }});
+            }
+            Documento documento = documentoService.enviarDocumento(
+                arquivo, titulo, descricao, nomeMotorista,
+                cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
+                curso,
+                empresaId
+            );
+            logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
+            return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
+                put("success", true);
+                put("documento", documento);
+                put("log", "Documento salvo com sucesso: id=" + documento.getId());
+            }});
+        } catch (Exception e) {
+            logger.error("[UPLOAD] Erro ao enviar documento", e);
+            return ResponseEntity.status(500).body(new java.util.HashMap<String, Object>() {{
+                put("error", "Erro ao enviar documento: " + e.getMessage());
+                put("log", e.toString());
+            }});
         }
-        Documento documento = documentoService.enviarDocumento(
-            arquivo, titulo, descricao, nomeMotorista,
-            cpf, dataNascimento, sexo, email, identidade, orgaoEmissor, ufEmissor, telefone,
-            curso,
-            empresaId
-        );
-        logger.info("[UPLOAD] Documento salvo com sucesso: id={}", documento.getId());
-        return ResponseEntity.ok(documento);
     }
     
     @GetMapping("/empresa/{empresaId}")
