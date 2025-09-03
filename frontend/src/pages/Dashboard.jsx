@@ -195,7 +195,16 @@ export default function Dashboard() {
         formDataToSend.append('arquivo', arquivo);
         formDataToSend.append('titulo', formData.titulo);
         formDataToSend.append('descricao', formData.descricao || '');
-        formDataToSend.append('motoristaId', motoristaSelecionado.id);
+        formDataToSend.append('nomeMotorista', motoristaSelecionado.nome || '');
+        formDataToSend.append('cpf', motoristaSelecionado.cpf || '');
+        formDataToSend.append('dataNascimento', motoristaSelecionado.dataNascimento || '');
+        formDataToSend.append('sexo', motoristaSelecionado.sexo || '');
+        formDataToSend.append('email', motoristaSelecionado.email || '');
+        formDataToSend.append('identidade', motoristaSelecionado.identidade || '');
+        formDataToSend.append('orgaoEmissor', motoristaSelecionado.orgaoEmissor || '');
+        formDataToSend.append('ufEmissor', motoristaSelecionado.ufEmissor || '');
+        formDataToSend.append('telefone', motoristaSelecionado.telefone || '');
+        formDataToSend.append('curso', motoristaSelecionado.curso || formData.curso || '');
         formDataToSend.append('empresaId', currentEmpresaData.empresaId);
         // Log do envio de cada arquivo
         console.log('[ENVIAR DOCUMENTO] Enviando arquivo:', arquivo.name, 'com dados:', Object.fromEntries(formDataToSend.entries()));
