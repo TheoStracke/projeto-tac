@@ -2,7 +2,6 @@ com\validacao\config\AppProperties$Email.class
 com\validacao\service\EmpresaService.class
 com\validacao\model\EnvioCertificado$StatusEnvio.class
 com\validacao\model\EnvioCertificado.class
-com\validacao\exception\GlobalExceptionHandler.class
 com\validacao\security\TokenService.class
 com\validacao\repository\EmpresaRepository.class
 com\validacao\service\DocumentoService.class
