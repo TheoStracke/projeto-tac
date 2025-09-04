@@ -17,7 +17,7 @@ console.log('🔗 API Base URL configurada:', API_BASE_URL);
 // Criar instância do Axios com configurações padrão
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // 15 segundos
+  timeout: 30000, // 30 segundos
   withCredentials: false, // Simplifica CORS, usamos Bearer token
   headers: {
     'Content-Type': 'application/json',
