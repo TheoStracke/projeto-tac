@@ -41,7 +41,7 @@ public class CertificadoController {
         }
         String contentType = arquivo.getContentType();
         if (!List.of("application/pdf", "image/jpeg", "image/png", "image/jpg").contains(contentType)) {
-            logger.warn("Tipo de arquivo não permitido: {}", contentType);
+            logger.warn("Tipo de arquivo não é permitido: {}", contentType);
             return ResponseEntity.badRequest().body(Map.of("error", "Tipo de arquivo não permitido"));
         }
         if (arquivo.getSize() > 10 * 1024 * 1024) {
