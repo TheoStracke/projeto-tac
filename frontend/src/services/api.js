@@ -189,9 +189,13 @@ export const buscarDocumento = async (documentoId) => {
   }
 };
 
+
 export const aprovarDocumento = async (documentoId, comentarios = '') => {
   try {
-    const response = await apiClient.post(`/documentos/${documentoId}/aprovar`, comentarios);
+    const response = await apiClient.post(
+      `/documentos/${documentoId}/aprovar`,
+      { comentarios }
+    );
     return {
       success: true,
       data: response.data
@@ -204,9 +208,13 @@ export const aprovarDocumento = async (documentoId, comentarios = '') => {
   }
 };
 
+
 export const rejeitarDocumento = async (documentoId, comentarios = '') => {
   try {
-    const response = await apiClient.post(`/documentos/${documentoId}/rejeitar`, comentarios);
+    const response = await apiClient.post(
+      `/documentos/${documentoId}/rejeitar`,
+      { comentarios }
+    );
     return {
       success: true,
       data: response.data
