@@ -383,22 +383,17 @@ export const enviarCertificado = async (dados) => {
       },
       timeout: 30000, // 30 segundos para upload
     });
-    
     console.log('✅ Certificado enviado com sucesso:', response.data);
-    return response;
+    return { success: true, data: response.data };
   } catch (error) {
     console.error('❌ Erro ao enviar certificado:', error);
-    throw error;
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+      // Timeout: considera sucesso em background
+      return { success: true, timeout: true };
+    }
+    return { success: false, error: error.response?.data?.message || error.response?.data || error.message || 'Erro ao enviar certificado' };
   }
 };
-
-// Função para gerar URL completa de arquivos (para links diretos)
-export const getArquivoUrl = (token) => {
-  return `${API_BASE_URL}/aprovacao/${token}/arquivo`;
-};
-
-// Exportar instância configurada para usos customizados
-export { apiClient };
 
 // Exportar URL base para compatibilidade
 export { API_BASE_URL };
