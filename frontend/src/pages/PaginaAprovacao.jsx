@@ -14,7 +14,14 @@ import {
   Chip
 } from '@mui/material';
 import { CheckCircle, Cancel } from '@mui/icons-material';
-import { buscarAprovacao, processarAprovacao, getArquivoUrl } from '../services/api';
+import { buscarAprovacao, processarAprovacao } from '../services/api';
+  // Função utilitária para gerar a URL de download do arquivo
+  const getArquivoUrl = (token) => {
+    // O backend deve expor um endpoint para download do arquivo por token ou id
+    // Exemplo: `${API_BASE_URL}/aprovacao/${token}/arquivo` ou similar
+    // Aqui, assumimos que o token é suficiente para identificar o documento
+    return `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/aprovacao/${token}/arquivo`;
+  };
 
 export default function PaginaAprovacao() {
   const { token } = useParams();

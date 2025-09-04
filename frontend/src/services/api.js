@@ -17,7 +17,6 @@ console.log('🔗 API Base URL configurada:', API_BASE_URL);
 // Criar instância do Axios com configurações padrão
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 segundos
   withCredentials: false, // Simplifica CORS, usamos Bearer token
   headers: {
     'Content-Type': 'application/json',
@@ -388,8 +387,7 @@ export const enviarCertificado = async (dados) => {
     formData.append('observacoes', dados.observacoes || '');
 
     const response = await apiClient.post('/certificados/enviar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30000,
+      headers: { 'Content-Type': 'multipart/form-data' }
     });
     return { success: true, data: response.data };
   } catch (error) {
