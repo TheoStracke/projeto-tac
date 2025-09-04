@@ -171,12 +171,21 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
       timeoutWarning = setTimeout(() => {
         setErro('O envio está demorando mais que o normal. O documento será processado em segundo plano.');
       }, 15000);
-      const response = await enviarCertificado({
-        despachanteId: despachanteSelecionado.id,
-        motoristaId: motoristaSelecionado.id || null,
-        arquivo: arquivo,
-        observacoes: observacoes
+
+      // Timeout manual de 5s
+      const manualTimeout = new Promise((resolve) => {
+        setTimeout(() => resolve({ success: true, timeout: true }), 5000);
       });
+      const response = await Promise.race([
+        enviarCertificado({
+          despachanteId: despachanteSelecionado.id,
+          motoristaId: motoristaSelecionado.id || null,
+          arquivo: arquivo,
+          observacoes: observacoes
+        }),
+        manualTimeout
+      ]);
+
       clearInterval(progressInterval);
       clearTimeout(timeoutWarning);
       setProgresso(100);
@@ -185,8 +194,8 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
         setTimeout(() => {
           if (!closed) {
             closed = true;
-            if (onSuccess) onSuccess();
             onClose();
+            if (onSuccess) onSuccess(); // Atualiza lista após fechar o modal
           }
         }, 2000);
       } else {
@@ -195,18 +204,7 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
     } catch (error) {
       clearInterval(progressInterval);
       clearTimeout(timeoutWarning);
-      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        setErro('O envio excedeu o tempo limite, mas o documento será processado em segundo plano.');
-        setTimeout(() => {
-          if (!closed) {
-            closed = true;
-            if (onSuccess) onSuccess();
-            onClose();
-          }
-        }, 2000);
-      } else {
-        setErro(error.response?.data?.message || 'Erro ao enviar certificado. Tente novamente.');
-      }
+      setErro(error.response?.data?.message || 'Erro ao enviar certificado. Tente novamente.');
     } finally {
       setEnviando(false);
     }
