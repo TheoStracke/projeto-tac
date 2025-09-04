@@ -161,11 +161,17 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
     setErro('');
     setProgresso(0);
 
+    let timeoutWarning = null;
     try {
       // Simular progresso
       const progressInterval = setInterval(() => {
         setProgresso(prev => Math.min(prev + 10, 90));
       }, 200);
+
+      // Timeout warning após 15s
+      timeoutWarning = setTimeout(() => {
+        setErro('O envio está demorando mais que o normal. O documento será processado em segundo plano. Aguarde ou feche este modal.');
+      }, 15000);
 
       await enviarCertificado({
         despachanteId: despachanteSelecionado.id,
@@ -176,6 +182,7 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
       });
 
       clearInterval(progressInterval);
+      clearTimeout(timeoutWarning);
       setProgresso(100);
 
       // Sucesso
@@ -185,8 +192,14 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
       }, 500);
 
     } catch (error) {
+      clearInterval(progressInterval);
+      clearTimeout(timeoutWarning);
       console.error('Erro ao enviar certificado:', error);
-      setErro(error.response?.data?.message || 'Erro ao enviar certificado. Tente novamente.');
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        setErro('O envio excedeu o tempo limite, mas o documento será processado em segundo plano. Aguarde ou feche este modal.');
+      } else {
+        setErro(error.response?.data?.message || 'Erro ao enviar certificado. Tente novamente.');
+      }
     } finally {
       setEnviando(false);
     }
