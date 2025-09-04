@@ -366,11 +366,13 @@ export const buscarMotoristasPorCpfOuNome = async (termo) => {
 };
 
 // Enviar certificado para despachante
+/**
+ * Envia um certificado para o backend (assíncrono, 30s timeout).
+ * Retorna { success: true } mesmo em timeout, pois o backend processa em background.
+ * @param {Object} dados - { despachanteId, motoristaId, arquivo, observacoes }
+ */
 export const enviarCertificado = async (dados) => {
   try {
-    console.log('📤 Enviando certificado:', dados);
-    
-    // Criar FormData para upload de arquivo
     const formData = new FormData();
     formData.append('despachanteId', dados.despachanteId);
     formData.append('motoristaId', dados.motoristaId);
@@ -378,20 +380,19 @@ export const enviarCertificado = async (dados) => {
     formData.append('observacoes', dados.observacoes || '');
 
     const response = await apiClient.post('/certificados/enviar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      timeout: 30000, // 30 segundos para upload
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
     });
-    console.log('✅ Certificado enviado com sucesso:', response.data);
     return { success: true, data: response.data };
   } catch (error) {
-    console.error('❌ Erro ao enviar certificado:', error);
     if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
       // Timeout: considera sucesso em background
       return { success: true, timeout: true };
     }
-    return { success: false, error: error.response?.data?.message || error.response?.data || error.message || 'Erro ao enviar certificado' };
+    return {
+      success: false,
+      error: error.response?.data?.message || error.response?.data || error.message || 'Erro ao enviar certificado'
+    };
   }
 };
 
