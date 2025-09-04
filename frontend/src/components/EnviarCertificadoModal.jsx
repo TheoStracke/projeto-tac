@@ -185,13 +185,13 @@ const EnviarCertificadoModal = ({ open, onClose, onSuccess }) => {
       clearTimeout(timeoutWarning);
       setProgresso(100);
 
-      // Sucesso: fechar modal imediatamente e mostrar mensagem
-      if (response?.success !== false) {
-        if (onSuccess) onSuccess(); // Atualiza lista de documentos
+      // Sucesso: fechar modal imediatamente e mostrar mensagem, inclusive em timeout
+      if (response?.success === true) {
         setTimeout(() => {
+          if (onSuccess) onSuccess(); // Atualiza lista de documentos após 2 segundos
           setErro('Documento enviado com sucesso! Será processado e aparecerá para aprovação em instantes.');
           onClose();
-        }, 500);
+        }, 2000);
       } else {
         setErro(response?.error || 'Erro ao enviar certificado. Tente novamente.');
       }
