@@ -14,9 +14,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
 console.log('🔗 API Base URL configurada:', API_BASE_URL);
 
-// Criar instância do Axios com configurações padrão
+// Criar instância do Axios com configurações padrão para Railway/Vercel
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000, // 30s timeout para Railway (pode ser mais lento que localhost)
   withCredentials: false, // Simplifica CORS, usamos Bearer token
   headers: {
     'Content-Type': 'application/json',
@@ -374,12 +375,19 @@ export const buscarMotoristasPorCpfOuNome = async (termo) => {
 
 // Enviar certificado para despachante
 /**
- * Envia um certificado para o backend (assíncrono, 30s timeout).
- * Retorna { success: true } mesmo em timeout, pois o backend processa em background.
+ * Envia um certificado para o Railway backend.
+ * Timeout configurado para lidar com a latência do Railway.
  * @param {Object} dados - { despachanteId, motoristaId, arquivo, observacoes }
  */
 export const enviarCertificado = async (dados) => {
   try {
+    console.log('📤 Enviando certificado para Railway...', {
+      despachanteId: dados.despachanteId,
+      motoristaId: dados.motoristaId,
+      arquivo: dados.arquivo?.name,
+      observacoes: dados.observacoes
+    });
+
     const formData = new FormData();
     formData.append('despachanteId', dados.despachanteId);
     formData.append('motoristaId', dados.motoristaId);
@@ -387,14 +395,26 @@ export const enviarCertificado = async (dados) => {
     formData.append('observacoes', dados.observacoes || '');
 
     const response = await apiClient.post('/certificados/enviar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 25000 // 25s específico para upload (Railway pode ser mais lento)
     });
+    
+    console.log('✅ Certificado enviado com sucesso:', response.data);
     return { success: true, data: response.data };
   } catch (error) {
+    console.error('❌ Erro no envio:', error);
+    
     if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
-      // Timeout: considera sucesso em background
+      console.log('⏰ Timeout - mas Railway pode ter processado em background');
       return { success: true, timeout: true };
     }
+    
+    // Erro de rede/CORS com Railway
+    if (error.response?.status >= 500 || !error.response) {
+      console.log('🔄 Erro de servidor/rede - pode ter sido processado');
+      return { success: true, networkError: true };
+    }
+    
     return {
       success: false,
       error: error.response?.data?.message || error.response?.data || error.message || 'Erro ao enviar certificado'

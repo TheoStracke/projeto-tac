@@ -789,6 +789,7 @@ export default function Dashboard() {
         onClose={() => setModalCertificadoAberto(false)}
         onSuccess={() => {
           setError('');
+          carregarPedidos(); // Atualiza a lista imediatamente após envio
           // Você pode adicionar uma notificação de sucesso aqui
           console.log('Certificado enviado com sucesso!');
         }}
